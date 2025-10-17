@@ -4192,13 +4192,6 @@ function setupMainButtons() {
     appMenuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
 
-      // Check if apps are hidden via visibility toggle
-      const appsVisibility = localStorage.getItem("appsVisibility");
-      if (appsVisibility === "hidden") {
-        showToast("Apps zijn verborgen. Klik op het oog-icoon om ze te tonen.");
-        return;
-      }
-
       if (appMenu.classList.contains("hidden")) {
         appMenu.classList.remove("hidden");
         appMenu.classList.add("menu-enter");
@@ -4212,20 +4205,10 @@ function setupMainButtons() {
 
     // Close menu when clicking outside
     document.addEventListener("click", (e) => {
-      // Don't close if clicking on toggle visibility button
-      const toggleBtn = document.getElementById("appsVisibilityToggle");
-      if (toggleBtn && toggleBtn.contains(e.target)) {
-        return;
-      }
-
       if (!appMenu.contains(e.target) && !appMenuBtn.contains(e.target)) {
-        // Only close if apps are not hidden by visibility toggle
-        const appsVisibility = localStorage.getItem("appsVisibility");
-        if (appsVisibility !== "hidden") {
-          appMenu.classList.add("hidden");
-          appMenu.classList.remove("menu-enter");
-          appMenuBtn.setAttribute("aria-expanded", "false");
-        }
+        appMenu.classList.add("hidden");
+        appMenu.classList.remove("menu-enter");
+        appMenuBtn.setAttribute("aria-expanded", "false");
       }
     });
   }
@@ -4406,10 +4389,17 @@ function setupAppsVisibilityToggle() {
   const toggleBtn = document.getElementById("appsVisibilityToggle");
   const eyeOpenIcon = document.getElementById("eyeOpenIcon");
   const eyeClosedIcon = document.getElementById("eyeClosedIcon");
-  const appMenu = document.getElementById("appMenu");
-  const appMenuBtn = document.getElementById("appMenuBtn");
 
-  if (!toggleBtn || !eyeOpenIcon || !eyeClosedIcon || !appMenu) {
+  // Target homepage elements instead of dropdown menu
+  const homePageAppsGrid = document.getElementById("homePageAppsGrid");
+  const homePagePinnedSection = document.getElementById(
+    "homePagePinnedSection"
+  );
+  const homePageCategoryFilter = document.getElementById(
+    "homePageCategoryFilter"
+  );
+
+  if (!toggleBtn || !eyeOpenIcon || !eyeClosedIcon) {
     console.warn("Apps visibility toggle elements not found");
     return;
   }
@@ -4418,6 +4408,8 @@ function setupAppsVisibilityToggle() {
   const isHidden = localStorage.getItem("appsVisibility") === "hidden";
   if (isHidden) {
     updateIconState(true);
+    // Apply hidden state immediately
+    hideAppsImmediately();
   }
 
   // Click handler
@@ -4445,19 +4437,48 @@ function setupAppsVisibilityToggle() {
     }
   }
 
+  function hideAppsImmediately() {
+    // Hide immediately without animation (for initial page load)
+    if (homePageAppsGrid) {
+      homePageAppsGrid.style.display = "none";
+    }
+    if (homePagePinnedSection) {
+      homePagePinnedSection.style.display = "none";
+    }
+    if (homePageCategoryFilter) {
+      homePageCategoryFilter.parentElement.style.display = "none";
+    }
+  }
+
   function hideApps() {
     console.log("hideApps called");
-    console.log("appMenu classes before:", appMenu.className);
 
-    // Close the menu - force it to be hidden
-    appMenu.classList.add("hidden");
-    appMenu.classList.remove("menu-enter");
-
-    if (appMenuBtn) {
-      appMenuBtn.setAttribute("aria-expanded", "false");
+    // Hide homepage sections with smooth animation
+    if (homePageAppsGrid) {
+      homePageAppsGrid.style.opacity = "0";
+      homePageAppsGrid.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        homePageAppsGrid.style.display = "none";
+      }, 200);
     }
 
-    console.log("appMenu classes after:", appMenu.className);
+    if (homePagePinnedSection) {
+      homePagePinnedSection.style.opacity = "0";
+      homePagePinnedSection.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        homePagePinnedSection.style.display = "none";
+      }, 200);
+    }
+
+    // Hide category filter
+    if (homePageCategoryFilter) {
+      const filterContainer = homePageCategoryFilter.parentElement;
+      filterContainer.style.opacity = "0";
+      filterContainer.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        filterContainer.style.display = "none";
+      }, 200);
+    }
 
     // Update icon state
     updateIconState(true);
@@ -4471,13 +4492,33 @@ function setupAppsVisibilityToggle() {
 
   function showApps() {
     console.log("showApps called");
-    // Open the menu
-    if (appMenu.classList.contains("hidden")) {
-      appMenu.classList.remove("hidden");
-      appMenu.classList.add("menu-enter");
-      if (appMenuBtn) {
-        appMenuBtn.setAttribute("aria-expanded", "true");
-      }
+
+    // Show homepage sections with smooth animation
+    if (homePageAppsGrid) {
+      homePageAppsGrid.style.display = "grid";
+      setTimeout(() => {
+        homePageAppsGrid.style.opacity = "1";
+        homePageAppsGrid.style.transform = "scale(1)";
+      }, 10);
+    }
+
+    // Only show pinned section if there are pinned apps
+    if (homePagePinnedSection && pinnedApps.length > 0) {
+      homePagePinnedSection.style.display = "block";
+      setTimeout(() => {
+        homePagePinnedSection.style.opacity = "1";
+        homePagePinnedSection.style.transform = "scale(1)";
+      }, 10);
+    }
+
+    // Show category filter
+    if (homePageCategoryFilter) {
+      const filterContainer = homePageCategoryFilter.parentElement;
+      filterContainer.style.display = "block";
+      setTimeout(() => {
+        filterContainer.style.opacity = "1";
+        filterContainer.style.transform = "scale(1)";
+      }, 10);
     }
 
     // Update icon state
