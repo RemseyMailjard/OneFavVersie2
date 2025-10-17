@@ -3,6 +3,7 @@ let allApps = [];
 let customApps = [];
 let pinnedApps = [];
 let collections = [];
+let appStats = {}; // Usage statistics
 let selectedColor = "blue";
 let selectedCollectionColor = "blue";
 let currentCategory = "all";
@@ -702,6 +703,7 @@ function createAppButton(app, isPinnedButton = false) {
 
     button.addEventListener("click", (e) => {
       if (!button.classList.contains("sortable-drag")) {
+        trackAppUsage(app.name); // Track usage
         window.open(app.url, "_blank");
       }
     });
