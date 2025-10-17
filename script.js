@@ -398,9 +398,9 @@ function createAppCard(app, isPinnedButton = false) {
   };
   updatePinButton();
 
-  // Main open button
+  // Main open button - v2.html styling
   const openBtn = document.createElement("button");
-  openBtn.className = "open-btn group flex flex-col items-center gap-0.5";
+  openBtn.className = "open-btn group flex flex-col items-center gap-1";
 
   // Create title with description for tooltip
   let tooltipText = app.name;
