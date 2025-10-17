@@ -1632,10 +1632,10 @@ window.debugSortable = function () {
  */
 function checkAndFixSortable() {
   console.log("🔍 Checking SortableJS status...");
-  
+
   const appsGrid = document.querySelector("#appsGrid");
   const homePageAppsGrid = document.querySelector("#homePageAppsGrid");
-  
+
   // Check main grid
   if (appsGrid) {
     const appItems = appsGrid.querySelectorAll(".app-item");
@@ -1644,8 +1644,8 @@ function checkAndFixSortable() {
       initSortable();
     }
   }
-  
-  // Check homepage grid  
+
+  // Check homepage grid
   if (homePageAppsGrid) {
     const appItems = homePageAppsGrid.querySelectorAll(".app-item");
     if (appItems.length > 0 && !homePageAppsGrid.sortableInstance) {
@@ -1653,7 +1653,7 @@ function checkAndFixSortable() {
       initHomePageSortable();
     }
   }
-  
+
   console.log("✅ SortableJS status check complete");
 }
 
