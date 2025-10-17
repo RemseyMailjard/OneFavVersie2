@@ -2881,8 +2881,8 @@ function setupShowShortcutsToggle() {
 
   if (!toggle || !widget) return;
 
-  // Load saved preference (default: false)
-  const showShortcuts = localStorage.getItem("showShortcuts") === "true";
+  // Load saved preference (default: true)
+  const showShortcuts = localStorage.getItem("showShortcuts") !== "false";
   toggle.checked = showShortcuts;
 
   // Apply initial visibility
