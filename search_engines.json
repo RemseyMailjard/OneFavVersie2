@@ -1,0 +1,62 @@
+{
+    "g:": {
+        "name": "Google",
+        "url": "https://www.google.com/search?q=",
+        "icon": "🔍"
+    },
+    "yt:": {
+        "name": "YouTube",
+        "url": "https://www.youtube.com/results?search_query=",
+        "icon": "▶️"
+    },
+    "gpt:": {
+        "name": "ChatGPT",
+        "url": "https://chat.openai.com/?q=",
+        "icon": "🤖"
+    },
+    "claude:": {
+        "name": "Claude",
+        "url": "https://claude.ai/new?q=",
+        "icon": "🧠"
+    },
+    "gemini:": {
+        "name": "Gemini",
+        "url": "https://gemini.google.com/app?q=",
+        "icon": "✨"
+    },
+    "perplexity:": {
+        "name": "Perplexity",
+        "url": "https://www.perplexity.ai/?q=",
+        "icon": "🔮"
+    },
+    "gh:": {
+        "name": "GitHub",
+        "url": "https://github.com/search?q=",
+        "icon": "💻"
+    },
+    "x:": {
+        "name": "X (Twitter)",
+        "url": "https://x.com/search?q=",
+        "icon": "🐦"
+    },
+    "reddit:": {
+        "name": "Reddit",
+        "url": "https://www.reddit.com/search/?q=",
+        "icon": "📱"
+    },
+    "wiki:": {
+        "name": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Special:Search?search=",
+        "icon": "📚"
+    },
+    "maps:": {
+        "name": "Google Maps",
+        "url": "https://www.google.com/maps/search/",
+        "icon": "🗺️"
+    },
+    "translate:": {
+        "name": "Google Translate",
+        "url": "https://translate.google.com/?text=",
+        "icon": "🌐"
+    }
+}

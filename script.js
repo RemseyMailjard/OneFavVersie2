@@ -34,516 +34,16 @@ const aiModes = {
   },
 };
 
-// Search engine shortcuts
-const searchEngines = {
-  "g:": { name: "Google", url: "https://www.google.com/search?q=", icon: "🔍" },
-  "yt:": {
-    name: "YouTube",
-    url: "https://www.youtube.com/results?search_query=",
-    icon: "▶️",
-  },
-  "gpt:": { name: "ChatGPT", url: "https://chat.openai.com/?q=", icon: "🤖" },
-  "claude:": { name: "Claude", url: "https://claude.ai/new?q=", icon: "🧠" },
-  "gemini:": {
-    name: "Gemini",
-    url: "https://gemini.google.com/app?q=",
-    icon: "✨",
-  },
-  "perplexity:": {
-    name: "Perplexity",
-    url: "https://www.perplexity.ai/?q=",
-    icon: "🔮",
-  },
-  "gh:": { name: "GitHub", url: "https://github.com/search?q=", icon: "💻" },
-  "x:": { name: "X (Twitter)", url: "https://x.com/search?q=", icon: "🐦" },
-  "reddit:": {
-    name: "Reddit",
-    url: "https://www.reddit.com/search/?q=",
-    icon: "📱",
-  },
-  "wiki:": {
-    name: "Wikipedia",
-    url: "https://en.wikipedia.org/wiki/Special:Search?search=",
-    icon: "📚",
-  },
-  "maps:": {
-    name: "Google Maps",
-    url: "https://www.google.com/maps/search/",
-    icon: "🗺️",
-  },
-  "translate:": {
-    name: "Google Translate",
-    url: "https://translate.google.com/?text=",
-    icon: "🌐",
-  },
-};
+// Search engine shortcuts (loaded from external JSON with inline fallback)
+let searchEngines = [];
+let apps = [];
 
-// App menu toggle functionaliteit
-document.addEventListener("DOMContentLoaded", async () => {
-  const appMenuBtn = document.getElementById("appMenuBtn");
-  const appMenu = document.getElementById("appMenu");
-  const themeToggle = document.getElementById("themeToggle");
-  const settingsBtn = document.getElementById("settingsBtn");
-
-  if (!appMenuBtn || !appMenu) {
-    console.error("App menu elementen niet gevonden");
-    return;
-  }
-
-  // Laad theme eerst (sync)
-  loadTheme();
-  console.log("✅ Theme geladen");
-
-  // Laad apps eerst (async) - DIT MOET EERST!
-  await loadApps();
-  console.log("✅ Apps geladen - allApps.length:", allApps.length);
-
-  // Dan pas collections laden (heeft apps nodig)
-  await loadCollections();
-  console.log(
-    "✅ Collections geladen - collections.length:",
-    collections.length
-  );
-
-  // En dan andere sync functies
-  loadPinnedApps();
-  loadCustomApps();
-  console.log("✅ Pinned apps en custom apps geladen");
-
-  // Setup event listeners
-  setupEventListeners();
-  setupKeyboardShortcuts();
-  setupHomePageAutocomplete();
-  setupAIModeButton();
-  console.log("✅ Event listeners ingesteld");
-
-  // Initialize UI systems
-  setupTagSuggestions();
-  setupShowTagsToggle();
-  setupUseFaviconsToggle();
-  setupGridSizeToggle();
-  setupHighlightSearchToggle();
-  setupShowShortcutsToggle();
-  setupShowAppsDashboardToggle();
-  setupContextMenu();
-  setupAppsDashboardMinimize();
-  setupAppsDashboardDrag();
-  renderAppsDashboard();
-  console.log("✅ UI systems geïnitialiseerd");
-
-  // Make functions globally available for inline onclick handlers
-  window.openCollection = openCollection;
-  window.editCollection = editCollection;
-  window.deleteCollection = deleteCollection;
-
-  console.log("🎉 Initialisatie compleet!");
-});
-/**
- * Setup alle event listeners
- */
-function setupEventListeners() {
-  const appMenuBtn = document.getElementById("appMenuBtn");
-  const appMenu = document.getElementById("appMenu");
-  const searchInput = document.getElementById("appSearch");
-  const resetBtn = document.getElementById("resetOrder");
-  const themeToggle = document.getElementById("themeToggle");
-  const settingsBtn = document.getElementById("settingsBtn");
-  const settingsModal = document.getElementById("settingsModal");
-  const closeSettings = document.getElementById("closeSettings");
-  const addCustomApp = document.getElementById("addCustomApp");
-  const customAppModal = document.getElementById("customAppModal");
-  const cancelCustomApp = document.getElementById("cancelCustomApp");
-  const customAppForm = document.getElementById("customAppForm");
-  const exportBtn = document.getElementById("exportConfig");
-  const importBtn = document.getElementById("importConfig");
-
-  // Zoekfunctionaliteit - Handled by setupAutocomplete()
-  // (Event listener moved to setupAutocomplete for autocomplete integration)
-
-  // Reset button
-  if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      resetAppOrder();
-    });
-  }
-
-  // Theme toggle
-  if (themeToggle) {
-    themeToggle.addEventListener("click", toggleTheme);
-  }
-
-  // Settings
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => {
-      const isHidden = settingsModal?.classList.contains("hidden");
-      settingsModal?.classList.remove("hidden");
-      settingsModal?.classList.add("flex");
-      settingsBtn.setAttribute("aria-expanded", "true");
-    });
-  }
-
-  if (closeSettings) {
-    closeSettings.addEventListener("click", () => {
-      settingsModal?.classList.add("hidden");
-      settingsModal?.classList.remove("flex");
-      settingsBtn?.setAttribute("aria-expanded", "false");
-    });
-  }
-
-  // Custom app modal
-  if (addCustomApp) {
-    addCustomApp.addEventListener("click", () => {
-      customAppModal?.classList.remove("hidden");
-      customAppModal?.classList.add("flex");
-    });
-  }
-
-  if (cancelCustomApp) {
-    cancelCustomApp.addEventListener("click", () => {
-      customAppModal?.classList.add("hidden");
-      customAppModal?.classList.remove("flex");
-      customAppForm?.reset();
-    });
-  }
-
-  if (customAppForm) {
-    customAppForm.addEventListener("submit", handleCustomAppSubmit);
-  }
-
-  // Color picker
-  document.querySelectorAll(".color-picker").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      document
-        .querySelectorAll(".color-picker")
-        .forEach((b) => b.classList.remove("ring-4"));
-      e.currentTarget.classList.add("ring-4");
-      selectedColor = e.currentTarget.getAttribute("data-color");
-    });
-  });
-
-  // Collection color picker
-  document.querySelectorAll(".collection-color-picker").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      document
-        .querySelectorAll(".collection-color-picker")
-        .forEach((b) => b.classList.remove("ring-4"));
-      e.currentTarget.classList.add("ring-4");
-      selectedCollectionColor = e.currentTarget.getAttribute(
-        "data-collection-color"
-      );
-    });
-  });
-
-  // Collections Modal
-  const collectionsBtn = document.getElementById("collectionsBtn");
-  const collectionsModal = document.getElementById("collectionsModal");
-  const closeCollections = document.getElementById("closeCollections");
-  const createCollectionBtn = document.getElementById("createCollectionBtn");
-  const collectionFormModal = document.getElementById("collectionFormModal");
-  const cancelCollection = document.getElementById("cancelCollection");
-  const collectionForm = document.getElementById("collectionForm");
-
-  if (collectionsBtn) {
-    collectionsBtn.addEventListener("click", () => {
-      collectionsModal?.classList.remove("hidden");
-      collectionsModal?.classList.add("flex");
-      collectionsBtn.setAttribute("aria-expanded", "true");
-      renderCollectionsList();
-    });
-  }
-
-  if (closeCollections) {
-    closeCollections.addEventListener("click", () => {
-      collectionsModal?.classList.add("hidden");
-      collectionsModal?.classList.remove("flex");
-      collectionsBtn?.setAttribute("aria-expanded", "false");
-    });
-  }
-
-  if (createCollectionBtn) {
-    createCollectionBtn.addEventListener("click", () => {
-      editingCollectionId = null;
-      document.getElementById("collectionFormTitle").textContent =
-        "Nieuwe Collection";
-      collectionForm?.reset();
-      selectedCollectionColor = "blue";
-      renderAppSelectionList();
-      collectionFormModal?.classList.remove("hidden");
-      collectionFormModal?.classList.add("flex");
-    });
-  }
-
-  if (cancelCollection) {
-    cancelCollection.addEventListener("click", () => {
-      collectionFormModal?.classList.add("hidden");
-      collectionFormModal?.classList.remove("flex");
-      editingCollectionId = null;
-    });
-  }
-
-  if (collectionForm) {
-    collectionForm.addEventListener("submit", handleCollectionSubmit);
-  }
-
-  // Export/Import
-  if (exportBtn) {
-    exportBtn.addEventListener("click", exportConfiguration);
-  }
-
-  if (importBtn) {
-    importBtn.addEventListener("click", importConfiguration);
-  }
-
-  // Toggle menu bij klik op waffel button
-  appMenuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isHidden = appMenu.classList.contains("hidden");
-
-    if (isHidden) {
-      appMenu.classList.remove("hidden");
-      appMenu.classList.add("menu-enter");
-      appMenuBtn.setAttribute("aria-expanded", "true");
-      setTimeout(() => searchInput?.focus(), 100);
-    } else {
-      appMenu.classList.add("hidden");
-      appMenu.classList.remove("menu-enter");
-      appMenuBtn.setAttribute("aria-expanded", "false");
-      if (searchInput) searchInput.value = "";
-      filterApps("");
-    }
-  });
-
-  // Sluit menu als je ergens anders klikt
-  document.addEventListener("click", (e) => {
-    if (!appMenuBtn.contains(e.target) && !appMenu.contains(e.target)) {
-      appMenu.classList.add("hidden");
-      appMenu.classList.remove("menu-enter");
-      appMenuBtn.setAttribute("aria-expanded", "false");
-      if (searchInput) searchInput.value = "";
-      filterApps("");
-    }
-  });
-
-  // Sluit menu met ESC toets
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (!appMenu.classList.contains("hidden")) {
-        appMenu.classList.add("hidden");
-        appMenu.classList.remove("menu-enter");
-        appMenuBtn.setAttribute("aria-expanded", "false");
-        appMenuBtn.focus();
-        if (searchInput) searchInput.value = "";
-        filterApps("");
-      }
-
-      // Sluit modals
-      if (settingsModal && !settingsModal.classList.contains("hidden")) {
-        settingsModal.classList.add("hidden");
-        settingsModal.classList.remove("flex");
-        settingsBtn?.setAttribute("aria-expanded", "false");
-      }
-      customAppModal?.classList.add("hidden");
-      customAppModal?.classList.remove("flex");
-      const collectionsModal = document.getElementById("collectionsModal");
-      if (collectionsModal && !collectionsModal.classList.contains("hidden")) {
-        collectionsModal.classList.add("hidden");
-        collectionsModal.classList.remove("flex");
-        collectionsBtn?.setAttribute("aria-expanded", "false");
-      }
-      const collectionFormModal = document.getElementById(
-        "collectionFormModal"
-      );
-      collectionFormModal?.classList.add("hidden");
-      collectionFormModal?.classList.remove("flex");
-    }
-  });
-
-  // Setup drag & drop zone voor apps grid
-  setupDropZone();
-
-  // Setup autocomplete for search
-  setupAutocomplete();
-}
-
-/**
- * Setup drop zone voor het slepen van links naar de app grid
- */
-function setupDropZone() {
-  const appsGrid = document.getElementById("appsGrid");
-  const appMenu = document.getElementById("appMenu");
-
-  if (!appsGrid || !appMenu) return;
-
-  // Prevent default drag over hele document
-  document.addEventListener("dragover", (e) => {
-    e.preventDefault();
-  });
-
-  document.addEventListener("drop", (e) => {
-    e.preventDefault();
-  });
-
-  // Link Dropzone handlers (dedicated drop area)
-  const linkDropzone = document.getElementById("linkDropzone");
-
-  if (linkDropzone) {
-    linkDropzone.addEventListener("dragenter", (e) => {
-      e.preventDefault();
-      // Check if it's an external drag (not a sortable drag)
-      const isDraggingApp = e.dataTransfer.types.includes("text/html");
-      if (!isDraggingApp) {
-        linkDropzone.classList.add("drag-over");
-      }
-    });
-
-    linkDropzone.addEventListener("dragleave", (e) => {
-      e.preventDefault();
-      // Only remove when actually leaving the dropzone
-      if (
-        e.target === linkDropzone ||
-        !linkDropzone.contains(e.relatedTarget)
-      ) {
-        linkDropzone.classList.remove("drag-over");
-      }
-    });
-
-    linkDropzone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      // Only allow external links, not internal app drags
-      const isDraggingApp = e.dataTransfer.types.includes("text/html");
-      if (!isDraggingApp) {
-        e.dataTransfer.dropEffect = "copy";
-      } else {
-        e.dataTransfer.dropEffect = "none";
-      }
-    });
-
-    linkDropzone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      linkDropzone.classList.remove("drag-over");
-
-      // Haal URL op uit drop data
-      const url =
-        e.dataTransfer.getData("text/uri-list") ||
-        e.dataTransfer.getData("text/plain");
-
-      if (url && url.startsWith("http")) {
-        // Extraheer domein naam voor app naam
-        try {
-          const urlObj = new URL(url);
-          const hostname = urlObj.hostname.replace("www.", "");
-          const appName = hostname.split(".")[0];
-          const capitalizedName =
-            appName.charAt(0).toUpperCase() + appName.slice(1);
-
-          // Open custom app modal met pre-filled data
-          const customAppModal = document.getElementById("customAppModal");
-          const nameInput = document.getElementById("customAppName");
-          const urlInput = document.getElementById("customAppUrl");
-
-          if (nameInput) nameInput.value = capitalizedName;
-          if (urlInput) urlInput.value = url;
-
-          customAppModal?.classList.remove("hidden");
-          customAppModal?.classList.add("flex");
-
-          console.log(
-            `✅ Link gedropt in dropzone: ${capitalizedName} - ${url}`
-          );
-          showToast("🔗 Link toegevoegd - pas aan indien nodig");
-
-          // Focus op naam input voor aanpassing
-          setTimeout(() => nameInput?.focus(), 100);
-        } catch (error) {
-          console.error("Ongeldige URL gedropt:", error);
-          showToast("✗ Ongeldige URL");
-        }
-      }
-    });
+async function ensureAppsLoaded() {
+  if (apps.length === 0) {
+    await loadApps();
   }
 }
 
-/**
- * Setup keyboard shortcuts
- */
-function setupKeyboardShortcuts() {
-  document.addEventListener("keydown", (e) => {
-    // Normalize key to avoid case issues
-    const key = e.key ? e.key.toLowerCase() : "";
-
-    // Ctrl/Cmd + K - Open Command Palette
-    if ((e.ctrlKey || e.metaKey) && key === "k") {
-      e.preventDefault();
-      openCommandPalette();
-      return;
-    }
-
-    // Ctrl/Cmd + M - Toggle main menu
-    if ((e.ctrlKey || e.metaKey) && key === "m") {
-      e.preventDefault();
-      document.getElementById("appMenuBtn")?.click();
-      return;
-    }
-
-    // Ctrl/Cmd + Shift + A - Add custom app
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && key === "a") {
-      e.preventDefault();
-      const customAppModal = document.getElementById("customAppModal");
-      customAppModal?.classList.remove("hidden");
-      customAppModal?.classList.add("flex");
-      return;
-    }
-
-    // Ctrl/Cmd + Shift + D - Toggle theme
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && key === "d") {
-      e.preventDefault();
-      toggleTheme();
-      return;
-    }
-
-    // Ctrl/Cmd + G - Open Collections
-    if ((e.ctrlKey || e.metaKey) && key === "g") {
-      e.preventDefault();
-      const collectionsModal = document.getElementById("collectionsModal");
-      const isHidden = collectionsModal?.classList.contains("hidden");
-      if (isHidden) {
-        collectionsModal?.classList.remove("hidden");
-        collectionsModal?.classList.add("flex");
-        renderCollectionsList();
-      } else {
-        collectionsModal?.classList.add("hidden");
-        collectionsModal?.classList.remove("flex");
-      }
-      return;
-    }
-
-    // Ctrl/Cmd + Q - Toggle Apps Dashboard
-    if ((e.ctrlKey || e.metaKey) && key === "q") {
-      e.preventDefault();
-      const dashboard = document.getElementById("appsDashboardWidget");
-      const toggle = document.getElementById("showAppsDashboardToggle");
-
-      if (dashboard && toggle) {
-        const isHidden = dashboard.classList.contains("hidden");
-        if (isHidden) {
-          dashboard.classList.remove("hidden");
-          toggle.checked = true;
-          localStorage.setItem("showAppsDashboard", "true");
-          renderAppsDashboard();
-        } else {
-          dashboard.classList.add("hidden");
-          toggle.checked = false;
-          localStorage.setItem("showAppsDashboard", "false");
-        }
-      }
-      return;
-    }
-  });
-}
-
-/**
- * Laad apps vanuit JSON bestand en render ze in het menu
- */
 async function loadApps() {
   try {
     const response = await fetch("apps.json");
@@ -762,6 +262,10 @@ function togglePin(appName) {
   );
   renderPinnedApps();
   renderAppsDashboard(); // Update Apps Dashboard
+  renderHomePagePinnedApps(); // Update homepage pinned apps
+  renderHomePageApps(allApps); // Update homepage all apps
+  // Update inline favorites under search bar
+  if (typeof renderInlineFavs === "function") renderInlineFavs();
 }
 
 /**
@@ -2383,7 +1887,7 @@ function renderCommandPaletteResults(query) {
 
   commandPaletteResults.forEach((cmd, index) => {
     const item = document.createElement("button");
-    item.className = `w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left ${
+    item.className = `w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
       index === commandPaletteSelectedIndex
         ? "bg-gray-100 dark:bg-gray-700"
         : ""
@@ -2643,6 +2147,50 @@ function setupKeyboardHints() {
     localStorage.setItem("keyboardHintsClosed", "false");
   });
 
+  // Compact tooltip: populate and show on hover/focus of showBtn
+  const compactTooltip = document.getElementById("compactHintsTooltip");
+  const compactContent = document.getElementById("compactHintsContent");
+  function buildCompactHints() {
+    if (!compactContent) return;
+    compactContent.innerHTML = "";
+    const items = [
+      ["Menu openen/sluiten", "Ctrl+M"],
+      ["Zoeken", "Ctrl+K"],
+      ["Custom app toevoegen", "Ctrl+N"],
+      ["Theme wisselen", "Ctrl+T"],
+      ["Workspaces beheren", "Ctrl+G"],
+    ];
+    items.forEach(([label, key]) => {
+      const row = document.createElement("div");
+      row.className = "flex justify-between items-center";
+      const l = document.createElement("span");
+      l.textContent = label;
+      l.className = "truncate";
+      const k = document.createElement("kbd");
+      k.textContent = key;
+      k.className = "ml-2 bg-gray-800 px-1 rounded";
+      row.appendChild(l);
+      row.appendChild(k);
+      compactContent.appendChild(row);
+    });
+  }
+
+  if (showBtn && compactTooltip) {
+    buildCompactHints();
+    showBtn.addEventListener("mouseenter", () => {
+      compactTooltip.classList.remove("hidden");
+    });
+    showBtn.addEventListener("mouseleave", () => {
+      compactTooltip.classList.add("hidden");
+    });
+    showBtn.addEventListener("focus", () =>
+      compactTooltip.classList.remove("hidden")
+    );
+    showBtn.addEventListener("blur", () =>
+      compactTooltip.classList.add("hidden")
+    );
+  }
+
   function minimizeHints() {
     const card = hintsContainer.querySelector("div");
     card.classList.add("max-w-xs");
@@ -2760,7 +2308,12 @@ function setupShowTagsToggle() {
   toggle.addEventListener("change", (e) => {
     const enabled = e.target.checked;
     localStorage.setItem("showTags", enabled.toString());
-
+    if (on) {
+      container.classList.remove("hidden");
+      if (typeof renderInlineFavs === "function") renderInlineFavs();
+    } else {
+      container.classList.add("hidden");
+    }
     // Re-render apps to show/hide tags
     renderApps(filterApps(currentCategory));
   });
@@ -2773,8 +2326,8 @@ function setupUseFaviconsToggle() {
   const toggle = document.getElementById("useFaviconsToggle");
   if (!toggle) return;
 
-  // Load saved preference (default: true)
-  const useFavicons = localStorage.getItem("useFavicons") !== "false";
+  // Load saved preference (default: false)
+  const useFavicons = localStorage.getItem("useFavicons") === "true";
   toggle.checked = useFavicons;
 
   // Listen for changes
@@ -2791,6 +2344,31 @@ function setupUseFaviconsToggle() {
     renderPinnedApps();
     renderQuickApps(); // Update Quick Apps widget
     renderAppsDashboard(); // Update Apps Dashboard
+  });
+}
+
+// Setup toggle to show/hide Workspaces button
+function setupShowWorkspacesToggle() {
+  const toggle = document.getElementById("showWorkspacesToggle");
+  const collectionsBtn = document.getElementById("collectionsBtn");
+
+  if (!toggle || !collectionsBtn) return;
+
+  // Default: hidden unless explicitly true in localStorage
+  const enabled = localStorage.getItem("showWorkspaces") === "true";
+  toggle.checked = enabled;
+
+  if (enabled) {
+    collectionsBtn.classList.remove("hidden");
+  } else {
+    collectionsBtn.classList.add("hidden");
+  }
+
+  toggle.addEventListener("change", (e) => {
+    const on = e.target.checked;
+    localStorage.setItem("showWorkspaces", on.toString());
+    if (on) collectionsBtn.classList.remove("hidden");
+    else collectionsBtn.classList.add("hidden");
   });
 }
 
@@ -2885,8 +2463,8 @@ function setupShowShortcutsToggle() {
 
   if (!toggle || !widget) return;
 
-  // Load saved preference (default: true)
-  const showShortcuts = localStorage.getItem("showShortcuts") !== "false";
+  // Load saved preference (default: false)
+  const showShortcuts = localStorage.getItem("showShortcuts") === "true";
   toggle.checked = showShortcuts;
 
   // Apply initial visibility
@@ -2917,9 +2495,8 @@ function setupShowAppsDashboardToggle() {
 
   if (!toggle || !dashboard) return;
 
-  // Load saved state
-  const saved = localStorage.getItem("showAppsDashboard");
-  const enabled = saved !== "false"; // Default to true
+  // Load saved state (default: false)
+  const enabled = localStorage.getItem("showAppsDashboard") === "true";
 
   toggle.checked = enabled;
   if (enabled) {
@@ -2940,6 +2517,121 @@ function setupShowAppsDashboardToggle() {
       dashboard.classList.add("hidden");
     }
   });
+}
+
+// Setup inline favorites toggle and renderer
+function setupShowInlineFavsToggle() {
+  const toggle = document.getElementById("showInlineFavsToggle");
+  const container = document.getElementById("inlineFavsContainer");
+  if (!toggle || !container) return;
+
+  const enabled = localStorage.getItem("showInlineFavs") === "true";
+  toggle.checked = enabled;
+  if (enabled) container.classList.remove("hidden");
+  else container.classList.add("hidden");
+
+  toggle.addEventListener("change", (e) => {
+    const on = e.target.checked;
+    localStorage.setItem("showInlineFavs", on.toString());
+    if (on) container.classList.remove("hidden");
+    else container.classList.add("hidden");
+  });
+}
+
+function renderInlineFavs() {
+  const container = document.getElementById("inlineFavsContainer");
+  if (!container) return;
+  const enabled = localStorage.getItem("showInlineFavs") === "true";
+  if (!enabled) {
+    container.classList.add("hidden");
+    return;
+  }
+  // If allApps is not loaded, try to fetch apps.json as a fallback
+  if (!window.allApps || window.allApps.length === 0) {
+    ensureAppsLoaded()
+      .then(() => {
+        // try again after loading
+        renderInlineFavs();
+      })
+      .catch(() => {
+        // nothing to render
+      });
+    return;
+  }
+  const pinned = allApps.filter((app) => isPinned(app.name));
+  // pinned already computed above
+  if (!pinned || pinned.length === 0) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+    return;
+  }
+
+  container.classList.remove("hidden");
+  container.innerHTML = "";
+
+  // Create a compact chips row with icons and optional tags
+  const row = document.createElement("div");
+  row.className = "flex items-center gap-3 overflow-x-auto py-1";
+
+  pinned.forEach((app) => {
+    const btn = document.createElement("button");
+    btn.className =
+      "inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm hover:shadow-md";
+    btn.setAttribute("aria-label", `Open ${app.name}`);
+    btn.addEventListener("click", () => {
+      trackAppUsage(app.name);
+      if (app.url) window.open(app.url, "_blank");
+    });
+
+    // icon
+    const iconWrap = document.createElement("span");
+    iconWrap.className =
+      "flex h-6 w-6 items-center justify-center rounded-full bg-gray-100";
+    // Try favicon quickly if allowed
+    const useFavicons = localStorage.getItem("useFavicons") !== "false";
+    if (useFavicons && app.url) {
+      try {
+        const u = new URL(app.url);
+        const img = document.createElement("img");
+        img.className = "h-4 w-4 rounded-sm";
+        img.src = `https://www.google.com/s2/favicons?sz=64&domain=${u.hostname}`;
+        img.alt = app.name;
+        iconWrap.appendChild(img);
+      } catch (err) {
+        const t = document.createElement("span");
+        t.textContent = app.icon?.emoji || app.name[0];
+        iconWrap.appendChild(t);
+      }
+    } else {
+      const t = document.createElement("span");
+      t.textContent = app.icon?.emoji || app.name[0];
+      iconWrap.appendChild(t);
+    }
+
+    btn.appendChild(iconWrap);
+    const lbl = document.createElement("span");
+    lbl.className = "text-xs text-gray-700";
+    lbl.textContent = app.name;
+    btn.appendChild(lbl);
+
+    // Optional small tags under label (show up to 2)
+    if (app.tags && app.tags.length > 0) {
+      const tags = document.createElement("div");
+      tags.className = "ml-2 flex gap-1";
+      app.tags.slice(0, 2).forEach((t) => {
+        const tg = document.createElement("span");
+        tg.className =
+          "text-[10px] px-1 py-0.5 bg-blue-100 rounded-full text-blue-700";
+        tg.textContent = t;
+        tags.appendChild(tg);
+      });
+      btn.appendChild(tags);
+    }
+
+    row.appendChild(btn);
+  });
+
+  container.appendChild(row);
 }
 
 // Setup minimize button for Apps Dashboard Widget
@@ -3180,7 +2872,7 @@ function renderAppsDashboard() {
         });
 
         iconContainer.appendChild(favicon);
-      } catch (error) {
+      } catch (err) {
         createDashboardSVGIcon(iconContainer, app);
       }
     } else {
@@ -3493,6 +3185,9 @@ function setupHomePageAutocomplete() {
     const query = e.target.value.trim();
     console.log("🏠 Homepage input:", query);
 
+    // ALSO filter the homepage apps grid
+    filterHomePageApps(query);
+
     if (query.length === 0) {
       dropdown.classList.add("hidden");
       return;
@@ -3778,7 +3473,7 @@ function renderHomePageSuggestions(suggestions) {
     }
 
     const reason = document.createElement("div");
-    reason.className = "text-xs text-gray-500 dark:text-gray-400 truncate";
+    reason.className = "text-xs text-gray-500 dark:text-gray-400";
     reason.textContent = suggestion.reason;
 
     textContainer.appendChild(appName);
@@ -3790,9 +3485,13 @@ function renderHomePageSuggestions(suggestions) {
 
     // Click handler
     item.addEventListener("click", () => {
-      window.open(suggestion.app.url, "_blank");
-      document.getElementById("homePageSearch").value = "";
-      document.getElementById("homePageAutocomplete").classList.add("hidden");
+      selectAutocompleteSuggestion(suggestion);
+    });
+
+    // Hover handler
+    item.addEventListener("mouseenter", () => {
+      autocompleteState.selectedIndex = index;
+      updateAutocompleteSelection();
     });
 
     resultsContainer.appendChild(item);
@@ -3885,12 +3584,10 @@ function renderAutocompleteSuggestions(suggestions) {
       try {
         const url = new URL(suggestion.app.url);
         const domain = url.hostname;
-
         const favicon = document.createElement("img");
         favicon.className = "h-5 w-5 rounded-sm";
         favicon.alt = `${suggestion.app.name} icon`;
         favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-
         favicon.addEventListener("error", () => {
           favicon.remove();
           const svg = document.createElementNS(
@@ -3908,7 +3605,6 @@ function renderAutocompleteSuggestions(suggestions) {
           svg.appendChild(path);
           iconContainer.appendChild(svg);
         });
-
         iconContainer.appendChild(favicon);
       } catch (error) {
         const svg = document.createElementNS(
@@ -4042,5 +3738,712 @@ function hideAutocomplete() {
   }
 }
 
-// All initialization moved to DOMContentLoaded event listener above
-// to ensure DOM is ready and allApps is loaded before running setup functions
+/**
+ * Setup homepage apps integration
+ */
+function setupHomePageApps() {
+  // NOTE: Search is now handled by the main homePageSearch input in setupHomePageAutocomplete()
+  // No separate search handler needed here
+
+  // Setup add custom app button
+  const addBtn = document.getElementById("homePageAddCustomApp");
+  if (addBtn) {
+    addBtn.addEventListener("click", () => {
+      document.getElementById("addCustomApp")?.click();
+    });
+  }
+
+  // Setup categories
+  setupHomePageCategories(allApps);
+
+  // Initial render
+  renderHomePageApps(allApps);
+  renderHomePagePinnedApps();
+  updateHomePageAppCounter(allApps.length);
+}
+
+/**
+ * Setup category filter for homepage
+ */
+function setupHomePageCategories(apps) {
+  const categoryFilter = document.getElementById("homePageCategoryFilter");
+  if (!categoryFilter) return;
+
+  // Category emoji mapping
+  const categoryEmojis = {
+    all: "📱",
+    favorieten: "⭐",
+    "ai-tools": "🤖",
+    "ai-agents": "🧠",
+    "microsoft-365": "🏢",
+    windows: "🪟",
+    "social-media": "💻",
+  };
+
+  // Get unique categories
+  const categories = [...new Set(apps.map((app) => app.category || "other"))];
+
+  // Clear existing categories (except "Alle")
+  const allBtn = categoryFilter.querySelector('[data-category="all"]');
+  categoryFilter.innerHTML = "";
+  if (allBtn) categoryFilter.appendChild(allBtn);
+
+  categories.forEach((cat) => {
+    const btn = document.createElement("button");
+    btn.setAttribute("data-category", cat);
+    btn.className =
+      "homepage-category-btn whitespace-nowrap rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300";
+
+    // Format category name with emoji
+    const emoji = categoryEmojis[cat] || "📦";
+    const displayName = cat
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    btn.textContent = `${emoji} ${displayName}`;
+
+    btn.addEventListener("click", () => filterHomePageByCategory(cat));
+
+    categoryFilter.appendChild(btn);
+  });
+
+  // All button handler
+  if (allBtn) {
+    allBtn.addEventListener("click", () => filterHomePageByCategory("all"));
+  }
+}
+
+/**
+ * Filter homepage apps by category
+ */
+function filterHomePageByCategory(category) {
+  // Update active button
+  document.querySelectorAll(".homepage-category-btn").forEach((btn) => {
+    btn.classList.remove("active", "bg-blue-500", "text-white");
+    btn.classList.add(
+      "bg-gray-200",
+      "text-gray-700",
+      "dark:bg-gray-700",
+      "dark:text-gray-300"
+    );
+  });
+
+  const activeBtn = document.querySelector(
+    `.homepage-category-btn[data-category="${category}"]`
+  );
+  if (activeBtn) {
+    activeBtn.classList.add("active", "bg-blue-500", "text-white");
+    activeBtn.classList.remove(
+      "bg-gray-200",
+      "text-gray-700",
+      "dark:bg-gray-700",
+      "dark:text-gray-300"
+    );
+  }
+
+  // Filter apps
+  if (category === "all") {
+    renderHomePageApps(allApps);
+  } else {
+    const filtered = allApps.filter((app) => app.category === category);
+    renderHomePageApps(filtered);
+  }
+}
+
+/**
+ * Filter homepage apps by search term
+ */
+function filterHomePageApps(searchTerm) {
+  const appsGrid = document.getElementById("homePageAppsGrid");
+  if (!appsGrid) return;
+
+  const appItems = appsGrid.querySelectorAll(".app-item");
+  const term = searchTerm.toLowerCase().trim();
+
+  let visibleCount = 0;
+
+  if (term === "") {
+    // Show all apps
+    appItems.forEach((item) => {
+      item.style.display = "";
+      visibleCount++;
+    });
+  } else {
+    // Filter apps
+    appItems.forEach((item) => {
+      const appName = item.getAttribute("data-name")?.toLowerCase() || "";
+      if (appName.includes(term)) {
+        item.style.display = "";
+        visibleCount++;
+      } else {
+        item.style.display = "none";
+      }
+    });
+  }
+
+  updateHomePageAppCounter(visibleCount, appItems.length);
+}
+
+/**
+ * Update homepage app counter
+ */
+function updateHomePageAppCounter(visible, total) {
+  const counter = document.getElementById("homePageAppCounter");
+  if (!counter) return;
+
+  if (total === undefined) {
+    counter.textContent = `${visible} apps`;
+  } else if (visible === total) {
+    counter.textContent = `${total} apps`;
+  } else {
+    counter.textContent = `${visible} van ${total} apps`;
+  }
+}
+
+/**
+ * Render homepage apps
+ */
+function renderHomePageApps(apps) {
+  const appsGrid = document.getElementById("homePageAppsGrid");
+  if (!appsGrid) return;
+
+  appsGrid.innerHTML = "";
+
+  // Filter out pinned apps
+  const unpinnedApps = apps.filter((app) => !isPinned(app.name));
+
+  if (unpinnedApps.length === 0) {
+    appsGrid.innerHTML = `
+      <div class="col-span-4 py-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Geen apps in deze categorie</p>
+      </div>
+    `;
+    return;
+  }
+
+  unpinnedApps.forEach((app) => {
+    const appButton = createAppButton(app);
+    appsGrid.appendChild(appButton);
+  });
+
+  updateHomePageAppCounter(unpinnedApps.length);
+}
+
+/**
+ * Render homepage pinned apps
+ */
+function renderHomePagePinnedApps() {
+  const pinnedSection = document.getElementById("homePagePinnedSection");
+  const pinnedAppsGrid = document.getElementById("homePagePinnedApps");
+
+  if (!pinnedAppsGrid || !pinnedSection) return;
+
+  const pinned = allApps.filter((app) => isPinned(app.name));
+
+  if (pinned.length === 0) {
+    pinnedSection.classList.add("hidden");
+    return;
+  }
+
+  pinnedSection.classList.remove("hidden");
+  pinnedAppsGrid.innerHTML = "";
+
+  pinned.forEach((app) => {
+    const appButton = createAppButton(app, true);
+    pinnedAppsGrid.appendChild(appButton);
+  });
+}
+
+/**
+ * Render vastgepinde apps op de homepage (oude functie - nu deprecated)
+ */
+function renderHomePageFavApps() {
+  const container = document.getElementById("homepageFavApps");
+  if (!container) return;
+
+  // Get pinned apps from allApps
+  const pinnedAppsData = allApps.filter((app) => isPinned(app.name));
+
+  if (pinnedAppsData.length === 0) {
+    container.innerHTML = `
+      <div class="py-8 text-center w-full">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Geen vastgepinde apps. Pin apps via het menu (Ctrl+M)</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  pinnedAppsData.forEach((app) => {
+    const button = document.createElement("button");
+    button.className =
+      "group relative flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200";
+    button.setAttribute("aria-label", `Open ${app.name}`);
+
+    // Icon container
+    const iconContainer = document.createElement("div");
+    iconContainer.className = `flex h-10 w-10 items-center justify-center rounded-lg ${app.color.bg}`;
+
+    // Try to load favicon
+    const useFavicons = localStorage.getItem("useFavicons") !== "false";
+
+    if (useFavicons && app.url) {
+      try {
+        const url = new URL(app.url);
+        const domain = url.hostname;
+
+        const favicon = document.createElement("img");
+        favicon.className = "h-8 w-8 rounded-sm";
+        favicon.alt = `${app.name} icon`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+        favicon.addEventListener("error", () => {
+          favicon.remove();
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("viewBox", app.icon.viewBox);
+
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute("d", app.icon.path);
+          svg.appendChild(path);
+          iconContainer.appendChild(svg);
+        });
+
+        iconContainer.appendChild(favicon);
+      } catch (err) {
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("viewBox", app.icon.viewBox);
+
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute("d", app.icon.path);
+        svg.appendChild(path);
+        iconContainer.appendChild(svg);
+      }
+    } else {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+      svg.setAttribute("fill", "currentColor");
+      svg.setAttribute("viewBox", app.icon.viewBox);
+
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute("d", app.icon.path);
+      svg.appendChild(path);
+      iconContainer.appendChild(svg);
+    }
+
+    // App name
+    const nameSpan = document.createElement("span");
+    nameSpan.className =
+      "text-xs font-medium text-gray-700 dark:text-gray-300 text-center";
+    nameSpan.textContent = app.name;
+
+    // Hover tooltip (CSS-based to avoid flickering)
+    const tooltip = document.createElement("div");
+    tooltip.className =
+      "absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10";
+    tooltip.textContent = app.name;
+
+    // Assemble button
+    button.appendChild(iconContainer);
+    button.appendChild(nameSpan);
+    button.appendChild(tooltip);
+
+    // Click handler
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      trackAppUsage(app.name);
+      if (app.url) {
+        window.open(app.url, "_blank");
+      }
+    });
+
+    // Right-click context menu
+    button.addEventListener("contextmenu", (e) => {
+      showContextMenu(e, app.name);
+    });
+
+    container.appendChild(button);
+  });
+}
+
+/**
+ * ==========================================
+ * INITIALIZATION
+ * ==========================================
+ */
+
+// Close modals when clicking outside
+function setupModalClosers() {
+  // Helper function to close a modal
+  function closeModal(modal) {
+    if (modal) {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+  }
+
+  // Settings Modal
+  const settingsModal = document.getElementById("settingsModal");
+  const closeSettingsBtn = document.getElementById("closeSettings");
+
+  if (settingsModal) {
+    // Close when clicking outside
+    settingsModal.addEventListener("click", (e) => {
+      if (e.target === settingsModal) {
+        closeModal(settingsModal);
+      }
+    });
+  }
+
+  // Close Settings button
+  if (closeSettingsBtn) {
+    closeSettingsBtn.addEventListener("click", () => {
+      closeModal(settingsModal);
+    });
+  }
+
+  // Collections Modal
+  const collectionsModal = document.getElementById("collectionsModal");
+  if (collectionsModal) {
+    collectionsModal.addEventListener("click", (e) => {
+      if (e.target === collectionsModal) {
+        closeModal(collectionsModal);
+      }
+    });
+  }
+
+  // Collection Form Modal
+  const collectionFormModal = document.getElementById("collectionFormModal");
+  if (collectionFormModal) {
+    collectionFormModal.addEventListener("click", (e) => {
+      if (e.target === collectionFormModal) {
+        closeModal(collectionFormModal);
+      }
+    });
+  }
+
+  // Custom App Modal
+  const customAppModal = document.getElementById("customAppModal");
+  if (customAppModal) {
+    customAppModal.addEventListener("click", (e) => {
+      if (e.target === customAppModal) {
+        closeModal(customAppModal);
+      }
+    });
+  }
+
+  // ESC key to close any modal
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const modals = [
+        settingsModal,
+        collectionsModal,
+        collectionFormModal,
+        customAppModal,
+      ];
+      modals.forEach((modal) => {
+        if (modal && !modal.classList.contains("hidden")) {
+          closeModal(modal);
+        }
+      });
+    }
+  });
+
+  // Command Palette (handled in setupCommandPalette)
+}
+
+// Setup main button handlers
+function setupMainButtons() {
+  // Settings button
+  const settingsBtn = document.getElementById("settingsBtn");
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", () => {
+      const modal = document.getElementById("settingsModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+    });
+  }
+
+  // App Menu button (Waffel icon)
+  const appMenuBtn = document.getElementById("appMenuBtn");
+  const appMenu = document.getElementById("appMenu");
+  if (appMenuBtn && appMenu) {
+    appMenuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (appMenu.classList.contains("hidden")) {
+        appMenu.classList.remove("hidden");
+        appMenu.classList.add("menu-enter");
+      } else {
+        appMenu.classList.add("hidden");
+        appMenu.classList.remove("menu-enter");
+      }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!appMenu.contains(e.target) && !appMenuBtn.contains(e.target)) {
+        appMenu.classList.add("hidden");
+        appMenu.classList.remove("menu-enter");
+      }
+    });
+  }
+
+  // Collections button (Workspaces)
+  const collectionsBtn = document.getElementById("collectionsBtn");
+  if (collectionsBtn) {
+    collectionsBtn.addEventListener("click", () => {
+      const modal = document.getElementById("collectionsModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        renderCollectionsList();
+      }
+    });
+  }
+
+  // Theme toggle
+  const themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
+  }
+}
+
+// Setup form handlers
+function setupFormHandlers() {
+  // Custom App Form
+  const customAppForm = document.getElementById("customAppForm");
+  if (customAppForm) {
+    customAppForm.addEventListener("submit", handleCustomAppSubmit);
+  }
+
+  // Collection Form
+  const collectionForm = document.getElementById("collectionForm");
+  if (collectionForm) {
+    collectionForm.addEventListener("submit", handleCollectionSubmit);
+  }
+
+  // Export button
+  const exportBtn = document.getElementById("exportConfig");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportConfiguration);
+  }
+
+  // Import button
+  const importBtn = document.getElementById("importConfig");
+  if (importBtn) {
+    importBtn.addEventListener("click", importConfiguration);
+  }
+
+  // Add Custom App button
+  const addCustomAppBtn = document.getElementById("addCustomApp");
+  if (addCustomAppBtn) {
+    addCustomAppBtn.addEventListener("click", () => {
+      const modal = document.getElementById("customAppModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        // Reset form for new app
+        document.getElementById("customAppForm")?.reset();
+        const title = modal.querySelector("h3");
+        if (title) title.textContent = "Custom App Toevoegen";
+      }
+    });
+  }
+
+  // Create Collection button
+  const createCollectionBtn = document.getElementById("createCollectionBtn");
+  if (createCollectionBtn) {
+    createCollectionBtn.addEventListener("click", () => {
+      editingCollectionId = null;
+      const formModal = document.getElementById("collectionFormModal");
+      const collectionsModal = document.getElementById("collectionsModal");
+
+      if (collectionsModal) {
+        collectionsModal.classList.add("hidden");
+        collectionsModal.classList.remove("flex");
+      }
+
+      if (formModal) {
+        formModal.classList.remove("hidden");
+        formModal.classList.add("flex");
+        document.getElementById("collectionForm")?.reset();
+        renderAppSelectionList();
+      }
+    });
+  }
+}
+
+// Setup color pickers
+function setupColorPickers() {
+  // Custom App color picker
+  const colorPickers = document.querySelectorAll(".color-picker");
+  colorPickers.forEach((picker) => {
+    picker.addEventListener("click", () => {
+      const color = picker.getAttribute("data-color");
+      if (color) {
+        selectedColor = color;
+        colorPickers.forEach((p) =>
+          p.classList.remove("ring-4", "ring-blue-300")
+        );
+        picker.classList.add("ring-4", "ring-blue-300");
+      }
+    });
+  });
+
+  // Collection color picker
+  const collectionColorPickers = document.querySelectorAll(
+    ".collection-color-picker"
+  );
+  collectionColorPickers.forEach((picker) => {
+    picker.addEventListener("click", () => {
+      const color = picker.getAttribute("data-collection-color");
+      if (color) {
+        selectedCollectionColor = color;
+        collectionColorPickers.forEach((p) => p.classList.remove("ring-4"));
+        picker.classList.add("ring-4");
+      }
+    });
+  });
+}
+
+// Setup keyboard shortcuts
+function setupKeyboardShortcuts() {
+  document.addEventListener("keydown", (e) => {
+    // Ctrl+K or Cmd+K: Search
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      e.preventDefault();
+      const appSearch = document.getElementById("appSearch");
+      if (appSearch) {
+        // First open the menu if not already open
+        const appMenuBtn = document.getElementById("appMenuBtn");
+        appMenuBtn?.click();
+        setTimeout(() => appSearch.focus(), 100);
+      }
+    }
+
+    // Ctrl+M or Cmd+M: Toggle menu
+    if ((e.ctrlKey || e.metaKey) && e.key === "m") {
+      e.preventDefault();
+      document.getElementById("appMenuBtn")?.click();
+    }
+
+    // Ctrl+N or Cmd+N: New custom app
+    if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+      e.preventDefault();
+      document.getElementById("addCustomApp")?.click();
+    }
+
+    // Ctrl+T or Cmd+T: Toggle theme
+    if ((e.ctrlKey || e.metaKey) && e.key === "t") {
+      e.preventDefault();
+      toggleTheme();
+    }
+
+    // Ctrl+G or Cmd+G: Toggle Workspaces
+    if ((e.ctrlKey || e.metaKey) && e.key === "g") {
+      e.preventDefault();
+      document.getElementById("collectionsBtn")?.click();
+    }
+
+    // Ctrl+, or Cmd+,: Settings
+    if ((e.ctrlKey || e.metaKey) && e.key === ",") {
+      e.preventDefault();
+      document.getElementById("settingsBtn")?.click();
+    }
+  });
+}
+
+// Initialize everything
+async function initializeApp() {
+  console.log("🚀 Initializing OneFav...");
+
+  try {
+    // Load theme first
+    loadTheme();
+
+    // Load all data
+    await loadApps();
+    await loadCollections();
+
+    // Load stats
+    loadAppStats();
+    loadPinnedApps();
+    loadCustomApps();
+
+    // Load search engines
+    const response = await fetch("search_engines.json");
+    if (response.ok) {
+      const data = await response.json();
+      searchEngines = data.engines || {};
+    }
+
+    // Setup UI
+    setupModalClosers();
+    setupMainButtons();
+    setupFormHandlers();
+    setupColorPickers();
+    setupKeyboardShortcuts();
+    setupAutocomplete();
+    setupHomePageAutocomplete();
+    setupAIModeButton();
+    setupTagSuggestions();
+    setupShowTagsToggle();
+    setupUseFaviconsToggle();
+    setupShowWorkspacesToggle();
+    setupGridSizeToggle();
+    setupHighlightSearchToggle();
+    setupShowShortcutsToggle();
+    setupShowAppsDashboardToggle();
+    setupAppsDashboardMinimize();
+    setupAppsDashboardDrag();
+    setupContextMenu();
+
+    // Apply grid size
+    const savedSize = localStorage.getItem("gridSize") || "medium";
+    applyGridSize(savedSize);
+
+    // Render inline favs
+    renderInlineFavs();
+    setupShowInlineFavsToggle();
+
+    // Setup and render homepage integrated apps
+    setupHomePageApps();
+
+    // Render apps dashboard
+    renderAppsDashboard();
+    setupDashboardCategoryFilter();
+
+    console.log("✅ OneFav initialized successfully!");
+  } catch (error) {
+    console.error("❌ Error initializing OneFav:", error);
+  }
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+  // DOM is already ready
+  initializeApp();
+}

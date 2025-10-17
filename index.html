@@ -11,6 +11,8 @@
         content="One Fav — al je favoriete apps en workspaces op 1 plek. Snel zoeken, pinnen en organiseren." />
     <meta property="og:type" content="website" />
     <title>One Fav - All je Favorieten op 1 plek!</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom styles -->
@@ -56,9 +58,9 @@
             </svg>
         </button>
 
-        <!-- Workspaces Button -->
+        <!-- Workspaces Button (default hidden; enable via Settings) -->
         <button id="collectionsBtn" type="button"
-            class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 hidden"
             aria-label="Workspaces" title="Workspaces (Ctrl+G)" aria-expanded="false" aria-controls="collectionsModal">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none"
                 stroke="currentColor" stroke-width="2">
@@ -304,7 +306,22 @@
                         <label class="flex items-center justify-between cursor-pointer">
                             <span class="text-sm text-gray-600 dark:text-gray-400">Gebruik echte app icons</span>
                             <div class="relative">
-                                <input type="checkbox" id="useFaviconsToggle" class="sr-only peer" checked>
+                                <input type="checkbox" id="useFaviconsToggle" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                </div>
+                            </div>
+                        </label>
+                        <div class="mt-2">
+                            <button id="testInlineFavsBtn" type="button"
+                                class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-1 text-sm text-white">Test
+                                inline Favorieten</button>
+                        </div>
+                        <input id="appsJsonUploader" type="file" accept="application/json" class="hidden" />
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon Workspaces</span>
+                            <div class="relative">
+                                <input type="checkbox" id="showWorkspacesToggle" class="sr-only peer">
                                 <div
                                     class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                 </div>
@@ -320,7 +337,7 @@
                             </div>
                         </label>
                         <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Highlight zoekresultaten</span>
+                            <span cla@ss="text-sm text-gray-600 dark:text-gray-400">Highlight zoekresultaten</span>
                             <div class="relative">
                                 <input type="checkbox" id="highlightSearchToggle" class="sr-only peer" checked>
                                 <div
@@ -329,9 +346,10 @@
                             </div>
                         </label>
                         <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon sneltoetsen widget</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon inline Favorieten onder
+                                zoekbalk</span>
                             <div class="relative">
-                                <input type="checkbox" id="showShortcutsToggle" class="sr-only peer">
+                                <input type="checkbox" id="showInlineFavsToggle" class="sr-only peer">
                                 <div
                                     class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                 </div>
@@ -348,6 +366,38 @@
                         </label>
                     </div>
                 </div>
+                <!-- Search Engines settings (collapsed by default) -->
+                <details class="mt-2">
+                    <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">Zoekmachines /
+                        AI-modi (geavanceerd)</summary>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">Beheer zoekmachines en AI-modi (prefix,
+                            naam, url, icoon). Aangepaste items worden lokaal opgeslagen.</p>
+                        <div class="flex items-center justify-between mb-2">
+                            <div></div>
+                            <div>
+                                <button id="resetSearchEnginesBtn" type="button"
+                                    class="inline-flex items-center gap-2 rounded-md bg-gray-200 px-2 py-1 text-sm">Reset
+                                    naar standaard</button>
+                            </div>
+                        </div>
+                        <div id="searchEnginesList" class="space-y-2 max-h-40 overflow-auto mb-2"></div>
+                        <form id="addSearchEngineForm" class="grid grid-cols-4 gap-2 items-center">
+                            <input id="sePrefix" placeholder="prefix (bijv. g:)"
+                                class="col-span-1 w-full rounded-md border px-2 py-1 text-sm" />
+                            <input id="seName" placeholder="naam"
+                                class="col-span-1 w-full rounded-md border px-2 py-1 text-sm" />
+                            <input id="seUrl" placeholder="zoek URL (e.g. https://...q=)"
+                                class="col-span-1 w-full rounded-md border px-2 py-1 text-sm" />
+                            <input id="seIcon" placeholder="icoon (emoji)"
+                                class="col-span-1 w-full rounded-md border px-2 py-1 text-sm" />
+                            <div class="col-span-4 text-right">
+                                <button id="addSearchEngineBtn" type="button"
+                                    class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-1 text-sm text-white">Toevoegen</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
                 <div>
                     <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">Grid Grootte</h4>
                     <div class="space-y-2">
@@ -375,21 +425,7 @@
                         </label>
                     </div>
                 </div>
-                <div>
-                    <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Sneltoetsen</h4>
-                    <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div class="flex justify-between"><span>Menu openen/sluiten</span><kbd
-                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+M</kbd></div>
-                        <div class="flex justify-between"><span>Zoeken</span><kbd
-                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+K</kbd></div>
-                        <div class="flex justify-between"><span>Custom app toevoegen</span><kbd
-                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+N</kbd></div>
-                        <div class="flex justify-between"><span>Theme wisselen</span><kbd
-                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+T</kbd></div>
-                        <div class="flex justify-between"><span>Workspaces beheren</span><kbd
-                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+G</kbd></div>
-                    </div>
-                </div>
+                <!-- Sneltoetsen section removed per user request -->
                 <button type="button" id="closeSettings"
                     class="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
                     Sluiten
@@ -570,7 +606,40 @@
                 </p>
             </div>
 
-            <!-- Extra: smalle variant voorbeeld 
+            <!-- Fav Apps Geïntegreerd op Homepage -->
+            <div class="mt-12">
+                <!-- Category Filter -->
+                <div class="mb-4">
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1" id="homePageCategoryFilter">
+                        <button data-category="all"
+                            class="homepage-category-btn active whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-xs font-medium text-white transition">
+                            📱 Alle apps
+                        </button>
+                        <!-- Categorieën worden dynamisch geladen -->
+                    </div>
+                </div>
+
+                <!-- Pinned Apps Section -->
+                <div id="homePagePinnedSection" class="hidden mb-4">
+                    <div id="homePagePinnedApps" class="grid grid-cols-4 gap-2">
+                        <!-- Gepinde apps komen hier -->
+                    </div>
+                </div>
+
+                <!-- Apps Grid -->
+                <div id="homePageAppsGrid" class="grid grid-cols-4 gap-3 p-5"
+                    style="max-height: 500px; overflow-y: auto;">
+                    <!-- Apps worden hier dynamisch geladen -->
+                    <div class="col-span-4 py-8 text-center">
+                        <div
+                            class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extra: smalle variant voorbeeld 
         <p class="mt-6 text-center text-sm text-gray-500">Tip: pas padding/spacing aan voor kleinere varianten.</p> -->
         </div>
     </main>
@@ -618,10 +687,13 @@
                 </div>
             </div>
         </div>
+
+        <!-- Inline Favorites (under search bar) -->
+        <div id="inlineFavsContainer" class="mt-3 max-w-3xl mx-auto hidden"></div>
     </div>
 
     <!-- Keyboard Shortcuts Hint -->
-    <div id="keyboardHints" class="fixed bottom-6 right-6 z-50 transition-all duration-300">
+    <div id="keyboardHints" class="fixed bottom-6 right-6 z-50 transition-all duration-300 hidden">
         <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 backdrop-blur-sm">
             <div class="flex items-center justify-between mb-3">
@@ -691,6 +763,11 @@
             Shortcuts
         </span>
     </button>
+    <!-- Compact shortcuts tooltip (shows on hover/focus of showHintsBtn) -->
+    <div id="compactHintsTooltip"
+        class="fixed bottom-20 right-6 z-50 hidden w-48 rounded-md bg-gray-900 text-white text-xs p-2 shadow-lg">
+        <div id="compactHintsContent" class="space-y-1"></div>
+    </div>
 
     <!-- Apps Dashboard Widget (Links) -->
     <div id="appsDashboardWidget" class="fixed top-20 left-6 z-40 transition-all duration-300 hidden">
