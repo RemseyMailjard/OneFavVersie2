@@ -1628,14 +1628,44 @@ window.debugSortable = function () {
 };
 
 /**
+ * Controleer en herstel SortableJS functionaliteit indien nodig
+ */
+function checkAndFixSortable() {
+  console.log("🔍 Checking SortableJS status...");
+  
+  const appsGrid = document.querySelector("#appsGrid");
+  const homePageAppsGrid = document.querySelector("#homePageAppsGrid");
+  
+  // Check main grid
+  if (appsGrid) {
+    const appItems = appsGrid.querySelectorAll(".app-item");
+    if (appItems.length > 0 && !appsGrid.sortableInstance) {
+      console.log("🔧 Fixing main grid SortableJS...");
+      initSortable();
+    }
+  }
+  
+  // Check homepage grid  
+  if (homePageAppsGrid) {
+    const appItems = homePageAppsGrid.querySelectorAll(".app-item");
+    if (appItems.length > 0 && !homePageAppsGrid.sortableInstance) {
+      console.log("🔧 Fixing homepage grid SortableJS...");
+      initHomePageSortable();
+    }
+  }
+  
+  console.log("✅ SortableJS status check complete");
+}
+
+/**
  * Sla de nieuwe volgorde van apps op in localStorage
  */
 function saveAppOrder() {
   const appsGrid = document.querySelector("#appsGrid");
-  const appButtons = appsGrid.querySelectorAll("button[data-name]");
+  const appItems = appsGrid.querySelectorAll(".app-item[data-name]");
 
-  const order = Array.from(appButtons).map((btn) =>
-    btn.getAttribute("data-name")
+  const order = Array.from(appItems).map((item) =>
+    item.getAttribute("data-name")
   );
 
   localStorage.setItem("appOrder", JSON.stringify(order));
@@ -1647,10 +1677,10 @@ function saveAppOrder() {
  */
 function saveHomePageAppOrder() {
   const homePageAppsGrid = document.querySelector("#homePageAppsGrid");
-  const appButtons = homePageAppsGrid.querySelectorAll("button[data-name]");
+  const appItems = homePageAppsGrid.querySelectorAll(".app-item[data-name]");
 
-  const order = Array.from(appButtons).map((btn) =>
-    btn.getAttribute("data-name")
+  const order = Array.from(appItems).map((item) =>
+    item.getAttribute("data-name")
   );
 
   localStorage.setItem("homePageAppOrder", JSON.stringify(order));
