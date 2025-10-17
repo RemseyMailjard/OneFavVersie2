@@ -3193,8 +3193,8 @@ function renderAppsDashboard() {
     
     dashboardList.appendChild(appButton);
   });
-  });
-}
+  };
+
 
 // Helper function to create SVG icons for dashboard
 function createDashboardSVGIcon(container, app) {
