@@ -465,7 +465,7 @@ function createAppButton(app, isPinnedButton = false) {
 
       // Visual feedback
       button.style.opacity = "0.5";
-      
+
       if (e.altKey) {
         console.log(`🔗 Alt+Drag to desktop: ${app.name} - ${app.url}`);
       } else {
