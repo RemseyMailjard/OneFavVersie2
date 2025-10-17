@@ -9,6 +9,74 @@ let selectedCollectionColor = "blue";
 let currentCategory = "all";
 let editingCollectionId = null;
 
+// AI Mode state
+let currentAIMode = "gpt"; // Default: ChatGPT
+const aiModes = {
+  gpt: { name: "ChatGPT", prefix: "gpt:", icon: "🤖", color: "text-green-600" },
+  claude: {
+    name: "Claude",
+    prefix: "claude:",
+    icon: "🧠",
+    color: "text-purple-600",
+  },
+  gemini: {
+    name: "Gemini",
+    prefix: "gemini:",
+    icon: "✨",
+    color: "text-blue-600",
+  },
+  perplexity: {
+    name: "Perplexity",
+    prefix: "perplexity:",
+    icon: "🔮",
+    color: "text-indigo-600",
+  },
+};
+
+// Search engine shortcuts
+const searchEngines = {
+  "g:": { name: "Google", url: "https://www.google.com/search?q=", icon: "🔍" },
+  "yt:": {
+    name: "YouTube",
+    url: "https://www.youtube.com/results?search_query=",
+    icon: "▶️",
+  },
+  "gpt:": { name: "ChatGPT", url: "https://chat.openai.com/?q=", icon: "🤖" },
+  "claude:": { name: "Claude", url: "https://claude.ai/new?q=", icon: "🧠" },
+  "gemini:": {
+    name: "Gemini",
+    url: "https://gemini.google.com/app?q=",
+    icon: "✨",
+  },
+  "perplexity:": {
+    name: "Perplexity",
+    url: "https://www.perplexity.ai/?q=",
+    icon: "🔮",
+  },
+  "gh:": { name: "GitHub", url: "https://github.com/search?q=", icon: "💻" },
+  "x:": { name: "X (Twitter)", url: "https://x.com/search?q=", icon: "🐦" },
+  "reddit:": {
+    name: "Reddit",
+    url: "https://www.reddit.com/search/?q=",
+    icon: "📱",
+  },
+  "wiki:": {
+    name: "Wikipedia",
+    url: "https://en.wikipedia.org/wiki/Special:Search?search=",
+    icon: "📚",
+  },
+  "maps:": {
+    name: "Google Maps",
+    url: "https://www.google.com/maps/search/",
+    icon: "🗺️",
+  },
+  "translate:": {
+    name: "Google Translate",
+    url: "https://translate.google.com/?text=",
+    icon: "🌐",
+  },
+};
+
 // App menu toggle functionaliteit
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 DOMContentLoaded - Start initialisatie");
@@ -46,7 +114,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Setup event listeners
   setupEventListeners();
   setupKeyboardShortcuts();
+  setupHomePageAutocomplete();
+  setupAIModeButton();
   console.log("✅ Event listeners ingesteld");
+
+  // Initialize UI systems
+  setupTagSuggestions();
+  setupShowTagsToggle();
+  setupUseFaviconsToggle();
+  setupGridSizeToggle();
+  setupHighlightSearchToggle();
+  setupShowShortcutsToggle();
+  setupShowQuickAppsToggle();
+  setupContextMenu();
+  setupQuickAppsMinimize();
+  renderQuickApps();
+  console.log("✅ UI systems geïnitialiseerd");
 
   // Make functions globally available for inline onclick handlers
   window.openCollection = openCollection;
@@ -74,12 +157,8 @@ function setupEventListeners() {
   const exportBtn = document.getElementById("exportConfig");
   const importBtn = document.getElementById("importConfig");
 
-  // Zoekfunctionaliteit
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      filterApps(e.target.value);
-    });
-  }
+  // Zoekfunctionaliteit - Handled by setupAutocomplete()
+  // (Event listener moved to setupAutocomplete for autocomplete integration)
 
   // Reset button
   if (resetBtn) {
@@ -96,8 +175,10 @@ function setupEventListeners() {
   // Settings
   if (settingsBtn) {
     settingsBtn.addEventListener("click", () => {
+      const isHidden = settingsModal?.classList.contains("hidden");
       settingsModal?.classList.remove("hidden");
       settingsModal?.classList.add("flex");
+      settingsBtn.setAttribute("aria-expanded", "true");
     });
   }
 
@@ -105,6 +186,7 @@ function setupEventListeners() {
     closeSettings.addEventListener("click", () => {
       settingsModal?.classList.add("hidden");
       settingsModal?.classList.remove("flex");
+      settingsBtn?.setAttribute("aria-expanded", "false");
     });
   }
 
@@ -165,6 +247,7 @@ function setupEventListeners() {
     collectionsBtn.addEventListener("click", () => {
       collectionsModal?.classList.remove("hidden");
       collectionsModal?.classList.add("flex");
+      collectionsBtn.setAttribute("aria-expanded", "true");
       renderCollectionsList();
     });
   }
@@ -173,6 +256,7 @@ function setupEventListeners() {
     closeCollections.addEventListener("click", () => {
       collectionsModal?.classList.add("hidden");
       collectionsModal?.classList.remove("flex");
+      collectionsBtn?.setAttribute("aria-expanded", "false");
     });
   }
 
@@ -218,10 +302,12 @@ function setupEventListeners() {
     if (isHidden) {
       appMenu.classList.remove("hidden");
       appMenu.classList.add("menu-enter");
+      appMenuBtn.setAttribute("aria-expanded", "true");
       setTimeout(() => searchInput?.focus(), 100);
     } else {
       appMenu.classList.add("hidden");
       appMenu.classList.remove("menu-enter");
+      appMenuBtn.setAttribute("aria-expanded", "false");
       if (searchInput) searchInput.value = "";
       filterApps("");
     }
@@ -232,6 +318,7 @@ function setupEventListeners() {
     if (!appMenuBtn.contains(e.target) && !appMenu.contains(e.target)) {
       appMenu.classList.add("hidden");
       appMenu.classList.remove("menu-enter");
+      appMenuBtn.setAttribute("aria-expanded", "false");
       if (searchInput) searchInput.value = "";
       filterApps("");
     }
@@ -243,19 +330,26 @@ function setupEventListeners() {
       if (!appMenu.classList.contains("hidden")) {
         appMenu.classList.add("hidden");
         appMenu.classList.remove("menu-enter");
+        appMenuBtn.setAttribute("aria-expanded", "false");
         appMenuBtn.focus();
         if (searchInput) searchInput.value = "";
         filterApps("");
       }
 
       // Sluit modals
-      settingsModal?.classList.add("hidden");
-      settingsModal?.classList.remove("flex");
+      if (settingsModal && !settingsModal.classList.contains("hidden")) {
+        settingsModal.classList.add("hidden");
+        settingsModal.classList.remove("flex");
+        settingsBtn?.setAttribute("aria-expanded", "false");
+      }
       customAppModal?.classList.add("hidden");
       customAppModal?.classList.remove("flex");
       const collectionsModal = document.getElementById("collectionsModal");
-      collectionsModal?.classList.add("hidden");
-      collectionsModal?.classList.remove("flex");
+      if (collectionsModal && !collectionsModal.classList.contains("hidden")) {
+        collectionsModal.classList.add("hidden");
+        collectionsModal.classList.remove("flex");
+        collectionsBtn?.setAttribute("aria-expanded", "false");
+      }
       const collectionFormModal = document.getElementById(
         "collectionFormModal"
       );
@@ -266,6 +360,9 @@ function setupEventListeners() {
 
   // Setup drag & drop zone voor apps grid
   setupDropZone();
+
+  // Setup autocomplete for search
+  setupAutocomplete();
 }
 
 /**
@@ -277,28 +374,6 @@ function setupDropZone() {
 
   if (!appsGrid || !appMenu) return;
 
-  let dropIndicator = null;
-
-  // Maak drop indicator element
-  const createDropIndicator = () => {
-    if (!dropIndicator) {
-      dropIndicator = document.createElement("div");
-      dropIndicator.className =
-        "col-span-4 rounded-lg border-2 border-dashed border-blue-400 bg-blue-50 dark:bg-blue-900/20 p-8 text-center hidden";
-      dropIndicator.innerHTML = `
-        <div class="flex flex-col items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Sleep een link hiernaartoe</p>
-          <p class="text-xs text-blue-500 dark:text-blue-500">We maken er automatisch een app van!</p>
-        </div>
-      `;
-      appsGrid.appendChild(dropIndicator);
-    }
-    return dropIndicator;
-  };
-
   // Prevent default drag over hele document
   document.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -308,69 +383,84 @@ function setupDropZone() {
     e.preventDefault();
   });
 
-  // App menu drop zone
-  appMenu.addEventListener("dragenter", (e) => {
-    e.preventDefault();
-    const indicator = createDropIndicator();
-    indicator.classList.remove("hidden");
-  });
+  // Link Dropzone handlers (dedicated drop area)
+  const linkDropzone = document.getElementById("linkDropzone");
 
-  appMenu.addEventListener("dragleave", (e) => {
-    // Alleen verbergen als we echt het app menu verlaten
-    if (e.target === appMenu) {
-      if (dropIndicator) {
-        dropIndicator.classList.add("hidden");
+  if (linkDropzone) {
+    linkDropzone.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      // Check if it's an external drag (not a sortable drag)
+      const isDraggingApp = e.dataTransfer.types.includes("text/html");
+      if (!isDraggingApp) {
+        linkDropzone.classList.add("drag-over");
       }
-    }
-  });
+    });
 
-  appMenu.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-  });
-
-  appMenu.addEventListener("drop", (e) => {
-    e.preventDefault();
-
-    if (dropIndicator) {
-      dropIndicator.classList.add("hidden");
-    }
-
-    // Haal URL op uit drop data
-    const url =
-      e.dataTransfer.getData("text/uri-list") ||
-      e.dataTransfer.getData("text/plain");
-
-    if (url && url.startsWith("http")) {
-      // Extraheer domein naam voor app naam
-      try {
-        const urlObj = new URL(url);
-        const hostname = urlObj.hostname.replace("www.", "");
-        const appName = hostname.split(".")[0];
-        const capitalizedName =
-          appName.charAt(0).toUpperCase() + appName.slice(1);
-
-        // Open custom app modal met pre-filled data
-        const customAppModal = document.getElementById("customAppModal");
-        const nameInput = document.getElementById("customAppName");
-        const urlInput = document.getElementById("customAppUrl");
-
-        if (nameInput) nameInput.value = capitalizedName;
-        if (urlInput) urlInput.value = url;
-
-        customAppModal?.classList.remove("hidden");
-        customAppModal?.classList.add("flex");
-
-        console.log(`✅ Link gedropt: ${capitalizedName} - ${url}`);
-
-        // Focus op naam input voor aanpassing
-        setTimeout(() => nameInput?.focus(), 100);
-      } catch (error) {
-        console.error("Ongeldige URL gedropt:", error);
-        alert("Ongeldige URL. Sleep een geldige link naar het app menu.");
+    linkDropzone.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      // Only remove when actually leaving the dropzone
+      if (
+        e.target === linkDropzone ||
+        !linkDropzone.contains(e.relatedTarget)
+      ) {
+        linkDropzone.classList.remove("drag-over");
       }
-    }
-  });
+    });
+
+    linkDropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      // Only allow external links, not internal app drags
+      const isDraggingApp = e.dataTransfer.types.includes("text/html");
+      if (!isDraggingApp) {
+        e.dataTransfer.dropEffect = "copy";
+      } else {
+        e.dataTransfer.dropEffect = "none";
+      }
+    });
+
+    linkDropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      linkDropzone.classList.remove("drag-over");
+
+      // Haal URL op uit drop data
+      const url =
+        e.dataTransfer.getData("text/uri-list") ||
+        e.dataTransfer.getData("text/plain");
+
+      if (url && url.startsWith("http")) {
+        // Extraheer domein naam voor app naam
+        try {
+          const urlObj = new URL(url);
+          const hostname = urlObj.hostname.replace("www.", "");
+          const appName = hostname.split(".")[0];
+          const capitalizedName =
+            appName.charAt(0).toUpperCase() + appName.slice(1);
+
+          // Open custom app modal met pre-filled data
+          const customAppModal = document.getElementById("customAppModal");
+          const nameInput = document.getElementById("customAppName");
+          const urlInput = document.getElementById("customAppUrl");
+
+          if (nameInput) nameInput.value = capitalizedName;
+          if (urlInput) urlInput.value = url;
+
+          customAppModal?.classList.remove("hidden");
+          customAppModal?.classList.add("flex");
+
+          console.log(
+            `✅ Link gedropt in dropzone: ${capitalizedName} - ${url}`
+          );
+          showToast("🔗 Link toegevoegd - pas aan indien nodig");
+
+          // Focus op naam input voor aanpassing
+          setTimeout(() => nameInput?.focus(), 100);
+        } catch (error) {
+          console.error("Ongeldige URL gedropt:", error);
+          showToast("✗ Ongeldige URL");
+        }
+      }
+    });
+  }
 }
 
 /**
@@ -390,16 +480,16 @@ function setupKeyboardShortcuts() {
       document.getElementById("appMenuBtn")?.click();
     }
 
-    // Ctrl+N of Cmd+N - Custom app toevoegen
-    if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+    // Ctrl+Shift+A of Cmd+Shift+A - Custom app toevoegen (Add)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "A") {
       e.preventDefault();
       const customAppModal = document.getElementById("customAppModal");
       customAppModal?.classList.remove("hidden");
       customAppModal?.classList.add("flex");
     }
 
-    // Ctrl+T of Cmd+T - Toggle theme
-    if ((e.ctrlKey || e.metaKey) && e.key === "t") {
+    // Ctrl+Shift+D of Cmd+Shift+D - Toggle theme (Dark mode)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "D") {
       e.preventDefault();
       toggleTheme();
     }
@@ -475,6 +565,17 @@ function setupCategories(apps) {
   const categoryFilter = document.getElementById("categoryFilter");
   if (!categoryFilter) return;
 
+  // Category emoji mapping
+  const categoryEmojis = {
+    all: "📱",
+    favorieten: "⭐",
+    "ai-tools": "🤖",
+    "ai-agents": "🧠",
+    "microsoft-365": "🏢",
+    windows: "🪟",
+    "social-media": "💻",
+  };
+
   // Get unique categories
   const categories = [...new Set(apps.map((app) => app.category || "other"))];
 
@@ -486,15 +587,23 @@ function setupCategories(apps) {
     btn.setAttribute("data-category", cat);
     btn.className =
       "category-btn whitespace-nowrap rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300";
-    btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+
+    // Format category name with emoji
+    const emoji = categoryEmojis[cat] || "📦";
+    const displayName = cat
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    btn.textContent = `${emoji} ${displayName}`;
 
     btn.addEventListener("click", () => filterByCategory(cat));
 
     categoryFilter.appendChild(btn);
   });
 
-  // All button handler
+  // All button handler - update with emoji
   if (allBtn) {
+    allBtn.textContent = "📱 Alle apps";
     allBtn.addEventListener("click", () => filterByCategory("all"));
   }
 }
@@ -622,6 +731,7 @@ function togglePin(appName) {
     )
   );
   renderPinnedApps();
+  renderQuickApps(); // Update Quick Apps widget
 }
 
 /**
@@ -713,17 +823,78 @@ function createAppButton(app, isPinnedButton = false) {
   const iconContainer = document.createElement("div");
   iconContainer.className = `flex h-12 w-12 items-center justify-center rounded-full ${app.color.bg}`;
 
-  // SVG icon
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
-  svg.setAttribute("fill", "currentColor");
-  svg.setAttribute("viewBox", app.icon.viewBox);
+  // Check if favicons are enabled
+  const useFavicons = localStorage.getItem("useFavicons") !== "false";
 
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", app.icon.path);
+  // Try to use favicon if enabled and URL is available, otherwise use SVG
+  if (useFavicons && app.url) {
+    try {
+      const url = new URL(app.url);
+      const domain = url.hostname;
 
-  svg.appendChild(path);
-  iconContainer.appendChild(svg);
+      // Create favicon img element
+      const favicon = document.createElement("img");
+      favicon.className = "h-8 w-8 rounded-sm";
+      favicon.alt = `${app.name} icon`;
+
+      // Try Google's favicon service first
+      favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+      // Fallback to SVG on error
+      favicon.addEventListener("error", () => {
+        // Remove failed favicon
+        favicon.remove();
+
+        // Create SVG fallback
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("viewBox", app.icon.viewBox);
+
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute("d", app.icon.path);
+
+        svg.appendChild(path);
+        iconContainer.appendChild(svg);
+      });
+
+      iconContainer.appendChild(favicon);
+    } catch (error) {
+      // Invalid URL, use SVG
+      console.warn(`Invalid URL for ${app.name}, using SVG icon`);
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+      svg.setAttribute("fill", "currentColor");
+      svg.setAttribute("viewBox", app.icon.viewBox);
+
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute("d", app.icon.path);
+
+      svg.appendChild(path);
+      iconContainer.appendChild(svg);
+    }
+  } else {
+    // No URL, use SVG icon
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+    svg.setAttribute("fill", "currentColor");
+    svg.setAttribute("viewBox", app.icon.viewBox);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", app.icon.path);
+
+    svg.appendChild(path);
+    iconContainer.appendChild(svg);
+  }
 
   // Label
   const label = document.createElement("span");
@@ -733,55 +904,291 @@ function createAppButton(app, isPinnedButton = false) {
   button.appendChild(iconContainer);
   button.appendChild(label);
 
+  // Add tag badges if enabled
+  const showTags = localStorage.getItem("showTags") !== "false";
+  if (showTags && app.tags && app.tags.length > 0) {
+    const tagsContainer = document.createElement("div");
+    tagsContainer.className = "flex flex-wrap gap-1 justify-center mt-1";
+
+    // Show max 3 tags to avoid clutter
+    const visibleTags = app.tags.slice(0, 3);
+    visibleTags.forEach((tag) => {
+      const tagBadge = document.createElement("span");
+      tagBadge.className =
+        "text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full";
+      tagBadge.textContent = tag;
+      tagsContainer.appendChild(tagBadge);
+    });
+
+    button.appendChild(tagsContainer);
+  }
+
   return button;
 }
 
 /**
  * Show context menu
  */
+// Context Menu State
+let contextMenuState = {
+  currentApp: null,
+  isOpen: false,
+};
+
+/**
+ * Show context menu
+ */
 function showContextMenu(e, appName) {
-  // Remove existing context menu
-  document.querySelectorAll(".context-menu").forEach((m) => m.remove());
+  e.preventDefault();
 
-  const menu = document.createElement("div");
-  menu.className =
-    "context-menu fixed z-[100] rounded-lg bg-white shadow-lg border border-gray-200 py-1 dark:bg-gray-800 dark:border-gray-700";
-  menu.style.left = `${e.pageX}px`;
-  menu.style.top = `${e.pageY}px`;
+  const contextMenu = document.getElementById("contextMenu");
+  if (!contextMenu) return;
 
+  // Find the app
+  const app = allApps.find((a) => a.name === appName);
+  if (!app) return;
+
+  // Store current app
+  contextMenuState.currentApp = app;
+  contextMenuState.isOpen = true;
+
+  // Update pin button text
   const isPinnedNow = isPinned(appName);
+  const contextPinText = document.getElementById("contextPinText");
+  if (contextPinText) {
+    contextPinText.textContent = isPinnedNow ? "Losmaken" : "Vastmaken";
+  }
 
-  menu.innerHTML = `
-    <button class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" data-action="pin">
-      ${isPinnedNow ? "Unpin" : "📌 Pin"} app
-    </button>
-    <button class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" data-action="delete">
-      🗑️ Verwijder
-    </button>
-  `;
+  // Position the menu
+  const menuWidth = 200;
+  const menuHeight = 250;
+  let x = e.pageX;
+  let y = e.pageY;
 
-  menu.querySelector('[data-action="pin"]').addEventListener("click", () => {
-    togglePin(appName);
-    menu.remove();
-  });
+  // Check if menu would go off-screen
+  if (x + menuWidth > window.innerWidth) {
+    x = window.innerWidth - menuWidth - 10;
+  }
+  if (y + menuHeight > window.innerHeight) {
+    y = window.innerHeight - menuHeight - 10;
+  }
 
-  menu.querySelector('[data-action="delete"]').addEventListener("click", () => {
-    deleteCustomApp(appName);
-    menu.remove();
-  });
+  contextMenu.style.left = `${x}px`;
+  contextMenu.style.top = `${y}px`;
 
-  document.body.appendChild(menu);
+  // Show menu
+  contextMenu.classList.remove("hidden");
 
-  // Remove on click outside
+  // Close on outside click
   setTimeout(() => {
-    document.addEventListener(
-      "click",
-      () => {
-        menu.remove();
-      },
-      { once: true }
-    );
+    document.addEventListener("click", closeContextMenu, { once: true });
+    document.addEventListener("contextmenu", closeContextMenu, { once: true });
   }, 0);
+}
+
+/**
+ * Close context menu
+ */
+function closeContextMenu() {
+  const contextMenu = document.getElementById("contextMenu");
+  if (contextMenu) {
+    contextMenu.classList.add("hidden");
+  }
+  contextMenuState.currentApp = null;
+  contextMenuState.isOpen = false;
+}
+
+/**
+ * Setup context menu actions
+ */
+function setupContextMenu() {
+  const contextEdit = document.getElementById("contextEdit");
+  const contextPin = document.getElementById("contextPin");
+  const contextAddToWorkspace = document.getElementById(
+    "contextAddToWorkspace"
+  );
+  const contextCopyUrl = document.getElementById("contextCopyUrl");
+  const contextDelete = document.getElementById("contextDelete");
+
+  // Edit action
+  if (contextEdit) {
+    contextEdit.addEventListener("click", () => {
+      if (contextMenuState.currentApp) {
+        // Check if it's a custom app
+        const customApp = customApps.find(
+          (a) => a.name === contextMenuState.currentApp.name
+        );
+        if (customApp) {
+          // Open edit modal (reuse add modal)
+          openEditAppModal(customApp);
+        } else {
+          alert("Alleen custom apps kunnen worden bewerkt");
+        }
+      }
+      closeContextMenu();
+    });
+  }
+
+  // Pin/Unpin action
+  if (contextPin) {
+    contextPin.addEventListener("click", () => {
+      if (contextMenuState.currentApp) {
+        togglePin(contextMenuState.currentApp.name);
+      }
+      closeContextMenu();
+    });
+  }
+
+  // Add to Workspace action
+  if (contextAddToWorkspace) {
+    contextAddToWorkspace.addEventListener("click", () => {
+      if (contextMenuState.currentApp) {
+        // Open collections modal to select workspace
+        openAddToWorkspaceModal(contextMenuState.currentApp);
+      }
+      closeContextMenu();
+    });
+  }
+
+  // Copy URL action
+  if (contextCopyUrl) {
+    contextCopyUrl.addEventListener("click", async () => {
+      if (contextMenuState.currentApp && contextMenuState.currentApp.url) {
+        try {
+          await navigator.clipboard.writeText(contextMenuState.currentApp.url);
+          // Show feedback
+          showToast("✓ URL gekopieerd!");
+        } catch (err) {
+          console.error("Failed to copy URL:", err);
+          showToast("✗ Kopiëren mislukt");
+        }
+      }
+      closeContextMenu();
+    });
+  }
+
+  // Delete action
+  if (contextDelete) {
+    contextDelete.addEventListener("click", () => {
+      if (contextMenuState.currentApp) {
+        deleteCustomApp(contextMenuState.currentApp.name);
+      }
+      closeContextMenu();
+    });
+  }
+
+  // Close on ESC key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && contextMenuState.isOpen) {
+      closeContextMenu();
+    }
+  });
+
+  // Close on scroll
+  document.addEventListener("scroll", () => {
+    if (contextMenuState.isOpen) {
+      closeContextMenu();
+    }
+  });
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message) {
+  // Remove existing toast
+  const existingToast = document.getElementById("toast");
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  const toast = document.createElement("div");
+  toast.id = "toast";
+  toast.className =
+    "fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg shadow-lg z-[200] animate-toast";
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2000);
+}
+
+/**
+ * Open Add to Workspace modal
+ */
+function openAddToWorkspaceModal(app) {
+  const modal = document.getElementById("collectionsModal");
+  if (!modal) return;
+
+  // Store which app we're adding
+  modal.dataset.addingApp = app.name;
+
+  // Show modal
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  // Add info text
+  const existingInfo = modal.querySelector(".adding-app-info");
+  if (existingInfo) existingInfo.remove();
+
+  const info = document.createElement("div");
+  info.className =
+    "adding-app-info bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg text-sm mb-4";
+  info.textContent = `Selecteer een workspace om "${app.name}" aan toe te voegen`;
+
+  const modalContent = modal.querySelector(".max-w-3xl");
+  if (modalContent) {
+    modalContent.insertBefore(info, modalContent.firstChild.nextSibling);
+  }
+}
+
+/**
+ * Open edit app modal
+ */
+function openEditAppModal(app) {
+  const modal = document.getElementById("customAppModal");
+  if (!modal) return;
+
+  // Fill form with existing data
+  document.getElementById("customAppName").value = app.name;
+  document.getElementById("customAppUrl").value = app.url || "";
+  document.getElementById("customAppCategory").value = app.category || "all";
+  document.getElementById("customAppTags").value = app.tags
+    ? app.tags.join(", ")
+    : "";
+
+  // Set color if available
+  if (app.color && app.color.bg) {
+    const colorMatch = app.color.bg.match(/bg-(\w+)-/);
+    if (colorMatch) {
+      selectedColor = colorMatch[1];
+      // Update color picker visual
+      document.querySelectorAll(".color-picker").forEach((picker) => {
+        picker.classList.remove("ring-4", "ring-blue-300");
+      });
+      const activePicker = document.querySelector(
+        `[data-color="${selectedColor}"]`
+      );
+      if (activePicker) {
+        activePicker.classList.add("ring-4", "ring-blue-300");
+      }
+    }
+  }
+
+  // Store that we're editing (not adding new)
+  modal.dataset.editing = app.name;
+
+  // Update modal title
+  const title = modal.querySelector("h3");
+  if (title) {
+    title.textContent = "App Bewerken";
+  }
+
+  // Show modal
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
 }
 
 /**
@@ -804,14 +1211,25 @@ function deleteCustomApp(appName) {
 function handleCustomAppSubmit(e) {
   e.preventDefault();
 
+  const modal = document.getElementById("customAppModal");
+  const isEditing = modal.dataset.editing;
+
   const name = document.getElementById("customAppName").value;
   const url = document.getElementById("customAppUrl").value;
   const category = document.getElementById("customAppCategory").value;
+  const tagsInput = document.getElementById("customAppTags").value;
 
-  const newApp = {
+  // Parse tags: split by comma, trim whitespace, filter empty strings
+  const tags = tagsInput
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+
+  const appData = {
     name,
     category,
     url,
+    tags: tags.length > 0 ? tags : [],
     icon: {
       type: "svg",
       viewBox: "0 0 24 24",
@@ -823,12 +1241,31 @@ function handleCustomAppSubmit(e) {
     },
   };
 
-  customApps.push(newApp);
+  if (isEditing) {
+    // Update existing app
+    const index = customApps.findIndex((app) => app.name === isEditing);
+    if (index !== -1) {
+      customApps[index] = appData;
+      showToast("✓ App bijgewerkt!");
+    }
+    delete modal.dataset.editing;
+  } else {
+    // Add new app
+    customApps.push(appData);
+    showToast("✓ App toegevoegd!");
+  }
+
   saveCustomApps();
 
+  // Reset modal title
+  const title = modal.querySelector("h3");
+  if (title) {
+    title.textContent = "Custom App Toevoegen";
+  }
+
   // Close modal and reset form
-  document.getElementById("customAppModal").classList.add("hidden");
-  document.getElementById("customAppModal").classList.remove("flex");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
   document.getElementById("customAppForm").reset();
 
   // Reload apps
@@ -968,7 +1405,7 @@ function loadTheme() {
 }
 
 /**
- * Filter apps op basis van zoekterm
+ * Filter apps op basis van zoekterm met fuzzy matching
  */
 function filterApps(searchTerm) {
   const appsGrid = document.querySelector("#appsGrid");
@@ -978,30 +1415,85 @@ function filterApps(searchTerm) {
   const term = searchTerm.toLowerCase().trim();
 
   let visibleCount = 0;
+  const results = [];
 
+  // Collect all apps with fuzzy match scores
   appItems.forEach((item) => {
-    const appName = item.getAttribute("data-name").toLowerCase();
-    const matches = appName.includes(term);
+    const appName = item.getAttribute("data-name");
 
-    if (matches) {
-      item.style.display = "";
-      visibleCount++;
+    // Get app data to check tags
+    const app = allApps.find((a) => a.name === appName);
+
+    if (term === "") {
+      // No search term - show all
+      results.push({ item, score: 0, matches: null });
     } else {
-      item.style.display = "none";
+      // Try fuzzy match on app name
+      let fuzzyResult = fuzzyMatch(appName, term);
+
+      // If no match on name, try tags
+      if (!fuzzyResult && app && app.tags) {
+        const tagMatch = app.tags.some((tag) => fuzzyMatch(tag, term));
+        if (tagMatch) {
+          // Give tag matches a slightly lower priority score
+          fuzzyResult = { score: 100, matches: [] };
+        }
+      }
+
+      if (fuzzyResult) {
+        results.push({
+          item,
+          score: fuzzyResult.score,
+          matches: fuzzyResult.matches,
+        });
+      } else {
+        // Hide non-matching items
+        item.style.display = "none";
+      }
     }
   });
+
+  // Sort by fuzzy match score (lower is better)
+  results.sort((a, b) => a.score - b.score);
+
+  // Show matching items and highlight
+  results.forEach((result, index) => {
+    result.item.style.display = "";
+    result.item.style.order = index; // Reorder based on relevance
+
+    // Highlight matched characters in app name
+    if (result.matches && result.matches.length > 0) {
+      const label = result.item.querySelector("span");
+      if (label) {
+        const appName = result.item.getAttribute("data-name");
+        label.innerHTML = highlightMatches(appName, result.matches);
+      }
+    } else {
+      // Reset highlight when no search
+      const label = result.item.querySelector("span");
+      if (label) {
+        label.textContent = result.item.getAttribute("data-name");
+      }
+    }
+    visibleCount++;
+  });
+
+  // Make grid use flexbox order for sorting
+  appsGrid.style.display = "flex";
+  appsGrid.style.flexWrap = "wrap";
 
   // Toon "geen resultaten" bericht
   const existingMessage = appsGrid.querySelector(".no-results");
   if (visibleCount === 0 && term !== "") {
     if (!existingMessage) {
       const message = document.createElement("div");
-      message.className = "no-results col-span-4 py-8 text-center";
+      message.className = "no-results col-span-4 py-8 text-center w-full";
       message.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Geen apps gevonden voor "${searchTerm}"</p>
+        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Try using partial matches like "gm" for Gmail</p>
       `;
       appsGrid.appendChild(message);
     }
@@ -1782,10 +2274,17 @@ function fuzzyMatch(text, query) {
 function highlightMatches(text, matches) {
   if (!matches || matches.length === 0) return text;
 
+  // Check if highlighting is enabled
+  const highlightEnabled = localStorage.getItem("highlightSearch") !== "false";
+
+  if (!highlightEnabled) {
+    return text; // Return plain text without highlighting
+  }
+
   let result = "";
   for (let i = 0; i < text.length; i++) {
     if (matches.includes(i)) {
-      result += `<span class="text-blue-600 dark:text-blue-400 font-semibold">${text[i]}</span>`;
+      result += `<span class="search-highlight">${text[i]}</span>`;
     } else {
       result += text[i];
     }
@@ -2061,3 +2560,1242 @@ function renderUsageStats() {
 
 // Load stats on init
 loadAppStats();
+
+/* ========================================
+   KEYBOARD HINTS WIDGET
+   ======================================== */
+
+/**
+ * Setup keyboard hints widget
+ */
+function setupKeyboardHints() {
+  const hintsContainer = document.getElementById("keyboardHints");
+  const closeBtn = document.getElementById("closeHints");
+  const toggleBtn = document.getElementById("toggleHintsSize");
+  const showBtn = document.getElementById("showHintsBtn");
+
+  // Check if user previously closed the hints
+  const hintsClosed = localStorage.getItem("keyboardHintsClosed") === "true";
+  const hintsMinimized =
+    localStorage.getItem("keyboardHintsMinimized") === "true";
+
+  if (hintsClosed) {
+    hintsContainer.classList.add("hidden");
+    showBtn.classList.remove("hidden");
+  } else if (hintsMinimized) {
+    minimizeHints();
+  }
+
+  // Close hints
+  closeBtn?.addEventListener("click", () => {
+    hintsContainer.classList.add("hidden");
+    showBtn.classList.remove("hidden");
+    localStorage.setItem("keyboardHintsClosed", "true");
+  });
+
+  // Toggle size (minimize/maximize)
+  let isMinimized = hintsMinimized;
+  toggleBtn?.addEventListener("click", () => {
+    isMinimized = !isMinimized;
+    if (isMinimized) {
+      minimizeHints();
+      localStorage.setItem("keyboardHintsMinimized", "true");
+    } else {
+      maximizeHints();
+      localStorage.setItem("keyboardHintsMinimized", "false");
+    }
+  });
+
+  // Show hints again
+  showBtn?.addEventListener("click", () => {
+    showBtn.classList.add("hidden");
+    hintsContainer.classList.remove("hidden");
+    localStorage.setItem("keyboardHintsClosed", "false");
+  });
+
+  function minimizeHints() {
+    const card = hintsContainer.querySelector("div");
+    card.classList.add("max-w-xs");
+
+    // Hide all shortcuts except first one
+    const shortcuts = card.querySelectorAll(".space-y-2 > div");
+    shortcuts.forEach((shortcut, index) => {
+      if (index > 0) shortcut.classList.add("hidden");
+    });
+
+    toggleBtn.textContent = "Show more";
+  }
+
+  function maximizeHints() {
+    const card = hintsContainer.querySelector("div");
+    card.classList.remove("max-w-xs");
+
+    // Show all shortcuts
+    const shortcuts = card.querySelectorAll(".space-y-2 > div");
+    shortcuts.forEach((shortcut) => {
+      shortcut.classList.remove("hidden");
+    });
+
+    toggleBtn.textContent = "Minimize";
+  }
+}
+
+// Initialize keyboard hints
+setupKeyboardHints();
+
+/* ========================================
+   TAGS SYSTEM
+   ======================================== */
+
+/**
+ * Get all unique tags from all apps
+ */
+function getAllTags() {
+  const tags = new Set();
+
+  // Get tags from default apps
+  allApps.forEach((app) => {
+    if (app.tags && Array.isArray(app.tags)) {
+      app.tags.forEach((tag) => tags.add(tag.toLowerCase()));
+    }
+  });
+
+  // Get tags from custom apps
+  customApps.forEach((app) => {
+    if (app.tags && Array.isArray(app.tags)) {
+      app.tags.forEach((tag) => tags.add(tag.toLowerCase()));
+    }
+  });
+
+  return Array.from(tags).sort();
+}
+
+/**
+ * Setup tag suggestions in custom app modal
+ */
+function setupTagSuggestions() {
+  const tagsInput = document.getElementById("customAppTags");
+  const suggestionsContainer = document.getElementById("tagSuggestions");
+
+  if (!tagsInput || !suggestionsContainer) return;
+
+  // Show popular tags as suggestions
+  tagsInput.addEventListener("focus", () => {
+    const allTags = getAllTags();
+    const popularTags = allTags.slice(0, 8); // Show top 8
+
+    suggestionsContainer.innerHTML = popularTags
+      .map(
+        (tag) =>
+          `<button type="button" 
+        class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+        onclick="addTagToInput('${tag}')">${tag}</button>`
+      )
+      .join("");
+  });
+}
+
+/**
+ * Add a suggested tag to the input field
+ */
+function addTagToInput(tag) {
+  const tagsInput = document.getElementById("customAppTags");
+  if (!tagsInput) return;
+
+  const currentValue = tagsInput.value.trim();
+  if (currentValue) {
+    // Add to existing tags
+    const tags = currentValue.split(",").map((t) => t.trim());
+    if (!tags.includes(tag)) {
+      tagsInput.value = [...tags, tag].join(", ");
+    }
+  } else {
+    tagsInput.value = tag;
+  }
+  tagsInput.focus();
+}
+
+/**
+ * Setup show tags toggle in settings
+ */
+function setupShowTagsToggle() {
+  const toggle = document.getElementById("showTagsToggle");
+  if (!toggle) return;
+
+  // Load saved preference (default: true)
+  const showTags = localStorage.getItem("showTags") !== "false";
+  toggle.checked = showTags;
+
+  // Listen for changes
+  toggle.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem("showTags", enabled.toString());
+
+    // Re-render apps to show/hide tags
+    renderApps(filterApps(currentCategory));
+  });
+}
+
+/**
+ * Setup use favicons toggle in settings
+ */
+function setupUseFaviconsToggle() {
+  const toggle = document.getElementById("useFaviconsToggle");
+  if (!toggle) return;
+
+  // Load saved preference (default: true)
+  const useFavicons = localStorage.getItem("useFavicons") !== "false";
+  toggle.checked = useFavicons;
+
+  // Listen for changes
+  toggle.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem("useFavicons", enabled.toString());
+
+    // Re-render apps to use favicons or SVG
+    renderApps(
+      allApps.filter(
+        (app) => currentCategory === "all" || app.category === currentCategory
+      )
+    );
+    renderPinnedApps();
+    renderQuickApps(); // Update Quick Apps widget
+  });
+}
+
+// Apply grid size classes to app containers
+function applyGridSize(size) {
+  const appsGrid = document.getElementById("appsGrid");
+  const pinnedApps = document.getElementById("pinnedApps");
+
+  if (!appsGrid || !pinnedApps) return;
+
+  // Grid size mapping
+  const gridSizes = {
+    small: "grid-cols-6",
+    medium: "grid-cols-4",
+    large: "grid-cols-3",
+  };
+
+  // Remove all grid size classes
+  Object.values(gridSizes).forEach((className) => {
+    appsGrid.classList.remove(className);
+    pinnedApps.classList.remove(className);
+  });
+
+  // Apply selected grid size
+  const selectedClass = gridSizes[size] || gridSizes.medium;
+  appsGrid.classList.add(selectedClass);
+  pinnedApps.classList.add(selectedClass);
+}
+
+// Setup grid size toggle in settings
+function setupGridSizeToggle() {
+  const radios = document.querySelectorAll('input[name="gridSize"]');
+  if (!radios || radios.length === 0) return;
+
+  // Load saved preference (default: medium)
+  const savedSize = localStorage.getItem("gridSize") || "medium";
+
+  // Set the correct radio button as checked
+  radios.forEach((radio) => {
+    if (radio.value === savedSize) {
+      radio.checked = true;
+    }
+  });
+
+  // Apply initial grid size
+  applyGridSize(savedSize);
+
+  // Listen for changes
+  radios.forEach((radio) => {
+    radio.addEventListener("change", (e) => {
+      const size = e.target.value;
+      localStorage.setItem("gridSize", size);
+      applyGridSize(size);
+    });
+  });
+}
+
+// Setup search highlight toggle in settings
+function setupHighlightSearchToggle() {
+  const toggle = document.getElementById("highlightSearchToggle");
+  if (!toggle) return;
+
+  // Load saved preference (default: true)
+  const highlightEnabled = localStorage.getItem("highlightSearch") !== "false";
+  toggle.checked = highlightEnabled;
+
+  // Listen for changes
+  toggle.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem("highlightSearch", enabled.toString());
+
+    // Re-trigger current search to update highlighting
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput && searchInput.value) {
+      const event = new Event("input", { bubbles: true });
+      searchInput.dispatchEvent(event);
+    }
+
+    // Also update Command Palette if it's open
+    const commandInput = document.getElementById("commandPaletteInput");
+    if (commandInput && commandInput.value) {
+      const event = new Event("input", { bubbles: true });
+      commandInput.dispatchEvent(event);
+    }
+  });
+}
+
+// Setup keyboard shortcuts widget toggle in settings
+function setupShowShortcutsToggle() {
+  const toggle = document.getElementById("showShortcutsToggle");
+  const widget = document.getElementById("keyboardHints");
+
+  if (!toggle || !widget) return;
+
+  // Load saved preference (default: true)
+  const showShortcuts = localStorage.getItem("showShortcuts") !== "false";
+  toggle.checked = showShortcuts;
+
+  // Apply initial visibility
+  if (showShortcuts) {
+    widget.classList.remove("hidden");
+  } else {
+    widget.classList.add("hidden");
+  }
+
+  // Listen for changes
+  toggle.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem("showShortcuts", enabled.toString());
+
+    if (enabled) {
+      widget.classList.remove("hidden");
+    } else {
+      widget.classList.add("hidden");
+    }
+  });
+}
+
+// Setup Quick Apps Widget visibility toggle
+function setupShowQuickAppsToggle() {
+  const toggle = document.getElementById("showQuickAppsToggle");
+  const widget = document.getElementById("quickAppsWidget");
+
+  if (!toggle || !widget) return;
+
+  // Load saved preference (default: true)
+  const showQuickApps = localStorage.getItem("showQuickApps") !== "false";
+  toggle.checked = showQuickApps;
+
+  // Apply initial visibility
+  if (showQuickApps) {
+    widget.classList.remove("hidden");
+  } else {
+    widget.classList.add("hidden");
+  }
+
+  // Listen for changes
+  toggle.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem("showQuickApps", enabled.toString());
+
+    if (enabled) {
+      widget.classList.remove("hidden");
+      renderQuickApps(); // Re-render when showing
+    } else {
+      widget.classList.add("hidden");
+    }
+  });
+}
+
+// Render Quick Apps Widget
+function renderQuickApps() {
+  const quickAppsList = document.getElementById("quickAppsList");
+  if (!quickAppsList) return;
+
+  // Get pinned apps from allApps array (max 9 for 3x3 grid)
+  const pinned = allApps
+    .filter((app) => pinnedApps.includes(app.name))
+    .slice(0, 9);
+
+  if (pinned.length === 0) {
+    quickAppsList.innerHTML = `
+      <div class="col-span-3 text-center py-4">
+        <p class="text-xs text-gray-400 dark:text-gray-500">Geen pinned apps</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pin apps in het menu</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Render pinned apps
+  quickAppsList.innerHTML = "";
+
+  pinned.forEach((app) => {
+    const appButton = document.createElement("button");
+    appButton.className =
+      "flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group relative";
+    appButton.title = app.name;
+
+    // Icon container
+    const iconContainer = document.createElement("div");
+    iconContainer.className = `flex h-10 w-10 items-center justify-center rounded-full ${app.color.bg}`;
+
+    // Use favicon if enabled
+    const useFavicons = localStorage.getItem("useFavicons") !== "false";
+
+    if (useFavicons && app.url) {
+      try {
+        const url = new URL(app.url);
+        const domain = url.hostname;
+
+        const favicon = document.createElement("img");
+        favicon.className = "h-6 w-6 rounded-sm";
+        favicon.alt = `${app.name} icon`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+        favicon.addEventListener("error", () => {
+          favicon.remove();
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("viewBox", app.icon.viewBox);
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute("d", app.icon.path);
+          svg.appendChild(path);
+          iconContainer.appendChild(svg);
+        });
+
+        iconContainer.appendChild(favicon);
+      } catch (error) {
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("viewBox", app.icon.viewBox);
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute("d", app.icon.path);
+        svg.appendChild(path);
+        iconContainer.appendChild(svg);
+      }
+    } else {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
+      svg.setAttribute("fill", "currentColor");
+      svg.setAttribute("viewBox", app.icon.viewBox);
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute("d", app.icon.path);
+      svg.appendChild(path);
+      iconContainer.appendChild(svg);
+    }
+
+    // App name (abbreviated)
+    const nameSpan = document.createElement("span");
+    nameSpan.className =
+      "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full";
+    nameSpan.textContent =
+      app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
+
+    appButton.appendChild(iconContainer);
+    appButton.appendChild(nameSpan);
+
+    // Click to open
+    if (app.url) {
+      appButton.addEventListener("click", () => {
+        trackAppUsage(app.name);
+        window.open(app.url, "_blank");
+      });
+    }
+
+    quickAppsList.appendChild(appButton);
+  });
+}
+
+// Setup minimize button for Quick Apps Widget
+function setupQuickAppsMinimize() {
+  const closeBtn = document.getElementById("closeQuickApps");
+  const widget = document.getElementById("quickAppsWidget");
+
+  if (!closeBtn || !widget) return;
+
+  closeBtn.addEventListener("click", () => {
+    widget.classList.add("hidden");
+    // Update toggle in settings
+    const toggle = document.getElementById("showQuickAppsToggle");
+    if (toggle) {
+      toggle.checked = false;
+      localStorage.setItem("showQuickApps", "false");
+    }
+  });
+}
+
+// Autocomplete state
+let autocompleteState = {
+  isOpen: false,
+  selectedIndex: -1,
+  results: [],
+};
+
+/**
+ * Setup autocomplete for search input
+ */
+function setupAutocomplete() {
+  const searchInput = document.getElementById("appSearch");
+  const dropdown = document.getElementById("autocompleteDropdown");
+  const resultsContainer = document.getElementById("autocompleteResults");
+
+  console.log("🔍 setupAutocomplete called");
+  console.log("  searchInput:", searchInput);
+  console.log("  dropdown:", dropdown);
+  console.log("  resultsContainer:", resultsContainer);
+  console.log("  allApps.length:", allApps.length);
+
+  if (!searchInput || !dropdown || !resultsContainer) {
+    console.error("❌ Autocomplete elements niet gevonden!");
+    return;
+  }
+
+  console.log("✅ Autocomplete setup - event listener toegevoegd");
+
+  // Input handler for autocomplete
+  searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.trim();
+    console.log("📝 Input event - query:", query);
+
+    // IMPORTANT: Also filter the apps in the menu
+    filterApps(e.target.value);
+
+    if (query.length === 0) {
+      hideAutocomplete();
+      return;
+    }
+
+    // Get suggestions
+    const suggestions = getAutocompleteSuggestions(query);
+    console.log("💡 Suggestions:", suggestions.length);
+    autocompleteState.results = suggestions;
+
+    // Auto-select first result if there's only 1 suggestion
+    if (suggestions.length === 1) {
+      autocompleteState.selectedIndex = 0;
+    } else {
+      autocompleteState.selectedIndex = -1;
+    }
+
+    if (suggestions.length > 0) {
+      renderAutocompleteSuggestions(suggestions);
+      showAutocomplete();
+      console.log("✅ Autocomplete shown");
+    } else {
+      hideAutocomplete();
+      console.log("❌ No suggestions - hiding");
+    }
+  }); // Keyboard navigation
+  searchInput.addEventListener("keydown", (e) => {
+    if (!autocompleteState.isOpen) return;
+
+    const results = autocompleteState.results;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        autocompleteState.selectedIndex = Math.min(
+          autocompleteState.selectedIndex + 1,
+          results.length - 1
+        );
+        updateAutocompleteSelection();
+        break;
+
+      case "ArrowUp":
+        e.preventDefault();
+        autocompleteState.selectedIndex = Math.max(
+          autocompleteState.selectedIndex - 1,
+          -1
+        );
+        updateAutocompleteSelection();
+        break;
+
+      case "Enter":
+        e.preventDefault();
+        // If nothing selected but results exist, auto-select first result
+        if (autocompleteState.selectedIndex === -1 && results.length > 0) {
+          autocompleteState.selectedIndex = 0;
+        }
+
+        if (autocompleteState.selectedIndex >= 0) {
+          selectAutocompleteSuggestion(
+            results[autocompleteState.selectedIndex]
+          );
+        }
+        break;
+
+      case "Escape":
+        e.preventDefault();
+        hideAutocomplete();
+        break;
+    }
+  });
+
+  // Click outside to close
+  document.addEventListener("click", (e) => {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+      hideAutocomplete();
+    }
+  });
+}
+
+/**
+ * Setup AI Mode Button - Toggle between AI platforms
+ */
+function setupAIModeButton() {
+  const aiModeBtn = document.getElementById("aiModeBtn");
+  const searchInput = document.getElementById("homePageSearch");
+
+  if (!aiModeBtn) {
+    console.warn("⚠️ AI-modus button niet gevonden");
+    return;
+  }
+
+  // Load saved AI mode from localStorage
+  const savedMode = localStorage.getItem("aiMode");
+  if (savedMode && aiModes[savedMode]) {
+    currentAIMode = savedMode;
+  }
+
+  // Update button to show current AI mode
+  updateAIModeButton();
+
+  // Toggle AI mode on click
+  aiModeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    // Cycle through AI modes
+    const modeKeys = Object.keys(aiModes);
+    const currentIndex = modeKeys.indexOf(currentAIMode);
+    const nextIndex = (currentIndex + 1) % modeKeys.length;
+    currentAIMode = modeKeys[nextIndex];
+
+    // Save to localStorage
+    localStorage.setItem("aiMode", currentAIMode);
+
+    // Update UI
+    updateAIModeButton();
+
+    // Auto-focus and prefill search input
+    if (searchInput) {
+      const mode = aiModes[currentAIMode];
+      searchInput.value = mode.prefix + " ";
+      searchInput.focus();
+
+      // Trigger input event to show autocomplete
+      const event = new Event("input", { bubbles: true });
+      searchInput.dispatchEvent(event);
+    }
+
+    // Show toast notification
+    showToast(
+      `AI-modus: ${aiModes[currentAIMode].name} ${aiModes[currentAIMode].icon}`
+    );
+  });
+}
+
+/**
+ * Update AI Mode Button UI
+ */
+function updateAIModeButton() {
+  const aiModeBtn = document.getElementById("aiModeBtn");
+  if (!aiModeBtn) return;
+
+  const mode = aiModes[currentAIMode];
+  const textSpan = aiModeBtn.querySelector(".leading-none");
+
+  if (textSpan) {
+    textSpan.textContent = `${mode.icon} ${mode.name}`;
+    textSpan.className = `leading-none font-semibold ${mode.color}`;
+  }
+}
+
+/**
+ * Setup autocomplete for homepage search
+ */
+function setupHomePageAutocomplete() {
+  const searchInput = document.getElementById("homePageSearch");
+  const dropdown = document.getElementById("homePageAutocomplete");
+  const resultsContainer = document.getElementById(
+    "homePageAutocompleteResults"
+  );
+
+  console.log("🏠 setupHomePageAutocomplete called");
+  console.log("  searchInput:", searchInput);
+  console.log("  dropdown:", dropdown);
+
+  if (!searchInput || !dropdown || !resultsContainer) {
+    console.warn("⚠️ Homepage autocomplete elements niet gevonden");
+    return;
+  }
+
+  console.log("✅ Homepage autocomplete setup");
+
+  let selectedIndex = -1;
+  let currentResults = [];
+
+  // Input handler
+  searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.trim();
+    console.log("🏠 Homepage input:", query);
+
+    if (query.length === 0) {
+      dropdown.classList.add("hidden");
+      return;
+    }
+
+    // Check for search engine shortcuts first
+    const searchEngineMatch = detectSearchEngine(query);
+
+    if (searchEngineMatch) {
+      // Show search engine suggestion
+      currentResults = [{ type: "search-engine", data: searchEngineMatch }];
+      selectedIndex = 0;
+      renderHomePageSuggestions(currentResults);
+      dropdown.classList.remove("hidden");
+      return;
+    }
+
+    // Get app suggestions
+    const suggestions = getAutocompleteSuggestions(query);
+    currentResults = suggestions;
+
+    // Auto-select first result if there's only 1 suggestion
+    if (suggestions.length === 1) {
+      selectedIndex = 0;
+    } else {
+      selectedIndex = -1;
+    }
+
+    if (suggestions.length > 0) {
+      renderHomePageSuggestions(suggestions);
+      dropdown.classList.remove("hidden");
+      // Update selection visually if auto-selected
+      if (suggestions.length === 1) {
+        updateHomePageSelection();
+      }
+      console.log(
+        "✅ Homepage dropdown shown with",
+        suggestions.length,
+        "results"
+      );
+    } else {
+      dropdown.classList.add("hidden");
+    }
+  });
+
+  // Keyboard navigation
+  searchInput.addEventListener("keydown", (e) => {
+    if (dropdown.classList.contains("hidden") || currentResults.length === 0)
+      return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, currentResults.length - 1);
+        updateHomePageSelection();
+        break;
+
+      case "ArrowUp":
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, -1);
+        updateHomePageSelection();
+        break;
+
+      case "Enter":
+        e.preventDefault();
+        // If nothing selected but results exist, auto-select first result
+        if (selectedIndex === -1 && currentResults.length > 0) {
+          selectedIndex = 0;
+        }
+
+        if (selectedIndex >= 0 && currentResults[selectedIndex]) {
+          const result = currentResults[selectedIndex];
+
+          // Handle search engine queries
+          if (result.type === "search-engine") {
+            window.open(result.data.fullUrl, "_blank");
+          } else {
+            // Handle regular app
+            window.open(result.app.url, "_blank");
+          }
+
+          searchInput.value = "";
+          dropdown.classList.add("hidden");
+          selectedIndex = -1;
+        }
+        break;
+
+      case "Escape":
+        e.preventDefault();
+        dropdown.classList.add("hidden");
+        searchInput.blur();
+        break;
+    }
+  });
+
+  // Click outside to close
+  document.addEventListener("click", (e) => {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add("hidden");
+    }
+  });
+
+  // Helper function to update selection
+  function updateHomePageSelection() {
+    const items = resultsContainer.querySelectorAll(".autocomplete-item");
+    items.forEach((item, index) => {
+      if (index === selectedIndex) {
+        item.classList.add(
+          "selected",
+          "bg-blue-50",
+          "dark:bg-blue-900/20",
+          "border-l-blue-500"
+        );
+      } else {
+        item.classList.remove(
+          "selected",
+          "bg-blue-50",
+          "dark:bg-blue-900/20",
+          "border-l-blue-500"
+        );
+      }
+    });
+  }
+}
+
+/**
+ * Detect search engine shortcuts in query
+ */
+function detectSearchEngine(query) {
+  for (const [prefix, engine] of Object.entries(searchEngines)) {
+    if (query.toLowerCase().startsWith(prefix)) {
+      const searchQuery = query.substring(prefix.length).trim();
+      if (searchQuery.length > 0) {
+        return {
+          prefix,
+          engine: engine.name,
+          icon: engine.icon,
+          query: searchQuery,
+          fullUrl: engine.url + encodeURIComponent(searchQuery),
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Render homepage autocomplete suggestions
+ */
+function renderHomePageSuggestions(suggestions) {
+  const resultsContainer = document.getElementById(
+    "homePageAutocompleteResults"
+  );
+  if (!resultsContainer) return;
+
+  resultsContainer.innerHTML = "";
+
+  suggestions.forEach((suggestion, index) => {
+    const item = document.createElement("div");
+    item.className =
+      "autocomplete-item px-4 py-3 cursor-pointer flex items-center gap-3 border-l-3 border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
+    item.dataset.index = index;
+
+    // Handle search engine suggestions differently
+    if (suggestion.type === "search-engine") {
+      const data = suggestion.data;
+
+      // Icon container with emoji
+      const iconContainer = document.createElement("div");
+      iconContainer.className =
+        "flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 flex-shrink-0 text-xl";
+      iconContainer.textContent = data.icon;
+
+      // Text container
+      const textContainer = document.createElement("div");
+      textContainer.className = "flex-1 min-w-0";
+
+      const engineName = document.createElement("div");
+      engineName.className =
+        "text-sm font-medium text-gray-900 dark:text-gray-100 truncate";
+      engineName.innerHTML = `Zoek op <span class="text-blue-600 dark:text-blue-400">${data.engine}</span>: <span class="font-normal">${data.query}</span>`;
+
+      const hint = document.createElement("div");
+      hint.className = "text-xs text-gray-500 dark:text-gray-400 truncate";
+      hint.textContent = `Druk Enter om te zoeken...`;
+
+      textContainer.appendChild(engineName);
+      textContainer.appendChild(hint);
+
+      item.appendChild(iconContainer);
+      item.appendChild(textContainer);
+
+      // Click handler
+      item.addEventListener("click", () => {
+        window.open(data.fullUrl, "_blank");
+        document.getElementById("homePageSearch").value = "";
+        document.getElementById("homePageAutocomplete").classList.add("hidden");
+      });
+
+      resultsContainer.appendChild(item);
+      return; // Skip rest of the loop for this item
+    }
+
+    // Regular app suggestion rendering
+    const iconContainer = document.createElement("div");
+    iconContainer.className = `flex h-10 w-10 items-center justify-center rounded-full ${suggestion.app.color.bg} flex-shrink-0`;
+
+    // Use favicon if enabled
+    const useFavicons = localStorage.getItem("useFavicons") !== "false";
+
+    if (useFavicons && suggestion.app.url) {
+      try {
+        const url = new URL(suggestion.app.url);
+        const domain = url.hostname;
+        const favicon = document.createElement("img");
+        favicon.className = "h-6 w-6 rounded-sm";
+        favicon.alt = `${suggestion.app.name} icon`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        favicon.addEventListener("error", () => {
+          favicon.remove();
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("class", `h-5 w-5 ${suggestion.app.color.text}`);
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("viewBox", suggestion.app.icon.viewBox);
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute("d", suggestion.app.icon.path);
+          svg.appendChild(path);
+          iconContainer.appendChild(svg);
+        });
+        iconContainer.appendChild(favicon);
+      } catch (error) {
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", `h-5 w-5 ${suggestion.app.color.text}`);
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("viewBox", suggestion.app.icon.viewBox);
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute("d", suggestion.app.icon.path);
+        svg.appendChild(path);
+        iconContainer.appendChild(svg);
+      }
+    } else {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", `h-5 w-5 ${suggestion.app.color.text}`);
+      svg.setAttribute("fill", "currentColor");
+      svg.setAttribute("viewBox", suggestion.app.icon.viewBox);
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute("d", suggestion.app.icon.path);
+      svg.appendChild(path);
+      iconContainer.appendChild(svg);
+    }
+
+    // Text container
+    const textContainer = document.createElement("div");
+    textContainer.className = "flex-1 min-w-0";
+
+    const appName = document.createElement("div");
+    appName.className =
+      "text-sm font-medium text-gray-900 dark:text-gray-100 truncate";
+
+    // Highlight matches
+    if (suggestion.matches && suggestion.matches.length > 0) {
+      appName.innerHTML = highlightMatches(
+        suggestion.app.name,
+        suggestion.matches
+      );
+    } else {
+      appName.textContent = suggestion.app.name;
+    }
+
+    const reason = document.createElement("div");
+    reason.className = "text-xs text-gray-500 dark:text-gray-400 truncate";
+    reason.textContent = suggestion.reason;
+
+    textContainer.appendChild(appName);
+    textContainer.appendChild(reason);
+
+    // Assemble
+    item.appendChild(iconContainer);
+    item.appendChild(textContainer);
+
+    // Click handler
+    item.addEventListener("click", () => {
+      window.open(suggestion.app.url, "_blank");
+      document.getElementById("homePageSearch").value = "";
+      document.getElementById("homePageAutocomplete").classList.add("hidden");
+    });
+
+    resultsContainer.appendChild(item);
+  });
+}
+
+/**
+ * Get autocomplete suggestions
+ */
+function getAutocompleteSuggestions(query) {
+  const lowerQuery = query.toLowerCase();
+  const suggestions = [];
+
+  // Search in all apps
+  allApps.forEach((app) => {
+    const matchResult = fuzzyMatch(app.name.toLowerCase(), lowerQuery);
+
+    // fuzzyMatch returns null if no match, or { matches, score } if match found
+    if (matchResult !== null) {
+      suggestions.push({
+        type: "app",
+        app: app,
+        score: matchResult.score,
+        matches: matchResult.matches,
+        reason: "App",
+      });
+    }
+
+    // Also check tags
+    if (app.tags && app.tags.length > 0) {
+      app.tags.forEach((tag) => {
+        if (tag.toLowerCase().includes(lowerQuery)) {
+          // Check if app not already added
+          const exists = suggestions.find(
+            (s) => s.app && s.app.name === app.name
+          );
+          if (!exists) {
+            suggestions.push({
+              type: "tag",
+              app: app,
+              score: 50,
+              matches: [],
+              reason: `Tag: ${tag}`,
+            });
+          }
+        }
+      });
+    }
+  });
+
+  // Sort by score (lower is better for fuzzy match) and limit to top 5
+  return suggestions.sort((a, b) => a.score - b.score).slice(0, 5);
+}
+
+/**
+ * Render autocomplete suggestions
+ */
+function renderAutocompleteSuggestions(suggestions) {
+  const resultsContainer = document.getElementById("autocompleteResults");
+  if (!resultsContainer) return;
+
+  resultsContainer.innerHTML = "";
+
+  suggestions.forEach((suggestion, index) => {
+    const item = document.createElement("div");
+    item.className =
+      "autocomplete-item px-4 py-2.5 cursor-pointer flex items-center gap-3 border-l-3 border-transparent";
+    item.dataset.index = index;
+
+    // Icon
+    const iconContainer = document.createElement("div");
+    iconContainer.className = `flex h-8 w-8 items-center justify-center rounded-full ${suggestion.app.color.bg} flex-shrink-0`;
+
+    // Use favicon if enabled
+    const useFavicons = localStorage.getItem("useFavicons") !== "false";
+
+    if (useFavicons && suggestion.app.url) {
+      try {
+        const url = new URL(suggestion.app.url);
+        const domain = url.hostname;
+
+        const favicon = document.createElement("img");
+        favicon.className = "h-5 w-5 rounded-sm";
+        favicon.alt = `${suggestion.app.name} icon`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+        favicon.addEventListener("error", () => {
+          favicon.remove();
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("class", `h-4 w-4 ${suggestion.app.color.text}`);
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("viewBox", suggestion.app.icon.viewBox);
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute("d", suggestion.app.icon.path);
+          svg.appendChild(path);
+          iconContainer.appendChild(svg);
+        });
+
+        iconContainer.appendChild(favicon);
+      } catch (error) {
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", `h-4 w-4 ${suggestion.app.color.text}`);
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("viewBox", suggestion.app.icon.viewBox);
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute("d", suggestion.app.icon.path);
+        svg.appendChild(path);
+        iconContainer.appendChild(svg);
+      }
+    } else {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", `h-4 w-4 ${suggestion.app.color.text}`);
+      svg.setAttribute("fill", "currentColor");
+      svg.setAttribute("viewBox", suggestion.app.icon.viewBox);
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute("d", suggestion.app.icon.path);
+      svg.appendChild(path);
+      iconContainer.appendChild(svg);
+    }
+
+    // Text container
+    const textContainer = document.createElement("div");
+    textContainer.className = "flex-1 min-w-0";
+
+    const appName = document.createElement("div");
+    appName.className =
+      "text-sm font-medium text-gray-900 dark:text-gray-100 truncate";
+
+    // Highlight matches
+    if (suggestion.matches && suggestion.matches.length > 0) {
+      appName.innerHTML = highlightMatches(
+        suggestion.app.name,
+        suggestion.matches
+      );
+    } else {
+      appName.textContent = suggestion.app.name;
+    }
+
+    const reason = document.createElement("div");
+    reason.className = "text-xs text-gray-500 dark:text-gray-400";
+    reason.textContent = suggestion.reason;
+
+    textContainer.appendChild(appName);
+    textContainer.appendChild(reason);
+
+    // Assemble
+    item.appendChild(iconContainer);
+    item.appendChild(textContainer);
+
+    // Click handler
+    item.addEventListener("click", () => {
+      selectAutocompleteSuggestion(suggestion);
+    });
+
+    // Hover handler
+    item.addEventListener("mouseenter", () => {
+      autocompleteState.selectedIndex = index;
+      updateAutocompleteSelection();
+    });
+
+    resultsContainer.appendChild(item);
+  });
+}
+
+/**
+ * Update autocomplete selection visual
+ */
+function updateAutocompleteSelection() {
+  const items = document.querySelectorAll(".autocomplete-item");
+  items.forEach((item, index) => {
+    if (index === autocompleteState.selectedIndex) {
+      item.classList.add("selected");
+      item.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else {
+      item.classList.remove("selected");
+    }
+  });
+}
+
+/**
+ * Select an autocomplete suggestion
+ */
+function selectAutocompleteSuggestion(suggestion) {
+  if (suggestion.app && suggestion.app.url) {
+    trackAppUsage(suggestion.app.name);
+    window.open(suggestion.app.url, "_blank");
+
+    // Clear search and hide dropdown
+    const searchInput = document.getElementById("appSearch");
+    if (searchInput) {
+      searchInput.value = "";
+      filterApps(""); // Reset filter
+    }
+    hideAutocomplete();
+  }
+}
+
+/**
+ * Show autocomplete dropdown
+ */
+function showAutocomplete() {
+  const dropdown = document.getElementById("autocompleteDropdown");
+  console.log("🎯 showAutocomplete - dropdown:", dropdown);
+  if (dropdown) {
+    dropdown.classList.remove("hidden");
+    autocompleteState.isOpen = true;
+    console.log("✅ Dropdown shown - classes:", dropdown.className);
+  }
+}
+
+/**
+ * Hide autocomplete dropdown
+ */
+function hideAutocomplete() {
+  const dropdown = document.getElementById("autocompleteDropdown");
+  if (dropdown) {
+    dropdown.classList.add("hidden");
+    autocompleteState.isOpen = false;
+    autocompleteState.selectedIndex = -1;
+  }
+}
+
+// All initialization moved to DOMContentLoaded event listener above
+// to ensure DOM is ready and allApps is loaded before running setup functions

@@ -4,13 +4,19 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description"
+        content="One Fav — al je favoriete apps en workspaces op 1 plek. Snel zoeken, pinnen en organiseren." />
+    <meta property="og:title" content="One Fav — Mijn Favorieten" />
+    <meta property="og:description"
+        content="One Fav — al je favoriete apps en workspaces op 1 plek. Snel zoeken, pinnen en organiseren." />
+    <meta property="og:type" content="website" />
     <title>One Fav - All je Favorieten op 1 plek!</title>
     <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom styles -->
     <link rel="stylesheet" href="styles.css" />
     <!-- SortableJS for drag and drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
 </head>
 
 <body class="min-h-screen bg-gray-100 antialiased transition-colors duration-200">
@@ -41,32 +47,29 @@
         <!-- Settings Button -->
         <button id="settingsBtn" type="button"
             class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-            aria-label="Settings">
+            aria-label="Settings" aria-expanded="false" aria-controls="settingsModal">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none"
-                stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3" />
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
-                    d="M12 1v6m0 6v6m0-18l-2.5 1.5M12 1l2.5 1.5M12 23l-2.5-1.5M12 23l2.5-1.5m-9-11H1m6 0h6m6 0h4M3 12l1.5-2.5M3 12l1.5 2.5M21 12l-1.5-2.5M21 12l-1.5 2.5" />
+                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
             </svg>
         </button>
 
-        <!-- Collections Button -->
+        <!-- Workspaces Button -->
         <button id="collectionsBtn" type="button"
             class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-            aria-label="Collections" title="App Collections (Ctrl+G)">
+            aria-label="Workspaces" title="Workspaces (Ctrl+G)" aria-expanded="false" aria-controls="collectionsModal">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none"
                 stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
             </svg>
         </button>
 
         <!-- Waffel icoon button -->
         <button id="appMenuBtn" type="button"
             class="group relative rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-            aria-label="Fav Apps">
+            aria-label="Fav Apps" aria-expanded="false" aria-controls="appMenu">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"
                 aria-hidden="true">
                 <circle cx="5" cy="5" r="2" />
@@ -118,6 +121,14 @@
                             class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-16 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:focus:border-blue-400 dark:focus:bg-gray-600" />
                         <kbd
                             class="absolute right-3 top-1/2 -translate-y-1/2 rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-600 dark:text-gray-300">⌘K</kbd>
+
+                        <!-- Autocomplete Dropdown -->
+                        <div id="autocompleteDropdown"
+                            class="hidden absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto z-50">
+                            <div id="autocompleteResults" class="py-1">
+                                <!-- Results komen hier -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -132,11 +143,11 @@
                     </div>
                 </div>
 
-                <!-- Collections Section -->
+                <!-- Workspaces Section -->
                 <div id="collectionsSection" class="hidden border-b border-gray-100 px-5 py-3 dark:border-gray-700">
-                    <p class="mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400">📁 Collections</p>
+                    <p class="mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400">🎯 Workspaces</p>
                     <div id="collectionsQuickAccess" class="space-y-2">
-                        <!-- Collections worden hier dynamisch geladen -->
+                        <!-- Workspaces worden hier dynamisch geladen -->
                     </div>
                 </div>
 
@@ -154,6 +165,22 @@
                     <div class="col-span-4 py-8 text-center">
                         <div
                             class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropzone for external links -->
+                <div id="linkDropzone"
+                    class="mx-5 mb-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10">
+                    <div class="flex flex-col items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400 dark:text-gray-500"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Sleep een link hierheen</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Om een nieuwe app toe te voegen</p>
                         </div>
                     </div>
                 </div>
@@ -218,11 +245,22 @@
                     <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Categorie</label>
                     <select id="customAppCategory"
                         class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
-                        <option value="custom">Custom</option>
-                        <option value="work">Work</option>
-                        <option value="social">Social</option>
-                        <option value="tools">Tools</option>
+                        <option value="favorieten">⭐ Favorieten</option>
+                        <option value="ai-tools">🤖 AI-tools</option>
+                        <option value="ai-agents">🧠 AI-agents</option>
+                        <option value="microsoft-365">🏢 Microsoft 365</option>
+                        <option value="windows">🪟 Windows</option>
+                        <option value="social-media">💻 Social media</option>
+                        <option value="custom">📦 Custom</option>
                     </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Tags
+                        (optioneel)</label>
+                    <input type="text" id="customAppTags"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="email, work, google (gescheiden door komma's)" />
+                    <div id="tagSuggestions" class="mt-2 flex flex-wrap gap-1"></div>
                 </div>
                 <div>
                     <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Kleur</label>
@@ -261,6 +299,83 @@
             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Instellingen</h3>
             <div class="space-y-4">
                 <div>
+                    <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Weergave</h4>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Gebruik echte app icons</span>
+                            <div class="relative">
+                                <input type="checkbox" id="useFaviconsToggle" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon tags op apps</span>
+                            <div class="relative">
+                                <input type="checkbox" id="showTagsToggle" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Highlight zoekresultaten</span>
+                            <div class="relative">
+                                <input type="checkbox" id="highlightSearchToggle" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon sneltoetsen widget</span>
+                            <div class="relative">
+                                <input type="checkbox" id="showShortcutsToggle" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon Quick Apps widget</span>
+                            <div class="relative">
+                                <input type="checkbox" id="showQuickAppsToggle" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">Grid Grootte</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="radio" name="gridSize" value="small"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            <span
+                                class="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200">Klein
+                                (6 kolommen) - Compact</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="radio" name="gridSize" value="medium"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                checked>
+                            <span
+                                class="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200">Medium
+                                (4 kolommen) - Standaard</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="radio" name="gridSize" value="large"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            <span
+                                class="ml-3 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200">Groot
+                                (3 kolommen) - Ruim</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
                     <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Sneltoetsen</h4>
                     <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                         <div class="flex justify-between"><span>Menu openen/sluiten</span><kbd
@@ -271,7 +386,7 @@
                                 class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+N</kbd></div>
                         <div class="flex justify-between"><span>Theme wisselen</span><kbd
                                 class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+T</kbd></div>
-                        <div class="flex justify-between"><span>Collections beheren</span><kbd
+                        <div class="flex justify-between"><span>Workspaces beheren</span><kbd
                                 class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+G</kbd></div>
                     </div>
                 </div>
@@ -283,22 +398,22 @@
         </div>
     </div>
 
-    <!-- Collections Modal -->
+    <!-- Workspaces Modal -->
     <div id="collectionsModal"
         class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800"
             style="max-height: 90vh; overflow-y: auto;">
             <div class="mb-6 flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">📁 App Collections</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">🎯 Workspaces</h3>
                 <button id="createCollectionBtn" type="button"
                     class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
-                    + Nieuwe Collection
+                    + Nieuwe Workspace
                 </button>
             </div>
 
-            <!-- Collections List -->
+            <!-- Workspaces List -->
             <div id="collectionsList" class="space-y-4">
-                <!-- Collections worden hier dynamisch geladen -->
+                <!-- Workspaces worden hier dynamisch geladen -->
             </div>
 
             <div class="mt-6 flex justify-end">
@@ -310,12 +425,12 @@
         </div>
     </div>
 
-    <!-- Create/Edit Collection Modal -->
+    <!-- Create/Edit Workspace Modal -->
     <div id="collectionFormModal"
         class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100" id="collectionFormTitle">Nieuwe
-                Collection</h3>
+                Workspace</h3>
             <form id="collectionForm" class="space-y-4">
                 <div>
                     <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Collection
@@ -403,8 +518,16 @@
                 </svg>
 
                 <!-- Invoerveld -->
-                <input type="text" placeholder="Zoeken..."
+                <input type="text" id="homePageSearch" placeholder="Zoeken..."
                     class="w-full appearance-none bg-transparent text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none" />
+
+                <!-- Autocomplete Dropdown for homepage -->
+                <div id="homePageAutocomplete"
+                    class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-50">
+                    <div id="homePageAutocompleteResults" class="py-1">
+                        <!-- Results komen hier -->
+                    </div>
+                </div>
 
                 <!-- Rechter iconen -->
                 <div class="flex items-center gap-3">
@@ -421,18 +544,35 @@
                         </button> -->
 
                     <!-- AI-modus pill -->
-                    <button type="button"
-                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-                        aria-label="AI-modus">
+                    <button type="button" id="aiModeBtn"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 cursor-pointer"
+                        aria-label="AI-modus" title="Klik om te wisselen tussen AI platforms">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-gray-600"
                             aria-hidden="true">
                             <path d="M12 5v4l3-3M12 19v-4l-3 3M5 12h4l-3-3m13 3h-4l3 3" fill="none"
                                 stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
-                        <span class="leading-none">AI‑modus</span>
+                        <span class="leading-none font-semibold">🤖 ChatGPT</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Search shortcuts hint -->
+            <div class="mt-3 text-center">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    💡 Klik op <strong>AI-modus</strong> om te wisselen tussen ChatGPT, Claude, Gemini & Perplexity • Of
+                    gebruik shortcuts:
+                    <code
+                        class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300">g: zoekterm</code>
+                    voor Google,
+                    <code
+                        class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300">yt: video</code>
+                    voor YouTube,
+                    <code
+                        class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300">gpt: vraag</code>
+                    voor ChatGPT
+                </p>
             </div>
 
             <!-- Extra: smalle variant voorbeeld 
@@ -485,8 +625,151 @@
         </div>
     </div>
 
+    <!-- Keyboard Shortcuts Hint -->
+    <div id="keyboardHints" class="fixed bottom-6 right-6 z-50 transition-all duration-300">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 backdrop-blur-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">⌨️</span>
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Shortcuts</span>
+                </div>
+                <button id="closeHints" title="Close shortcuts hint"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-2 text-xs">
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-gray-600 dark:text-gray-400">Command Palette</span>
+                    <kbd
+                        class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">Ctrl+K</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-gray-600 dark:text-gray-400">Toggle Menu</span>
+                    <kbd
+                        class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">Ctrl+M</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-gray-600 dark:text-gray-400">New App</span>
+                    <kbd
+                        class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">Ctrl+Shift+A</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-gray-600 dark:text-gray-400">Dark Mode</span>
+                    <kbd
+                        class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">Ctrl+Shift+D</kbd>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-gray-600 dark:text-gray-400">Workspaces</span>
+                    <kbd
+                        class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono text-xs">Ctrl+G</kbd>
+                </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <button id="toggleHintsSize"
+                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline w-full text-left">
+                    Minimize
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button to show hints -->
+    <button id="showHintsBtn"
+        class="fixed bottom-6 right-6 z-50 hidden bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110 group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span
+            class="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Shortcuts
+        </span>
+    </button>
+
+    <!-- Quick Apps Widget (Pinned Apps on Homepage) -->
+    <div id="quickAppsWidget" class="fixed top-20 right-6 z-40 transition-all duration-300 hidden">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <span>⚡</span>
+                    <span>Quick Apps</span>
+                </h4>
+                <button id="closeQuickApps" title="Minimize widget"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+            </div>
+            <div id="quickAppsList" class="grid grid-cols-3 gap-2 min-w-[160px]">
+                <!-- Apps komen hier dynamisch -->
+                <div class="col-span-3 text-center py-4">
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Geen pinned apps</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu"
+        class="fixed hidden z-[100] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-1 min-w-[200px]">
+        <button id="contextEdit"
+            class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Bewerken</span>
+        </button>
+        <button id="contextPin"
+            class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            <span id="contextPinText">Vastmaken</span>
+        </button>
+        <button id="contextAddToWorkspace"
+            class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Aan Workspace toevoegen</span>
+        </button>
+        <button id="contextCopyUrl"
+            class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>URL kopiëren</span>
+        </button>
+        <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+        <button id="contextDelete"
+            class="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>Verwijderen</span>
+        </button>
+    </div>
+
     <!-- External JavaScript -->
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 
 </html>
