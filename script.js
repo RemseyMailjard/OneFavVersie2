@@ -2942,40 +2942,10 @@ function setupShowAppsDashboardToggle() {
 function setupAppsDashboardMinimize() {
   const closeBtn = document.getElementById("closeDashboard");
   const widget = document.getElementById("appsDashboardWidget");
-  const shortcutLauncher = document.getElementById("shortcutLauncher");
-  const appsGrid = document.getElementById("dashboardAppsGrid");
 
   if (!closeBtn || !widget) return;
 
-  // Setup shortcut launcher click
-  if (shortcutLauncher && appsGrid) {
-    shortcutLauncher.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isGridHidden = appsGrid.classList.contains("hidden");
-
-      if (isGridHidden) {
-        appsGrid.classList.remove("hidden");
-        renderAppsDashboard(); // Load apps when showing
-      } else {
-        appsGrid.classList.add("hidden");
-      }
-    });
-
-    // Click outside to close grid
-    document.addEventListener("click", (e) => {
-      if (!widget.contains(e.target)) {
-        appsGrid.classList.add("hidden");
-      }
-    });
-  }
-
-  // Close button functionality
   closeBtn.addEventListener("click", () => {
-    appsGrid.classList.add("hidden");
-  });
-
-  // Minimize entire widget
-  const minimizeWidget = () => {
     widget.classList.add("hidden");
     // Update toggle in settings
     const toggle = document.getElementById("showAppsDashboardToggle");
@@ -2983,13 +2953,8 @@ function setupAppsDashboardMinimize() {
       toggle.checked = false;
       localStorage.setItem("showAppsDashboard", "false");
     }
-  };
-
-  // You can call minimizeWidget() if needed elsewhere
-  window.minimizeAppsDashboard = minimizeWidget;
-}
-
-// Setup drag functionality for Apps Dashboard Widget
+  });
+} // Setup drag functionality for Apps Dashboard Widget
 function setupAppsDashboardDrag() {
   const widget = document.getElementById("appsDashboardWidget");
   const dragHandle = document.getElementById("dashboardDragHandle");
