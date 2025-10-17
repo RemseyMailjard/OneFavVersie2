@@ -4191,12 +4191,22 @@ function setupMainButtons() {
   if (appMenuBtn && appMenu) {
     appMenuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
+
+      // Check if apps are hidden via visibility toggle
+      const appsVisibility = localStorage.getItem("appsVisibility");
+      if (appsVisibility === "hidden") {
+        showToast("Apps zijn verborgen. Klik op het oog-icoon om ze te tonen.");
+        return;
+      }
+
       if (appMenu.classList.contains("hidden")) {
         appMenu.classList.remove("hidden");
         appMenu.classList.add("menu-enter");
+        appMenuBtn.setAttribute("aria-expanded", "true");
       } else {
         appMenu.classList.add("hidden");
         appMenu.classList.remove("menu-enter");
+        appMenuBtn.setAttribute("aria-expanded", "false");
       }
     });
 
@@ -4205,6 +4215,7 @@ function setupMainButtons() {
       if (!appMenu.contains(e.target) && !appMenuBtn.contains(e.target)) {
         appMenu.classList.add("hidden");
         appMenu.classList.remove("menu-enter");
+        appMenuBtn.setAttribute("aria-expanded", "false");
       }
     });
   }
@@ -4385,16 +4396,18 @@ function setupAppsVisibilityToggle() {
   const toggleBtn = document.getElementById("appsVisibilityToggle");
   const eyeOpenIcon = document.getElementById("eyeOpenIcon");
   const eyeClosedIcon = document.getElementById("eyeClosedIcon");
-  const appsGrid = document.getElementById("appsGrid");
-  const pinnedSection = document.getElementById("pinnedSection");
-  const collectionsSection = document.getElementById("collectionsSection");
+  const appMenu = document.getElementById("appMenu");
+  const appMenuBtn = document.getElementById("appMenuBtn");
 
-  if (!toggleBtn || !eyeOpenIcon || !eyeClosedIcon) return;
+  if (!toggleBtn || !eyeOpenIcon || !eyeClosedIcon || !appMenu) {
+    console.warn("Apps visibility toggle elements not found");
+    return;
+  }
 
   // Load saved state
   const isHidden = localStorage.getItem("appsVisibility") === "hidden";
   if (isHidden) {
-    hideApps();
+    updateIconState(true);
   }
 
   // Click handler
@@ -4402,7 +4415,9 @@ function setupAppsVisibilityToggle() {
 
   function toggleAppsVisibility() {
     const currentState = localStorage.getItem("appsVisibility");
-    if (currentState === "hidden") {
+    const isCurrentlyHidden = currentState === "hidden";
+
+    if (isCurrentlyHidden) {
       showApps();
     } else {
       hideApps();
@@ -4410,32 +4425,16 @@ function setupAppsVisibilityToggle() {
   }
 
   function hideApps() {
-    // Hide sections with smooth animation
-    if (appsGrid) {
-      appsGrid.style.opacity = "0";
-      appsGrid.style.transform = "scale(0.95)";
-      setTimeout(() => {
-        appsGrid.style.display = "none";
-      }, 200);
-    }
-    if (pinnedSection) {
-      pinnedSection.style.opacity = "0";
-      pinnedSection.style.transform = "scale(0.95)";
-      setTimeout(() => {
-        pinnedSection.style.display = "none";
-      }, 200);
-    }
-    if (collectionsSection) {
-      collectionsSection.style.opacity = "0";
-      collectionsSection.style.transform = "scale(0.95)";
-      setTimeout(() => {
-        collectionsSection.style.display = "none";
-      }, 200);
+    // Close the menu if it's open
+    if (!appMenu.classList.contains("hidden")) {
+      appMenu.classList.add("hidden");
+      if (appMenuBtn) {
+        appMenuBtn.setAttribute("aria-expanded", "false");
+      }
     }
 
-    // Switch icons
-    eyeOpenIcon.classList.add("hidden");
-    eyeClosedIcon.classList.remove("hidden");
+    // Update icon state
+    updateIconState(true);
 
     // Save state
     localStorage.setItem("appsVisibility", "hidden");
@@ -4445,43 +4444,36 @@ function setupAppsVisibilityToggle() {
   }
 
   function showApps() {
-    // Show sections with smooth animation
-    if (appsGrid) {
-      appsGrid.style.display = "grid";
-      setTimeout(() => {
-        appsGrid.style.opacity = "1";
-        appsGrid.style.transform = "scale(1)";
-      }, 10);
+    // Open the menu
+    if (appMenu.classList.contains("hidden")) {
+      appMenu.classList.remove("hidden");
+      if (appMenuBtn) {
+        appMenuBtn.setAttribute("aria-expanded", "true");
+      }
     }
 
-    // Only show pinned section if there are pinned apps
-    if (pinnedSection && pinnedApps.length > 0) {
-      pinnedSection.style.display = "block";
-      setTimeout(() => {
-        pinnedSection.style.opacity = "1";
-        pinnedSection.style.transform = "scale(1)";
-      }, 10);
-    }
-
-    // Only show collections section if workspace feature is enabled
-    const showWorkspaces = localStorage.getItem("showWorkspaces") === "true";
-    if (collectionsSection && showWorkspaces && collections.length > 0) {
-      collectionsSection.style.display = "block";
-      setTimeout(() => {
-        collectionsSection.style.opacity = "1";
-        collectionsSection.style.transform = "scale(1)";
-      }, 10);
-    }
-
-    // Switch icons
-    eyeOpenIcon.classList.remove("hidden");
-    eyeClosedIcon.classList.add("hidden");
+    // Update icon state
+    updateIconState(false);
 
     // Save state
     localStorage.setItem("appsVisibility", "visible");
 
     // Show notification
     showToast("Apps zichtbaar");
+  }
+
+  function updateIconState(isHidden) {
+    if (isHidden) {
+      eyeOpenIcon.classList.add("hidden");
+      eyeClosedIcon.classList.remove("hidden");
+      toggleBtn.setAttribute("aria-label", "Toon apps (Ctrl+H)");
+      toggleBtn.setAttribute("title", "Toon apps (Ctrl+H)");
+    } else {
+      eyeOpenIcon.classList.remove("hidden");
+      eyeClosedIcon.classList.add("hidden");
+      toggleBtn.setAttribute("aria-label", "Verberg apps (Ctrl+H)");
+      toggleBtn.setAttribute("title", "Verberg apps (Ctrl+H)");
+    }
   }
 
   // Make function globally accessible
