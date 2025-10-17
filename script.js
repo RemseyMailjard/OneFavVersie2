@@ -63,11 +63,19 @@ const aiModes = {
 // Search engine shortcuts (loaded from external JSON with inline fallback)
 let searchEngines = [];
 let apps = [];
+let isLoadingApps = false;
 
 async function ensureAppsLoaded() {
-  if (apps.length === 0) {
-    await loadApps();
+  if (allApps && allApps.length > 0) {
+    return; // Already loaded
   }
+  
+  if (isLoadingApps) {
+    console.warn("⚠️ Apps already loading, skipping...");
+    return;
+  }
+  
+  await loadApps();
 }
 
 async function loadApps() {
@@ -2605,22 +2613,22 @@ function renderInlineFavs() {
     console.warn("⚠️ renderInlineFavs already in progress, skipping...");
     return;
   }
-  
+
   isRenderingInlineFavs = true;
-  
+
   const container = document.getElementById("inlineFavsContainer");
   if (!container) {
     isRenderingInlineFavs = false;
     return;
   }
-  
+
   const enabled = localStorage.getItem("showInlineFavs") === "true";
   if (!enabled) {
     container.classList.add("hidden");
     isRenderingInlineFavs = false;
     return;
   }
-  
+
   // Check if allApps is loaded - but don't trigger more loading
   if (!allApps || allApps.length === 0) {
     container.innerHTML = "";
@@ -2628,12 +2636,13 @@ function renderInlineFavs() {
     isRenderingInlineFavs = false;
     return;
   }
-  
+
   const pinned = allApps.filter((app) => isPinned(app.name));
   // pinned already computed above
   if (!pinned || pinned.length === 0) {
     container.innerHTML = "";
     container.classList.add("hidden");
+    isRenderingInlineFavs = false;
     return;
   }
 
