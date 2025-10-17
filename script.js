@@ -430,13 +430,13 @@ function createAppCard(app, isPinnedButton = false) {
         } else if (app.color && app.icon) {
           // Create SVG fallback
           const iconContainer = document.createElement("div");
-          iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center ${app.color.bg}`;
+          iconContainer.className = `w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${app.color.bg}`;
 
           const svg = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "svg"
           );
-          svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+          svg.setAttribute("class", `h-7 w-7 ${app.color.text}`);
           svg.setAttribute("fill", "currentColor");
           svg.setAttribute("viewBox", app.icon.viewBox);
 
@@ -519,7 +519,7 @@ function createAppCard(app, isPinnedButton = false) {
   } else {
     // Create a simple colored div as fallback
     const fallbackDiv = document.createElement("div");
-    fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold ${
+    fallbackDiv.className = `w-14 h-14 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-sm ${
       app.color?.bg || "bg-gray-500"
     }`;
     fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
