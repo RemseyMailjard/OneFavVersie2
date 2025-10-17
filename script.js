@@ -136,6 +136,11 @@ async function loadApps() {
 
     // Initialiseer sortable na het renderen
     initSortable();
+
+    // Controleer of SortableJS correct werkt na 500ms
+    setTimeout(() => {
+      checkAndFixSortable();
+    }, 500);
   } catch (error) {
     console.error("Fout bij laden van apps:", error);
     showErrorMessage();
