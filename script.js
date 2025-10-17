@@ -2962,6 +2962,10 @@ function applyGridSize(size) {
       base: "grid-cols-6",
       responsive: "grid-cols-5 sm:grid-cols-6",
     },
+    v4: {
+      base: "grid-cols-4",
+      responsive: "grid-cols-4 sm:grid-cols-5",
+    },
     medium: {
       base: "grid-cols-4",
       responsive: "grid-cols-4 sm:grid-cols-5",
@@ -2996,7 +3000,7 @@ function applyGridSize(size) {
   );
 
   // Apply selected grid size
-  const selectedGrid = gridSizes[size] || gridSizes.medium;
+  const selectedGrid = gridSizes[size] || gridSizes.v4;
 
   // Apply base grid classes to modal/search containers
   if (appsGrid) {
