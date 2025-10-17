@@ -342,85 +342,6 @@ function loadPinnedApps() {
 }
 
 /**
- * Update grid layout based on user preference
- */
-function updateGridLayout() {
-  const gridSize = localStorage.getItem("gridSize") || "4-5"; // Default: 4 mobile, 5 desktop
-  const homePageAppsGrid = document.getElementById("homePageAppsGrid");
-  const homePagePinnedApps = document.getElementById("homePagePinnedApps");
-
-  if (!homePageAppsGrid) return;
-
-  // Remove existing grid classes
-  const gridClasses = [
-    "grid-cols-3",
-    "grid-cols-4",
-    "grid-cols-5",
-    "grid-cols-6",
-    "grid-cols-8",
-    "sm:grid-cols-3",
-    "sm:grid-cols-4",
-    "sm:grid-cols-5",
-    "sm:grid-cols-6",
-    "sm:grid-cols-8",
-  ];
-
-  [homePageAppsGrid, homePagePinnedApps].forEach((grid) => {
-    if (grid) {
-      gridClasses.forEach((cls) => grid.classList.remove(cls));
-    }
-  });
-
-  // Apply new grid classes based on preference
-  let mobileClass, desktopClass;
-
-  switch (gridSize) {
-    case "3-4":
-      mobileClass = "grid-cols-3";
-      desktopClass = "sm:grid-cols-4";
-      break;
-    case "4-5":
-      mobileClass = "grid-cols-4";
-      desktopClass = "sm:grid-cols-5";
-      break;
-    case "4-6":
-      mobileClass = "grid-cols-4";
-      desktopClass = "sm:grid-cols-6";
-      break;
-    case "5-8":
-      mobileClass = "grid-cols-5";
-      desktopClass = "sm:grid-cols-8";
-      break;
-    default:
-      mobileClass = "grid-cols-4";
-      desktopClass = "sm:grid-cols-5";
-  }
-
-  [homePageAppsGrid, homePagePinnedApps].forEach((grid) => {
-    if (grid) {
-      grid.classList.add(mobileClass, desktopClass);
-    }
-  });
-
-  // Update loading state column span
-  const loadingStates = document.querySelectorAll(
-    "#homePageAppsGrid .col-span-4, #homePageAppsGrid .col-span-5"
-  );
-  loadingStates.forEach((state) => {
-    state.classList.remove(
-      "col-span-4",
-      "col-span-5",
-      "sm:col-span-5",
-      "sm:col-span-6",
-      "sm:col-span-8"
-    );
-    const desktopCols = desktopClass.split("-").pop();
-    const mobileCols = mobileClass.split("-").pop();
-    state.classList.add(`col-span-${mobileCols}`, `sm:col-span-${desktopCols}`);
-  });
-}
-
-/**
  * Create modern app card with new styling
  */
 function createAppCard(app, isPinnedButton = false) {
@@ -3002,28 +2923,73 @@ function setupShowWorkspacesToggle() {
 
 // Apply grid size classes to app containers
 function applyGridSize(size) {
+  // Get all grid containers
   const appsGrid = document.getElementById("appsGrid");
   const pinnedApps = document.getElementById("pinnedApps");
+  const homePageAppsGrid = document.getElementById("homePageAppsGrid");
+  const homePagePinnedApps = document.getElementById("homePagePinnedApps");
 
-  if (!appsGrid || !pinnedApps) return;
-
-  // Grid size mapping
+  // Grid size mapping with responsive classes for home page
   const gridSizes = {
-    small: "grid-cols-6",
-    medium: "grid-cols-4",
-    large: "grid-cols-3",
+    small: {
+      base: "grid-cols-6",
+      responsive: "grid-cols-5 sm:grid-cols-6",
+    },
+    medium: {
+      base: "grid-cols-4",
+      responsive: "grid-cols-4 sm:grid-cols-5",
+    },
+    large: {
+      base: "grid-cols-3",
+      responsive: "grid-cols-3 sm:grid-cols-4",
+    },
   };
 
-  // Remove all grid size classes
-  Object.values(gridSizes).forEach((className) => {
-    appsGrid.classList.remove(className);
-    pinnedApps.classList.remove(className);
-  });
+  // All possible grid classes to remove
+  const allGridClasses = [
+    "grid-cols-3",
+    "grid-cols-4",
+    "grid-cols-5",
+    "grid-cols-6",
+    "sm:grid-cols-3",
+    "sm:grid-cols-4",
+    "sm:grid-cols-5",
+    "sm:grid-cols-6",
+  ];
+
+  // Remove all grid size classes from all containers
+  [appsGrid, pinnedApps, homePageAppsGrid, homePagePinnedApps].forEach(
+    (container) => {
+      if (container) {
+        allGridClasses.forEach((className) => {
+          container.classList.remove(className);
+        });
+      }
+    }
+  );
 
   // Apply selected grid size
-  const selectedClass = gridSizes[size] || gridSizes.medium;
-  appsGrid.classList.add(selectedClass);
-  pinnedApps.classList.add(selectedClass);
+  const selectedGrid = gridSizes[size] || gridSizes.medium;
+
+  // Apply base grid classes to modal/search containers
+  if (appsGrid) {
+    appsGrid.classList.add(selectedGrid.base);
+  }
+  if (pinnedApps) {
+    pinnedApps.classList.add(selectedGrid.base);
+  }
+
+  // Apply responsive grid classes to home page containers
+  if (homePageAppsGrid) {
+    selectedGrid.responsive.split(" ").forEach((cls) => {
+      homePageAppsGrid.classList.add(cls);
+    });
+  }
+  if (homePagePinnedApps) {
+    selectedGrid.responsive.split(" ").forEach((cls) => {
+      homePagePinnedApps.classList.add(cls);
+    });
+  }
 }
 
 // Setup grid size toggle in settings
@@ -5707,8 +5673,9 @@ async function initializeApp() {
     loadAppStats();
     loadPinnedApps();
 
-    // Update grid layout
-    updateGridLayout();
+    // Apply grid layout
+    const gridSize = localStorage.getItem("gridSize") || "medium";
+    applyGridSize(gridSize);
     loadCustomApps();
 
     // Load search engines
