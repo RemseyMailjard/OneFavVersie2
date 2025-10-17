@@ -185,7 +185,8 @@
                         </svg>
                     </button>
 
-                    <div class="flex gap-2 overflow-x-auto pb-1 scroll-smooth" id="categoryFilter">
+                    <div class="category-filter-container flex gap-2 overflow-x-auto pb-1 scroll-smooth"
+                        id="categoryFilter">
                         <button data-category="all"
                             class="category-btn active whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-xs font-medium text-white transition">
                             Alle
@@ -878,13 +879,23 @@
                         </svg>
                     </button>
 
-                    <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1 scroll-smooth"
-                        id="homePageCategoryFilter">
+                    <div id="chipRow" class="flex gap-2 overflow-x-auto scrollbar-none pb-1">
                         <button data-category="all"
-                            class="homepage-category-btn active whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-xs font-medium text-white transition">
-                            📱 Alle apps
-                        </button>
-                        <!-- Categorieën worden dynamisch geladen -->
+                            class="homepage-chip-btn active shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors bg-sky-100 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 font-medium">Alle</button>
+                        <button data-category="ai-tools"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">AI-tools</button>
+                        <button data-category="ai-agents"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">🧠 AI-agents</button>
+                        <button data-category="social-media"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">Social Media</button>
+                        <button data-category="microsoft-365"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">🏢 M365</button>
+                        <button data-category="favorieten"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">⭐ Favorieten</button>
+                        <button data-category="windows"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">� Windows</button>
+                        <button data-category="custom"
+                            class="homepage-chip-btn shrink-0 text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-600 transition-colors">📦 Custom</button>
                     </div>
 
                     <!-- Scroll indicator dots -->
@@ -1076,7 +1087,7 @@
             <div class="p-4">
                 <!-- Category Filter voor widget -->
                 <div class="mb-3">
-                    <div class="flex gap-1 overflow-x-auto pb-1" id="dashboardCategoryFilter">
+                    <div class="category-filter-container flex gap-1 overflow-x-auto pb-1" id="dashboardCategoryFilter">
                         <button data-dashboard-category="all"
                             class="dashboard-category-btn active whitespace-nowrap rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white transition">
                             Alle

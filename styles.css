@@ -115,6 +115,96 @@ body {
     color: #ffffff; /* Pure white for better contrast in dark mode */
 }
 
+/* Category filter container styling */
+.category-filter-container {
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    -webkit-tap-highlight-color: transparent;
+    --sat: env(safe-area-inset-top);
+    --sab: env(safe-area-inset-bottom);
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-body: #f3f4f6;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    --border-color: #e5e7eb;
+    --border-color-hover: #d1d5db;
+    --accent-color: #0ea5e9;
+    --accent-hover: #0284c7;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --ring-color: rgba(14, 165, 233, 0.5);
+    line-height: inherit;
+    --tw-bg-opacity: 1;
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+    --tw-border-spacing-x: 0;
+    --tw-border-spacing-y: 0;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-rotate: 0;
+    --tw-skew-x: 0;
+    --tw-skew-y: 0;
+    --tw-scale-x: 1;
+    --tw-scale-y: 1;
+    --tw-pan-x: ;
+    --tw-pan-y: ;
+    --tw-pinch-zoom: ;
+    --tw-scroll-snap-strictness: proximity;
+    --tw-gradient-from-position: ;
+    --tw-gradient-via-position: ;
+    --tw-gradient-to-position: ;
+    --tw-ordinal: ;
+    --tw-slashed-zero: ;
+    --tw-numeric-figure: ;
+    --tw-numeric-spacing: ;
+    --tw-numeric-fraction: ;
+    --tw-ring-inset: ;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-color: rgb(59 130 246 / 0.5);
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-colored: 0 0 #0000;
+    --tw-blur: ;
+    --tw-brightness: ;
+    --tw-contrast: ;
+    --tw-grayscale: ;
+    --tw-hue-rotate: ;
+    --tw-invert: ;
+    --tw-saturate: ;
+    --tw-sepia: ;
+    --tw-drop-shadow: ;
+    --tw-backdrop-blur: ;
+    --tw-backdrop-brightness: ;
+    --tw-backdrop-contrast: ;
+    --tw-backdrop-grayscale: ;
+    --tw-backdrop-hue-rotate: ;
+    --tw-backdrop-invert: ;
+    --tw-backdrop-opacity: ;
+    --tw-backdrop-saturate: ;
+    --tw-backdrop-sepia: ;
+    --tw-contain-size: ;
+    --tw-contain-layout: ;
+    --tw-contain-paint: ;
+    --tw-contain-style: ;
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+    scrollbar-width: none;
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
 /* Custom animaties voor dropdown menu */
 @keyframes fadeIn {
     from {
@@ -253,12 +343,14 @@ body {
 }
 
 /* Hide scrollbar but keep scroll functionality */
-.hide-scrollbar {
+.hide-scrollbar,
+.scrollbar-none {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
 
-.hide-scrollbar::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
 }
 
@@ -369,6 +461,19 @@ body {
 .category-btn.active {
     background-color: rgb(59 130 246);
     color: white;
+}
+
+/* Homepage chip buttons */
+.homepage-chip-btn.active {
+    background-color: rgb(125 211 252) !important; /* sky-300 */
+    border-color: rgb(14 165 233) !important; /* sky-500 */
+    color: rgb(14 116 144) !important; /* sky-700 */
+}
+
+.dark .homepage-chip-btn.active {
+    background-color: rgb(12 74 110 / 0.3) !important; /* sky-900/30 */
+    border-color: rgb(3 105 161) !important; /* sky-700 */
+    color: rgb(125 211 252) !important; /* sky-300 */
 }
 
 /* Context menu */
