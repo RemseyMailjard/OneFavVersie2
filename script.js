@@ -9,7 +9,7 @@ let selectedCollectionColor = "blue";
 let currentCategory = "all";
 let editingCollectionId = null;
 
-// Feature modules instances
+// Feature modules instances with fallbacks
 let fuzzySearch = null;
 let analytics = null;
 let recentSearches = null;
@@ -17,6 +17,23 @@ let tagFilter = null;
 let uiEnhancements = null;
 let keyboardShortcuts = null;
 let appNotes = null;
+
+// Initialize modules safely
+function initializeModules() {
+  try {
+    if (typeof window.FuzzySearch !== 'undefined') {
+      fuzzySearch = new window.FuzzySearch();
+    }
+    if (typeof window.Analytics !== 'undefined') {
+      analytics = new window.Analytics();
+    }
+    if (typeof window.UIEnhancements !== 'undefined') {
+      uiEnhancements = new window.UIEnhancements();
+    }
+  } catch (error) {
+    console.warn("Module initialization error:", error);
+  }
+}
 
 // AI Mode state
 let currentAIMode = "gpt"; // Default: ChatGPT
@@ -4155,14 +4172,25 @@ function updateHomePageAppCounter(visible, total) {
   }
 }
 
+// Prevent infinite rendering loops
+let isRenderingHomePage = false;
+
 /**
  * Render homepage apps
  */
 function renderHomePageApps(apps) {
+  if (isRenderingHomePage) {
+    console.warn("⚠️ renderHomePageApps already in progress, skipping...");
+    return;
+  }
+  
+  isRenderingHomePage = true;
   console.log("🎨 renderHomePageApps called with", apps.length, "apps");
+  
   const appsGrid = document.getElementById("homePageAppsGrid");
   if (!appsGrid) {
     console.error("❌ homePageAppsGrid element not found!");
+    isRenderingHomePage = false;
     return;
   }
 
@@ -4178,6 +4206,7 @@ function renderHomePageApps(apps) {
         <p class="text-sm text-gray-500 dark:text-gray-400">Geen apps in deze categorie</p>
       </div>
     `;
+    isRenderingHomePage = false;
     return;
   }
 
@@ -4188,6 +4217,7 @@ function renderHomePageApps(apps) {
   });
 
   updateHomePageAppCounter(unpinnedApps.length);
+  isRenderingHomePage = false;
 }
 
 /**
