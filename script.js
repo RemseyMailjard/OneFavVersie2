@@ -21,13 +21,13 @@ let appNotes = null;
 // Initialize modules safely
 function initializeModules() {
   try {
-    if (typeof window.FuzzySearch !== 'undefined') {
+    if (typeof window.FuzzySearch !== "undefined") {
       fuzzySearch = new window.FuzzySearch();
     }
-    if (typeof window.Analytics !== 'undefined') {
+    if (typeof window.Analytics !== "undefined") {
       analytics = new window.Analytics();
     }
-    if (typeof window.UIEnhancements !== 'undefined') {
+    if (typeof window.UIEnhancements !== "undefined") {
       uiEnhancements = new window.UIEnhancements();
     }
   } catch (error) {
@@ -428,8 +428,12 @@ function createAppButton(app, isPinnedButton = false) {
       // Try Google's favicon service first
       favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
 
-      // Fallback to SVG on error
+      // Fallback to SVG on error (prevent multiple loads)
+      let errorHandled = false;
       favicon.addEventListener("error", () => {
+        if (errorHandled) return;
+        errorHandled = true;
+
         // Remove failed favicon
         favicon.remove();
 
@@ -2592,26 +2596,39 @@ function setupShowInlineFavsToggle() {
   });
 }
 
+// Prevent infinite loops
+let isRenderingInlineFavs = false;
+
 function renderInlineFavs() {
+  // Prevent recursive calls
+  if (isRenderingInlineFavs) {
+    console.warn("⚠️ renderInlineFavs already in progress, skipping...");
+    return;
+  }
+  
+  isRenderingInlineFavs = true;
+  
   const container = document.getElementById("inlineFavsContainer");
-  if (!container) return;
+  if (!container) {
+    isRenderingInlineFavs = false;
+    return;
+  }
+  
   const enabled = localStorage.getItem("showInlineFavs") === "true";
   if (!enabled) {
     container.classList.add("hidden");
+    isRenderingInlineFavs = false;
     return;
   }
-  // If allApps is not loaded, try to fetch apps.json as a fallback
-  if (!window.allApps || window.allApps.length === 0) {
-    ensureAppsLoaded()
-      .then(() => {
-        // try again after loading
-        renderInlineFavs();
-      })
-      .catch(() => {
-        // nothing to render
-      });
+  
+  // Check if allApps is loaded - but don't trigger more loading
+  if (!allApps || allApps.length === 0) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+    isRenderingInlineFavs = false;
     return;
   }
+  
   const pinned = allApps.filter((app) => isPinned(app.name));
   // pinned already computed above
   if (!pinned || pinned.length === 0) {
@@ -2686,6 +2703,7 @@ function renderInlineFavs() {
   });
 
   container.appendChild(row);
+  isRenderingInlineFavs = false;
 }
 
 // Setup minimize button for Apps Dashboard Widget
@@ -4064,10 +4082,6 @@ function setupHomePageCategories(apps) {
  * Filter homepage apps by category
  */
 function filterHomePageByCategory(category) {
-  console.log("🧭 filterHomePageByCategory called", {
-    category,
-    allAppsLength: allApps.length,
-  });
   // Update active button
   document.querySelectorAll(".homepage-category-btn").forEach((btn) => {
     btn.classList.remove("active", "bg-blue-500", "text-white");
@@ -4094,29 +4108,10 @@ function filterHomePageByCategory(category) {
 
   // Filter apps
   if (category === "all") {
-    console.log("✅ Showing ALL apps");
     renderHomePageApps(allApps);
   } else {
-    console.log("🔍 Filtering by category:", category);
-    console.log("📦 Total apps before filter:", allApps.length);
-
-    // Debug: print first few apps with their categories
-    allApps.slice(0, 5).forEach((app) => {
-      console.log(`  - ${app.name}: category="${app.category}"`);
-    });
-
-    const filtered = allApps.filter((app) => {
-      const matches = (app.category || "").toString() === category;
-      if (matches) {
-        console.log(`  ✓ ${app.name} matches category ${category}`);
-      }
-      return matches;
-    });
-    console.log(
-      "🔎 Filtered apps count:",
-      filtered.length,
-      "for category:",
-      category
+    const filtered = allApps.filter(
+      (app) => (app.category || "").toString() === category
     );
     renderHomePageApps(filtered);
   }
@@ -4174,19 +4169,24 @@ function updateHomePageAppCounter(visible, total) {
 
 // Prevent infinite rendering loops
 let isRenderingHomePage = false;
+let lastRenderTime = 0;
+const RENDER_THROTTLE_MS = 100; // Minimum time between renders
 
 /**
  * Render homepage apps
  */
 function renderHomePageApps(apps) {
-  if (isRenderingHomePage) {
-    console.warn("⚠️ renderHomePageApps already in progress, skipping...");
+  const now = Date.now();
+
+  // Throttle renders to prevent loops
+  if (isRenderingHomePage || now - lastRenderTime < RENDER_THROTTLE_MS) {
+    console.warn("⚠️ renderHomePageApps throttled, skipping...");
     return;
   }
-  
+
   isRenderingHomePage = true;
-  console.log("🎨 renderHomePageApps called with", apps.length, "apps");
-  
+  lastRenderTime = now;
+
   const appsGrid = document.getElementById("homePageAppsGrid");
   if (!appsGrid) {
     console.error("❌ homePageAppsGrid element not found!");
@@ -4198,7 +4198,6 @@ function renderHomePageApps(apps) {
 
   // Filter out pinned apps
   const unpinnedApps = apps.filter((app) => !isPinned(app.name));
-  console.log("📌 Unpinned apps:", unpinnedApps.length, "out of", apps.length);
 
   if (unpinnedApps.length === 0) {
     appsGrid.innerHTML = `
@@ -4210,7 +4209,6 @@ function renderHomePageApps(apps) {
     return;
   }
 
-  console.log("🖼️ Rendering apps:", unpinnedApps.map((a) => a.name).join(", "));
   unpinnedApps.forEach((app) => {
     const appButton = createAppButton(app);
     appsGrid.appendChild(appButton);
@@ -4219,7 +4217,6 @@ function renderHomePageApps(apps) {
   updateHomePageAppCounter(unpinnedApps.length);
   isRenderingHomePage = false;
 }
-
 /**
  * Render homepage pinned apps
  */
@@ -5047,6 +5044,13 @@ function setupFeatureToggles() {
 async function initializeApp() {
   console.log("🚀 Initializing OneFav...");
 
+  // Prevent double initialization
+  if (window.oneFavInitialized) {
+    console.warn("OneFav already initialized, skipping...");
+    return;
+  }
+  window.oneFavInitialized = true;
+
   try {
     // Load theme first
     loadTheme();
@@ -5125,6 +5129,22 @@ async function initializeApp() {
     console.log("✅ OneFav initialized successfully!");
   } catch (error) {
     console.error("❌ Error initializing OneFav:", error);
+
+    // Reset state to prevent loops
+    window.oneFavInitialized = false;
+    isRenderingHomePage = false;
+
+    // Show user-friendly error message
+    const errorDiv = document.createElement("div");
+    errorDiv.className =
+      "fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50";
+    errorDiv.innerHTML = `
+      <strong>Fout:</strong> OneFav kon niet volledig laden.
+      <button onclick="location.reload()" class="ml-2 bg-red-500 text-white px-2 py-1 rounded text-sm">
+        Herlaad
+      </button>
+    `;
+    document.body.appendChild(errorDiv);
   }
 }
 
