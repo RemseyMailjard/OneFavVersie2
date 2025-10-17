@@ -127,11 +127,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupHighlightSearchToggle();
   setupShowShortcutsToggle();
   setupShowQuickAppsToggle();
-  setupShowAppLauncherToggle();
+  setupShowAppsDashboardToggle();
   setupContextMenu();
   setupQuickAppsMinimize();
+  setupAppsDashboardMinimize();
   renderQuickApps();
-  renderAppLauncher();
+  renderAppsDashboard();
   console.log("✅ UI systems geïnitialiseerd");
 
   // Make functions globally available for inline onclick handlers
@@ -735,7 +736,7 @@ function togglePin(appName) {
   );
   renderPinnedApps();
   renderQuickApps(); // Update Quick Apps widget
-  renderAppLauncher(); // Update App Launcher
+  renderAppsDashboard(); // Update Apps Dashboard
 }
 
 /**
@@ -2764,7 +2765,7 @@ function setupUseFaviconsToggle() {
     );
     renderPinnedApps();
     renderQuickApps(); // Update Quick Apps widget
-    renderAppLauncher(); // Update App Launcher
+    renderAppsDashboard(); // Update Apps Dashboard
   });
 }
 
@@ -3050,69 +3051,96 @@ function setupQuickAppsMinimize() {
   });
 }
 
-// Setup App Launcher Bar toggle
-function setupShowAppLauncherToggle() {
-  const toggle = document.getElementById("showAppLauncherToggle");
-  const launcher = document.getElementById("appLauncherBar");
+// Setup Apps Dashboard toggle
+function setupShowAppsDashboardToggle() {
+  const toggle = document.getElementById("showAppsDashboardToggle");
+  const dashboard = document.getElementById("appsDashboardWidget");
 
-  if (!toggle || !launcher) return;
+  if (!toggle || !dashboard) return;
 
   // Load saved state
-  const saved = localStorage.getItem("showAppLauncher");
+  const saved = localStorage.getItem("showAppsDashboard");
   const enabled = saved !== "false"; // Default to true
 
   toggle.checked = enabled;
   if (enabled) {
-    launcher.classList.remove("hidden");
+    dashboard.classList.remove("hidden");
   } else {
-    launcher.classList.add("hidden");
+    dashboard.classList.add("hidden");
   }
 
   // Listen for changes
   toggle.addEventListener("change", (e) => {
     const enabled = e.target.checked;
-    localStorage.setItem("showAppLauncher", enabled.toString());
+    localStorage.setItem("showAppsDashboard", enabled.toString());
 
     if (enabled) {
-      launcher.classList.remove("hidden");
-      renderAppLauncher(); // Re-render when showing
+      dashboard.classList.remove("hidden");
+      renderAppsDashboard(); // Re-render when showing
     } else {
-      launcher.classList.add("hidden");
+      dashboard.classList.add("hidden");
     }
   });
 }
 
-// Render App Launcher Bar
-function renderAppLauncher() {
-  const launcherList = document.getElementById("launcherAppsList");
-  if (!launcherList) return;
+// Setup minimize button for Apps Dashboard Widget
+function setupAppsDashboardMinimize() {
+  const closeBtn = document.getElementById("closeDashboard");
+  const widget = document.getElementById("appsDashboardWidget");
 
-  // Get top 8 most used/important apps - could be based on usage stats or predefined list
-  let topApps = [];
+  if (!closeBtn || !widget) return;
 
-  // Get pinned apps first (max 4)
-  const pinned = allApps.filter((app) => app.isPinned).slice(0, 4);
-  topApps.push(...pinned);
+  closeBtn.addEventListener("click", () => {
+    widget.classList.add("hidden");
+    // Update toggle in settings
+    const toggle = document.getElementById("showAppsDashboardToggle");
+    if (toggle) {
+      toggle.checked = false;
+      localStorage.setItem("showAppsDashboard", "false");
+    }
+  });
+}
 
-  // Fill remaining slots with popular apps from different categories
-  if (topApps.length < 8) {
-    const remaining = 8 - topApps.length;
-    const popularApps = allApps
-      .filter((app) => !app.isPinned)
-      .filter((app) =>
-        ["favorieten", "ai-tools", "microsoft-365"].includes(app.category)
-      )
-      .slice(0, remaining);
-    topApps.push(...popularApps);
+// Render Apps Dashboard Widget
+function renderAppsDashboard() {
+  const dashboardList = document.getElementById("dashboardAppsList");
+  const categoryFilter = document.getElementById("dashboardCategoryFilter");
+  const counter = document.getElementById("dashboardAppCounter");
+
+  if (!dashboardList) return;
+
+  // Get current selected category
+  const activeCategory =
+    document
+      .querySelector(".dashboard-category-btn.active")
+      ?.getAttribute("data-dashboard-category") || "all";
+
+  // Filter apps based on category
+  let filteredApps = allApps;
+  if (activeCategory !== "all") {
+    filteredApps = allApps.filter((app) => app.category === activeCategory);
+  }
+
+  // Get top 9 apps (3x3 grid)
+  const topApps = filteredApps.slice(0, 9);
+
+  // Update counter
+  if (counter) {
+    counter.textContent = `${topApps.length}/${filteredApps.length}`;
+  }
+
+  // Setup category filter if not done yet
+  if (categoryFilter && categoryFilter.children.length === 1) {
+    setupDashboardCategoryFilter();
   }
 
   // Clear current apps
-  launcherList.innerHTML = "";
+  dashboardList.innerHTML = "";
 
   if (topApps.length === 0) {
-    launcherList.innerHTML = `
-      <div class="text-center py-2">
-        <p class="text-xs text-gray-400 dark:text-gray-500">Geen apps beschikbaar</p>
+    dashboardList.innerHTML = `
+      <div class="col-span-3 text-center py-4">
+        <p class="text-xs text-gray-400 dark:text-gray-500">Geen apps in deze categorie</p>
       </div>
     `;
     return;
@@ -3121,14 +3149,17 @@ function renderAppLauncher() {
   // Create app buttons
   topApps.forEach((app) => {
     const appButton = document.createElement("button");
-    appButton.className = "launcher-app group";
+    appButton.className =
+      "group flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors";
     appButton.title = app.name;
     appButton.addEventListener("click", () => openApp(app));
 
     // Icon container
     const iconContainer = document.createElement("div");
-    iconContainer.className = "launcher-app-icon";
+    iconContainer.className =
+      "w-8 h-8 flex items-center justify-center rounded-lg";
 
+    // Create icon (same logic as Quick Apps)
     const useFavicons = localStorage.getItem("useFavicons") !== "false";
 
     if (useFavicons && app.url) {
@@ -3137,37 +3168,41 @@ function renderAppLauncher() {
         const domain = url.hostname;
 
         const favicon = document.createElement("img");
-        favicon.className = "w-8 h-8 rounded-sm";
+        favicon.className = "w-6 h-6 rounded-sm";
         favicon.alt = `${app.name} icon`;
         favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
 
         favicon.addEventListener("error", () => {
           favicon.remove();
-          // Use SVG icon as fallback instead of just letter
-          createSVGIcon(iconContainer, app);
+          createDashboardSVGIcon(iconContainer, app);
         });
 
         iconContainer.appendChild(favicon);
       } catch (error) {
-        // Use SVG icon as fallback
-        createSVGIcon(iconContainer, app);
+        createDashboardSVGIcon(iconContainer, app);
       }
     } else {
-      // Use SVG icon from app data
-      createSVGIcon(iconContainer, app);
+      createDashboardSVGIcon(iconContainer, app);
     }
 
+    // App name (abbreviated)
+    const nameSpan = document.createElement("span");
+    nameSpan.className =
+      "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full text-center";
+    nameSpan.textContent =
+      app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
+
     appButton.appendChild(iconContainer);
-    launcherList.appendChild(appButton);
+    appButton.appendChild(nameSpan);
+    dashboardList.appendChild(appButton);
   });
 }
 
-// Helper function to create SVG icons for launcher
-function createSVGIcon(container, app) {
+// Helper function to create SVG icons for dashboard
+function createDashboardSVGIcon(container, app) {
   if (app.icon && app.icon.path) {
-    // Create SVG from app data
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "w-6 h-6");
+    svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
     svg.setAttribute("fill", "currentColor");
     svg.setAttribute("viewBox", app.icon.viewBox || "0 0 24 24");
 
@@ -3176,12 +3211,65 @@ function createSVGIcon(container, app) {
 
     svg.appendChild(path);
     container.appendChild(svg);
-    container.className += ` ${app.color.bg} ${app.color.text}`;
+    container.className += ` ${app.color.bg}`;
   } else {
-    // Fallback to first letter if no icon data
     container.textContent = app.name.charAt(0).toUpperCase();
     container.className += ` ${app.color.bg} ${app.color.text}`;
   }
+}
+
+// Setup category filter for dashboard
+function setupDashboardCategoryFilter() {
+  const categoryFilter = document.getElementById("dashboardCategoryFilter");
+  if (!categoryFilter) return;
+
+  // Get unique categories from all apps
+  const categories = [...new Set(allApps.map((app) => app.category))];
+
+  // Add category buttons
+  categories.forEach((category) => {
+    const categoryNames = {
+      favorieten: "⭐ Favorieten",
+      "ai-tools": "🤖 AI-tools",
+      "ai-agents": "🧠 AI-agents",
+      "microsoft-365": "🏢 Microsoft 365",
+      windows: "🪟 Windows",
+      "social-media": "💻 Social media",
+      custom: "📦 Custom",
+    };
+
+    const button = document.createElement("button");
+    button.setAttribute("data-dashboard-category", category);
+    button.className =
+      "dashboard-category-btn whitespace-nowrap rounded-full bg-gray-200 dark:bg-gray-600 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 transition hover:bg-gray-300 dark:hover:bg-gray-500";
+    button.textContent = categoryNames[category] || category;
+
+    button.addEventListener("click", () => {
+      // Update active state
+      document.querySelectorAll(".dashboard-category-btn").forEach((btn) => {
+        btn.classList.remove("active", "bg-blue-500", "text-white");
+        btn.classList.add(
+          "bg-gray-200",
+          "dark:bg-gray-600",
+          "text-gray-700",
+          "dark:text-gray-300"
+        );
+      });
+
+      button.classList.add("active", "bg-blue-500", "text-white");
+      button.classList.remove(
+        "bg-gray-200",
+        "dark:bg-gray-600",
+        "text-gray-700",
+        "dark:text-gray-300"
+      );
+
+      // Re-render apps
+      renderAppsDashboard();
+    });
+
+    categoryFilter.appendChild(button);
+  });
 }
 
 // Autocomplete state

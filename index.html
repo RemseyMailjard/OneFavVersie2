@@ -347,9 +347,9 @@
                             </div>
                         </label>
                         <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon App Launcher Bar</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Toon Apps Dashboard</span>
                             <div class="relative">
-                                <input type="checkbox" id="showAppLauncherToggle" class="sr-only peer" checked>
+                                <input type="checkbox" id="showAppsDashboardToggle" class="sr-only peer" checked>
                                 <div
                                     class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                 </div>
@@ -728,15 +728,52 @@
         </div>
     </div>
 
-    <!-- App Launcher Bar (macOS style) -->
-    <div id="appLauncherBar"
-        class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 hidden">
+    <!-- Apps Dashboard Widget (Links) -->
+    <div id="appsDashboardWidget" class="fixed top-20 left-6 z-40 transition-all duration-300 hidden">
         <div
-            class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
-            <div id="launcherAppsList" class="flex items-center gap-3">
-                <!-- Top apps komen hier dynamisch -->
-                <div class="text-center py-2">
-                    <p class="text-xs text-gray-400 dark:text-gray-500">Loading apps...</p>
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+            <!-- Drag Handle -->
+            <div id="dashboardDragHandle"
+                class="flex items-center justify-between p-2 cursor-move hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-xl border-b border-gray-100 dark:border-gray-600">
+                <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <span>📱</span>
+                    <span>Top Apps</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                    </svg>
+                </h4>
+                <div class="flex items-center gap-2">
+                    <span id="dashboardAppCounter" class="text-xs text-gray-500 dark:text-gray-400"></span>
+                    <button id="closeDashboard" title="Minimize widget"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Widget Content -->
+            <div class="p-4">
+                <!-- Category Filter voor widget -->
+                <div class="mb-3">
+                    <div class="flex gap-1 overflow-x-auto pb-1" id="dashboardCategoryFilter">
+                        <button data-dashboard-category="all"
+                            class="dashboard-category-btn active whitespace-nowrap rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white transition">
+                            Alle
+                        </button>
+                        <!-- Categorieën worden dynamisch geladen -->
+                    </div>
+                </div>
+
+                <div id="dashboardAppsList" class="grid grid-cols-3 gap-2 min-w-[200px]">
+                    <!-- Apps komen hier dynamisch (3x3 = 9 apps) -->
+                    <div class="col-span-3 text-center py-4">
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Loading apps...</p>
+                    </div>
                 </div>
             </div>
         </div>

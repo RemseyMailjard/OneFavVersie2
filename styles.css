@@ -398,124 +398,38 @@ body {
     background-color: rgba(96, 165, 250, 0.15);
 }
 
-/* App Launcher Bar (macOS style) */
-#appLauncherBar {
-    animation: launcherSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+/* Apps Dashboard Widget Styles */
+.dashboard-category-btn.active {
+    background-color: #3b82f6 !important;
+    color: white !important;
 }
 
-@keyframes launcherSlideUp {
+/* Dashboard widget slide animation */
+#appsDashboardWidget {
+    animation: dashboardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dashboardSlideIn {
     from {
         opacity: 0;
-        transform: translate(-50%, 100px) scale(0.9);
+        transform: translateX(-20px);
     }
     to {
         opacity: 1;
-        transform: translate(-50%, 0) scale(1);
+        transform: translateX(0);
     }
 }
 
-#appLauncherBar .launcher-app {
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
-}
-
-#appLauncherBar .launcher-app:hover {
-    transform: translateY(-8px) scale(1.1);
-    filter: brightness(1.1);
-}
-
-#appLauncherBar .launcher-app:active {
-    transform: translateY(-4px) scale(1.05);
-}
-
-/* Launcher app icons */
-.launcher-app-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    color: #475569;
-}
-
-.dark .launcher-app-icon {
-    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-    border-color: rgba(75, 85, 99, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    color: #d1d5db;
-}
-
-/* Style voor SVG icons in launcher */
-.launcher-app-icon svg {
-    width: 24px;
-    height: 24px;
-}
-
-/* Override kleuren voor apps met specifieke kleuren */
-.launcher-app-icon.bg-red-100 {
-    background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-    color: #dc2626;
-}
-
-.launcher-app-icon.bg-blue-100 {
-    background: linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%);
-    color: #2563eb;
-}
-
-.launcher-app-icon.bg-green-100 {
-    background: linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%);
-    color: #16a34a;
-}
-
-.launcher-app-icon.bg-yellow-100 {
-    background: linear-gradient(135deg, #fefce8 0%, #fde047 100%);
-    color: #ca8a04;
-}
-
-.launcher-app-icon.bg-purple-100 {
-    background: linear-gradient(135deg, #faf5ff 0%, #d8b4fe 100%);
-    color: #9333ea;
-}
-
-.launcher-app-icon.bg-pink-100 {
-    background: linear-gradient(135deg, #fdf2f8 0%, #f9a8d4 100%);
-    color: #ec4899;
-}
-
-.launcher-app-icon.bg-orange-100 {
-    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
-    color: #ea580c;
-}
-
-.launcher-app-icon.bg-cyan-100 {
-    background: linear-gradient(135deg, #ecfeff 0%, #a5f3fc 100%);
-    color: #0891b2;
-}
-
-.launcher-app-icon.bg-gray-100 {
-    background: linear-gradient(135deg, #f9fafb 0%, #d1d5db 100%);
-    color: #374151;
-}
-
-/* Responsive: Hide App Launcher on small screens */
+/* Responsive: Adjust Apps Dashboard on smaller screens */
 @media (max-width: 768px) {
-    #appLauncherBar {
-        bottom: 2rem;
-        left: 1rem;
-        right: 1rem;
-        transform: none;
-    }
-    
-    #appLauncherBar .launcher-app-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
+    #appsDashboardWidget {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 50;
+        width: 90vw;
+        max-width: 320px;
     }
 }
 
