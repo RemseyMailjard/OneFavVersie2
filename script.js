@@ -1197,13 +1197,15 @@ function showErrorMessage() {
 }
 
 /**
- * Initialiseer Sortable.js voor drag & drop functionaliteit
+ * Initialiseer Sortable.js voor een specifiek grid element
+ * @param {string} gridSelector - CSS selector voor het grid element
+ * @param {string} saveFunction - Naam van de save functie ('saveAppOrder' of 'saveHomePageAppOrder')
  */
-function initSortable() {
-  const appsGrid = document.querySelector("#appsGrid");
+function initSortableForGrid(gridSelector, saveFunction = "saveAppOrder") {
+  const appsGrid = document.querySelector(gridSelector);
 
   if (!appsGrid) {
-    console.error("Apps grid niet gevonden voor SortableJS");
+    console.error(`Grid niet gevonden voor SortableJS: ${gridSelector}`);
     return;
   }
 
@@ -1214,11 +1216,13 @@ function initSortable() {
 
   // Destroy existing sortable instance if any
   if (appsGrid.sortableInstance) {
-    console.log("🔄 Destroying existing SortableJS instance");
+    console.log(
+      `🔄 Destroying existing SortableJS instance for ${gridSelector}`
+    );
     appsGrid.sortableInstance.destroy();
   }
 
-  console.log("🔄 Initializing SortableJS for apps grid");
+  console.log(`🔄 Initializing SortableJS for ${gridSelector}`);
 
   // Create new sortable instance
   const sortableInstance = Sortable.create(appsGrid, {
@@ -1237,26 +1241,47 @@ function initSortable() {
 
     onStart: function (evt) {
       console.log(
-        "🔄 SortableJS drag started",
+        `🔄 SortableJS drag started in ${gridSelector}:`,
         evt.item.getAttribute("data-name")
       );
       evt.item.classList.add("sortable-dragging");
     },
 
     onEnd: function (evt) {
-      console.log("🔄 App verplaatst van", evt.oldIndex, "naar", evt.newIndex);
+      console.log(
+        `🔄 App verplaatst van ${evt.oldIndex} naar ${evt.newIndex} in ${gridSelector}`
+      );
       evt.item.classList.remove("sortable-dragging");
 
       // Only save if position actually changed
       if (evt.oldIndex !== evt.newIndex) {
-        saveAppOrder();
+        // Call the appropriate save function
+        if (saveFunction === "saveHomePageAppOrder") {
+          saveHomePageAppOrder();
+        } else {
+          saveAppOrder();
+        }
       }
     },
   });
 
   // Store reference for cleanup
   appsGrid.sortableInstance = sortableInstance;
-  console.log("✅ SortableJS initialized successfully");
+  console.log(`✅ SortableJS initialized successfully for ${gridSelector}`);
+}
+
+/**
+ * Initialiseer Sortable.js voor drag & drop functionaliteit (hoofdgrid)
+ */
+function initSortable() {
+  initSortableForGrid("#appsGrid", "saveAppOrder");
+}
+
+/**
+ * Initialiseer Sortable.js voor de homepage apps grid
+ */
+function initHomePageSortable() {
+  initSortableForGrid("#homePageAppsGrid", "saveHomePageAppOrder");
 }
 
 /**
@@ -1265,25 +1290,56 @@ function initSortable() {
  */
 window.debugSortable = function () {
   const appsGrid = document.querySelector("#appsGrid");
-  console.log("🔍 SortableJS Debug Info:");
-  console.log("Apps Grid:", appsGrid);
-  console.log("SortableJS loaded:", typeof Sortable !== "undefined");
-  console.log("Sortable instance:", appsGrid?.sortableInstance);
-  console.log(
-    "App items count:",
-    appsGrid?.querySelectorAll(".app-item").length
-  );
-  console.log(
-    "Draggable elements:",
-    appsGrid?.querySelectorAll('[draggable="true"]').length
-  );
+  const homePageAppsGrid = document.querySelector("#homePageAppsGrid");
 
-  if (appsGrid?.sortableInstance) {
-    console.log("✅ SortableJS is active");
-  } else {
-    console.log("❌ SortableJS not initialized");
-    console.log("Trying to reinitialize...");
-    initSortable();
+  console.log("🔍 SortableJS Debug Info:");
+  console.log("Main Apps Grid:", appsGrid);
+  console.log("Homepage Apps Grid:", homePageAppsGrid);
+  console.log("SortableJS loaded:", typeof Sortable !== "undefined");
+
+  // Debug main grid
+  if (appsGrid) {
+    console.log("Main Grid - Sortable instance:", appsGrid.sortableInstance);
+    console.log(
+      "Main Grid - App items count:",
+      appsGrid.querySelectorAll(".app-item").length
+    );
+    console.log(
+      "Main Grid - Draggable elements:",
+      appsGrid.querySelectorAll('[draggable="true"]').length
+    );
+
+    if (appsGrid.sortableInstance) {
+      console.log("✅ Main Grid SortableJS is active");
+    } else {
+      console.log("❌ Main Grid SortableJS not initialized");
+      console.log("Trying to reinitialize main grid...");
+      initSortable();
+    }
+  }
+
+  // Debug homepage grid
+  if (homePageAppsGrid) {
+    console.log(
+      "Homepage Grid - Sortable instance:",
+      homePageAppsGrid.sortableInstance
+    );
+    console.log(
+      "Homepage Grid - App items count:",
+      homePageAppsGrid.querySelectorAll(".app-item").length
+    );
+    console.log(
+      "Homepage Grid - Draggable elements:",
+      homePageAppsGrid.querySelectorAll('[draggable="true"]').length
+    );
+
+    if (homePageAppsGrid.sortableInstance) {
+      console.log("✅ Homepage Grid SortableJS is active");
+    } else {
+      console.log("❌ Homepage Grid SortableJS not initialized");
+      console.log("Trying to reinitialize homepage grid...");
+      initHomePageSortable();
+    }
   }
 };
 
@@ -1303,10 +1359,27 @@ function saveAppOrder() {
 }
 
 /**
- * Laad de opgeslagen volgorde en sorteer de apps
+ * Sla de nieuwe volgorde van homepage apps op in localStorage
  */
-function applySavedOrder(apps) {
-  const savedOrder = localStorage.getItem("appOrder");
+function saveHomePageAppOrder() {
+  const homePageAppsGrid = document.querySelector("#homePageAppsGrid");
+  const appButtons = homePageAppsGrid.querySelectorAll("button[data-name]");
+
+  const order = Array.from(appButtons).map((btn) =>
+    btn.getAttribute("data-name")
+  );
+
+  localStorage.setItem("homePageAppOrder", JSON.stringify(order));
+  console.log("Nieuwe homepage volgorde opgeslagen:", order);
+}
+
+/**
+ * Laad de opgeslagen volgorde en sorteer de apps
+ * @param {Array} apps - Array van apps om te sorteren
+ * @param {string} storageKey - LocalStorage key voor de volgorde ('appOrder' of 'homePageAppOrder')
+ */
+function applySavedOrder(apps, storageKey = "appOrder") {
+  const savedOrder = localStorage.getItem(storageKey);
 
   if (!savedOrder) {
     return apps;
@@ -1331,9 +1404,16 @@ function applySavedOrder(apps) {
 
     return sortedApps;
   } catch (error) {
-    console.error("Fout bij laden opgeslagen volgorde:", error);
+    console.error(`Fout bij laden opgeslagen volgorde (${storageKey}):`, error);
     return apps;
   }
+}
+
+/**
+ * Laad de opgeslagen volgorde voor homepage apps
+ */
+function applySavedHomePageOrder(apps) {
+  return applySavedOrder(apps, "homePageAppOrder");
 }
 
 /**
@@ -4330,12 +4410,19 @@ function renderHomePageApps(apps) {
     return;
   }
 
-  unpinnedApps.forEach((app) => {
+  // Apply saved order for homepage apps
+  const sortedApps = applySavedHomePageOrder(unpinnedApps);
+
+  sortedApps.forEach((app) => {
     const appButton = createAppButton(app);
     appsGrid.appendChild(appButton);
   });
 
-  updateHomePageAppCounter(unpinnedApps.length);
+  updateHomePageAppCounter(sortedApps.length);
+
+  // Initialize SortableJS for homepage grid
+  initHomePageSortable();
+
   isRenderingHomePage = false;
 }
 /**
