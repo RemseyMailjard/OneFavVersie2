@@ -350,110 +350,20 @@ function createAppButton(app, isPinnedButton = false) {
   button.setAttribute("aria-label", `Open ${app.name}`);
   button.setAttribute("data-name", app.name);
 
-  // Draggable management voor desktop drag vs reordering
-  // Desktop: Alt+click of long-press (500ms) voor desktop drag
-  // Mobiel: Long-press (500ms) voor desktop drag, normale touch voor reordering
-  button.setAttribute("draggable", "false");
+  // Eenvoudige draggable setup - altijd desktop drag mogelijk
+  // Geen Alt-toets vereist, geen long-press vereist
+  // Gewoon slepen = desktop shortcut maken
+  button.setAttribute("draggable", "true");
 
   let dragStartTime = 0;
   let isDragToDesktop = false;
-  let altKeyPressed = false;
-  let longPressTimer = null;
-  let isLongPress = false;
-  let touchStartTime = 0;
-
-  // Desktop: Track Alt key state
-  button.addEventListener("mousedown", (e) => {
-    altKeyPressed = e.altKey;
-    if (altKeyPressed) {
-      button.setAttribute("draggable", "true");
-      button.style.cursor = "copy";
-      console.log("🎯 Alt+mousedown: Desktop drag enabled");
-    }
-  });
-
-  button.addEventListener("mouseup", (e) => {
-    if (!altKeyPressed) {
-      button.setAttribute("draggable", "false");
-      button.style.cursor = "";
-    }
-    altKeyPressed = false;
-  });
-
-  // Touch: Long-press for desktop drag
-  button.addEventListener("touchstart", (e) => {
-    touchStartTime = Date.now();
-    isLongPress = false;
-
-    // Start long-press timer (500ms)
-    longPressTimer = setTimeout(() => {
-      isLongPress = true;
-      button.setAttribute("draggable", "true");
-
-      // Visual feedback for long-press
-      button.style.transform = "scale(1.05)";
-      button.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
-      button.classList.add("long-press-active");
-
-      // Haptic feedback if available
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-
-      console.log("📱 Long-press detected: Desktop drag enabled");
-    }, 500);
-  });
-
-  button.addEventListener("touchend", (e) => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
-
-    // Reset visual feedback
-    button.style.transform = "";
-    button.style.boxShadow = "";
-    button.classList.remove("long-press-active");
-
-    // Short delay before resetting draggable to allow drag to complete
-    setTimeout(() => {
-      if (!isLongPress) {
-        button.setAttribute("draggable", "false");
-      }
-      isLongPress = false;
-    }, 100);
-  });
-
-  button.addEventListener("touchmove", (e) => {
-    // Cancel long-press if user moves finger
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
-  });
-
-  button.addEventListener("touchcancel", (e) => {
-    // Cancel long-press on touch cancel
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
-
-    // Reset visual feedback
-    button.style.transform = "";
-    button.style.boxShadow = "";
-    button.classList.remove("long-press-active");
-    isLongPress = false;
-  });
 
   button.addEventListener("dragstart", (e) => {
     dragStartTime = Date.now();
 
-    // Desktop drag allowed when:
-    // 1. Alt key is pressed (desktop)
-    // 2. Long-press was detected (mobile)
-    if ((e.altKey || isLongPress) && app.url) {
-      // Alt + drag (desktop) or long-press + drag (mobile) = drag to desktop
+    // Altijd desktop drag toestaan als app een URL heeft
+    if (app.url) {
+      // Gewoon slepen = desktop shortcut maken
       isDragToDesktop = true;
       e.dataTransfer.effectAllowed = "copyLink";
       e.dataTransfer.setData("text/uri-list", app.url);
@@ -465,14 +375,9 @@ function createAppButton(app, isPinnedButton = false) {
 
       // Visual feedback
       button.style.opacity = "0.5";
-
-      if (e.altKey) {
-        console.log(`🔗 Alt+Drag to desktop: ${app.name} - ${app.url}`);
-      } else {
-        console.log(`📱 Long-press+Drag to desktop: ${app.name} - ${app.url}`);
-      }
+      console.log(`🔗 Drag to desktop: ${app.name} - ${app.url}`);
     } else {
-      // Prevent conflicting drag when Alt is not pressed
+      // Geen URL beschikbaar
       console.log(`� Blocking drag - Alt not pressed or no URL`);
       e.preventDefault();
       return false;
@@ -483,6 +388,7 @@ function createAppButton(app, isPinnedButton = false) {
     if (isDragToDesktop) {
       button.style.opacity = "1";
       isDragToDesktop = false;
+      console.log(`✅ Desktop drag completed for ${app.name}`);
     }
   });
 
@@ -1307,11 +1213,15 @@ function initSortableForGrid(gridSelector, saveFunction = "saveAppOrder") {
     ghostClass: "sortable-ghost",
     dragClass: "sortable-drag",
     chosenClass: "sortable-chosen",
-    delay: 100,
+    delay: 200, // Increased delay for better touch distinction
     delayOnTouchOnly: true,
-    touchStartThreshold: 5,
+    touchStartThreshold: 10, // Increased threshold for more reliable touch
     forceFallback: false,
     preventOnFilter: false,
+
+    // Touch-specific settings
+    filter: ".long-press-active", // Prevent SortableJS drag during long-press
+    preventOnFilter: true,
 
     // Only allow dragging on the app items, not the loading indicator
     draggable: ".app-item",
