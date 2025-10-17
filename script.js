@@ -3042,6 +3042,84 @@ function setupAutocomplete() {
 
   // Keyboard navigation
   searchInput.addEventListener("keydown", (e) => {
+    const query = searchInput.value.trim();
+
+    // Always handle Enter key, regardless of autocomplete state
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      // Check for search engine shortcuts first (higher priority)
+      const searchEngineMatch = detectSearchEngine(query);
+
+      if (searchEngineMatch) {
+        console.log("🔍 Opening search engine:", searchEngineMatch);
+        window.open(searchEngineMatch.fullUrl, "_blank");
+        searchInput.value = "";
+        hideAutocomplete();
+        return;
+      }
+
+      // If autocomplete is open and has results
+      if (autocompleteState.isOpen && autocompleteState.results.length > 0) {
+        // If nothing selected but results exist, auto-select first result
+        if (autocompleteState.selectedIndex === -1) {
+          autocompleteState.selectedIndex = 0;
+        }
+
+        if (autocompleteState.selectedIndex >= 0) {
+          selectAutocompleteSuggestion(
+            autocompleteState.results[autocompleteState.selectedIndex]
+          );
+          return;
+        }
+      }
+
+      // Fallback: If no results or autocomplete closed, try to match with apps directly
+      if (query.length > 0) {
+        const directMatch = allApps.find(
+          (app) => app.name.toLowerCase() === query.toLowerCase()
+        );
+
+        if (directMatch) {
+          console.log("✅ Direct app match found:", directMatch.name);
+          window.open(directMatch.url, "_blank");
+          searchInput.value = "";
+          hideAutocomplete();
+          return;
+        }
+
+        // Try fuzzy match
+        const fuzzyMatches = allApps.filter(
+          (app) =>
+            app.name.toLowerCase().includes(query.toLowerCase()) ||
+            (app.tags &&
+              app.tags.some((tag) =>
+                tag.toLowerCase().includes(query.toLowerCase())
+              ))
+        );
+
+        if (fuzzyMatches.length > 0) {
+          console.log("✅ Fuzzy match found:", fuzzyMatches[0].name);
+          window.open(fuzzyMatches[0].url, "_blank");
+          searchInput.value = "";
+          hideAutocomplete();
+          return;
+        }
+
+        // Last resort: default Google search
+        console.log("🔍 No match found, defaulting to Google search");
+        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(
+          query
+        )}`;
+        window.open(googleUrl, "_blank");
+        searchInput.value = "";
+        hideAutocomplete();
+      }
+
+      return;
+    }
+
+    // Handle other keys only if autocomplete is open
     if (!autocompleteState.isOpen) return;
 
     const results = autocompleteState.results;
@@ -3063,20 +3141,6 @@ function setupAutocomplete() {
           -1
         );
         updateAutocompleteSelection();
-        break;
-
-      case "Enter":
-        e.preventDefault();
-        // If nothing selected but results exist, auto-select first result
-        if (autocompleteState.selectedIndex === -1 && results.length > 0) {
-          autocompleteState.selectedIndex = 0;
-        }
-
-        if (autocompleteState.selectedIndex >= 0) {
-          selectAutocompleteSuggestion(
-            results[autocompleteState.selectedIndex]
-          );
-        }
         break;
 
       case "Escape":
@@ -3244,26 +3308,28 @@ function setupHomePageAutocomplete() {
 
   // Keyboard navigation
   searchInput.addEventListener("keydown", (e) => {
-    if (dropdown.classList.contains("hidden") || currentResults.length === 0)
-      return;
+    const query = searchInput.value.trim();
 
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        selectedIndex = Math.min(selectedIndex + 1, currentResults.length - 1);
-        updateHomePageSelection();
-        break;
+    // Always handle Enter key, regardless of dropdown state
+    if (e.key === "Enter") {
+      e.preventDefault();
 
-      case "ArrowUp":
-        e.preventDefault();
-        selectedIndex = Math.max(selectedIndex - 1, -1);
-        updateHomePageSelection();
-        break;
+      // Check for search engine shortcuts first (higher priority)
+      const searchEngineMatch = detectSearchEngine(query);
 
-      case "Enter":
-        e.preventDefault();
+      if (searchEngineMatch) {
+        console.log("🔍 Opening search engine:", searchEngineMatch);
+        window.open(searchEngineMatch.fullUrl, "_blank");
+        searchInput.value = "";
+        dropdown.classList.add("hidden");
+        selectedIndex = -1;
+        return;
+      }
+
+      // If dropdown is visible and has results
+      if (!dropdown.classList.contains("hidden") && currentResults.length > 0) {
         // If nothing selected but results exist, auto-select first result
-        if (selectedIndex === -1 && currentResults.length > 0) {
+        if (selectedIndex === -1) {
           selectedIndex = 0;
         }
 
@@ -3281,13 +3347,77 @@ function setupHomePageAutocomplete() {
           searchInput.value = "";
           dropdown.classList.add("hidden");
           selectedIndex = -1;
+          return;
         }
+      }
+
+      // Fallback: If no results or dropdown hidden, try to match with apps directly
+      if (query.length > 0) {
+        const directMatch = allApps.find(
+          (app) => app.name.toLowerCase() === query.toLowerCase()
+        );
+
+        if (directMatch) {
+          console.log("✅ Direct app match found:", directMatch.name);
+          window.open(directMatch.url, "_blank");
+          searchInput.value = "";
+          dropdown.classList.add("hidden");
+          return;
+        }
+
+        // Try fuzzy match
+        const fuzzyMatches = allApps.filter(
+          (app) =>
+            app.name.toLowerCase().includes(query.toLowerCase()) ||
+            (app.tags &&
+              app.tags.some((tag) =>
+                tag.toLowerCase().includes(query.toLowerCase())
+              ))
+        );
+
+        if (fuzzyMatches.length > 0) {
+          console.log("✅ Fuzzy match found:", fuzzyMatches[0].name);
+          window.open(fuzzyMatches[0].url, "_blank");
+          searchInput.value = "";
+          dropdown.classList.add("hidden");
+          return;
+        }
+
+        // Last resort: default Google search
+        console.log("🔍 No match found, defaulting to Google search");
+        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(
+          query
+        )}`;
+        window.open(googleUrl, "_blank");
+        searchInput.value = "";
+        dropdown.classList.add("hidden");
+      }
+
+      return;
+    }
+
+    // Handle other keys only if dropdown is visible
+    if (dropdown.classList.contains("hidden") || currentResults.length === 0)
+      return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, currentResults.length - 1);
+        updateHomePageSelection();
+        break;
+
+      case "ArrowUp":
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, -1);
+        updateHomePageSelection();
         break;
 
       case "Escape":
         e.preventDefault();
         dropdown.classList.add("hidden");
         searchInput.blur();
+        selectedIndex = -1;
         break;
     }
   });
