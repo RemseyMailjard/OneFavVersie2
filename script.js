@@ -4248,23 +4248,6 @@ function setupMainButtons() {
       }
     });
   }
-
-  // Quick Add from Homepage button
-  const quickAddFromHomepage = document.getElementById("quickAddFromHomepage");
-  if (quickAddFromHomepage) {
-    quickAddFromHomepage.addEventListener("click", () => {
-      const modal = document.getElementById("customAppModal");
-      if (modal) {
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-        // Focus on the name input
-        setTimeout(() => {
-          const nameInput = document.getElementById("customAppName");
-          if (nameInput) nameInput.focus();
-        }, 100);
-      }
-    });
-  }
 }
 
 // Setup form handlers
