@@ -109,6 +109,11 @@ body {
     display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Smooth scrolling for containers */
+.scroll-smooth {
+    scroll-behavior: smooth;
+}
+
 /* Search highlighting improvements */
 .search-highlight {
     display: inline-block;

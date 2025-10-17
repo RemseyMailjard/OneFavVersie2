@@ -4628,6 +4628,9 @@ async function initializeApp() {
     renderAppsDashboard();
     setupDashboardCategoryFilter();
 
+    // Setup category scroll helpers
+    setupCategoryScrollHelpers();
+
     // Add pulse animation to FAB after a short delay (to draw attention)
     setTimeout(() => {
       const fab = document.getElementById("quickAddAppFAB");
@@ -4644,6 +4647,86 @@ async function initializeApp() {
   } catch (error) {
     console.error("❌ Error initializing OneFav:", error);
   }
+}
+
+/**
+ * Setup horizontal scroll helpers for category filters
+ */
+function setupCategoryScrollHelpers() {
+  // Helper function to setup scroll for a container
+  const setupScroll = (containerId, leftBtnId, rightBtnId) => {
+    const container = document.getElementById(containerId);
+    const leftBtn = document.getElementById(leftBtnId);
+    const rightBtn = document.getElementById(rightBtnId);
+
+    if (!container || !leftBtn || !rightBtn) return;
+
+    // Check if scrollable
+    const checkScrollable = () => {
+      const isScrollable = container.scrollWidth > container.clientWidth;
+      if (isScrollable) {
+        leftBtn.classList.remove("hidden");
+        rightBtn.classList.remove("hidden");
+      } else {
+        leftBtn.classList.add("hidden");
+        rightBtn.classList.add("hidden");
+      }
+      updateScrollButtons();
+    };
+
+    // Update button visibility based on scroll position
+    const updateScrollButtons = () => {
+      const isAtStart = container.scrollLeft <= 5;
+      const isAtEnd =
+        container.scrollLeft >=
+        container.scrollWidth - container.clientWidth - 5;
+
+      leftBtn.style.opacity = isAtStart ? "0" : "";
+      rightBtn.style.opacity = isAtEnd ? "0" : "";
+      leftBtn.style.pointerEvents = isAtStart ? "none" : "";
+      rightBtn.style.pointerEvents = isAtEnd ? "none" : "";
+    };
+
+    // Scroll amount (200px or half of container width)
+    const getScrollAmount = () => Math.min(200, container.clientWidth / 2);
+
+    // Left button click
+    leftBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      container.scrollBy({ left: -getScrollAmount(), behavior: "smooth" });
+    });
+
+    // Right button click
+    rightBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      container.scrollBy({ left: getScrollAmount(), behavior: "smooth" });
+    });
+
+    // Update on scroll
+    container.addEventListener("scroll", updateScrollButtons);
+
+    // Update on resize
+    window.addEventListener("resize", checkScrollable);
+
+    // Initial check
+    checkScrollable();
+
+    // Re-check after categories are loaded
+    setTimeout(checkScrollable, 100);
+    setTimeout(checkScrollable, 500);
+  };
+
+  // Setup for homepage category filter
+  setupScroll(
+    "homePageCategoryFilter",
+    "scrollLeftHomeBtn",
+    "scrollRightHomeBtn"
+  );
+
+  // Setup for menu category filter
+  setupScroll("categoryFilter", "scrollLeftMenuBtn", "scrollRightMenuBtn");
 }
 
 // Start initialization when DOM is ready
