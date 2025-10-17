@@ -347,7 +347,7 @@ function loadPinnedApps() {
 function createAppCard(app, isPinnedButton = false) {
   const cardDiv = document.createElement("div");
   cardDiv.className =
-    "card relative flex flex-col items-center gap-1 p-2 rounded-2xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow dark:hover:shadow-lg transition group";
+    "card relative flex flex-col items-center gap-0.5 p-1.5 rounded-xl bg-transparent hover:bg-gray-100/50 dark:hover:bg-slate-800/50 transition-colors duration-200 group";
   cardDiv.setAttribute(
     "data-id",
     app.id || app.name.toLowerCase().replace(/\s+/g, "-")
@@ -370,7 +370,7 @@ function createAppCard(app, isPinnedButton = false) {
   // Pin button
   const pinBtn = document.createElement("button");
   pinBtn.className =
-    "pin-btn absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 text-gray-300 hover:!text-yellow-500 hover:!bg-yellow-50 dark:text-gray-600 dark:hover:!bg-yellow-900/30 transition-all duration-200 z-10";
+    "pin-btn absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-700 border shadow-sm text-gray-400 hover:!text-yellow-500 transition-all duration-200 z-10 flex items-center justify-center";
   pinBtn.setAttribute("title", "Pin/Unpin favoriet");
   pinBtn.setAttribute("aria-label", "Pin favoriet");
 
@@ -395,7 +395,7 @@ function createAppCard(app, isPinnedButton = false) {
 
   // Main open button
   const openBtn = document.createElement("button");
-  openBtn.className = "open-btn group flex flex-col items-center gap-1";
+  openBtn.className = "open-btn group flex flex-col items-center gap-0.5";
 
   // Create title with description for tooltip
   let tooltipText = app.name;
@@ -410,7 +410,7 @@ function createAppCard(app, isPinnedButton = false) {
   // Icon - use img element for modern card styling
   const iconImg = document.createElement("img");
   iconImg.className =
-    "w-12 h-12 rounded-xl object-contain border dark:border-slate-600 bg-white dark:bg-slate-700 pointer-events-none";
+    "w-14 h-14 rounded-2xl object-cover shadow-sm pointer-events-none bg-white dark:bg-slate-700";
   iconImg.setAttribute("alt", `${app.name} icoon`);
 
   // Check if favicons are enabled and set icon source
@@ -529,7 +529,7 @@ function createAppCard(app, isPinnedButton = false) {
   // App name label
   const nameSpan = document.createElement("span");
   nameSpan.className =
-    "w-full text-center text-[11px] leading-tight font-medium dark:text-white line-clamp-2 pointer-events-none";
+    "w-full text-center text-[10px] leading-[12px] font-normal text-gray-900 dark:text-white line-clamp-2 pointer-events-none px-0.5";
   nameSpan.textContent = app.name;
   openBtn.appendChild(nameSpan);
 
