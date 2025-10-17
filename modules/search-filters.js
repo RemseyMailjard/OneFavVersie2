@@ -232,3 +232,9 @@ class TagFilter {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { RecentSearches, TagFilter };
 }
+
+// Make globally available for browser
+if (typeof window !== "undefined") {
+  window.RecentSearches = RecentSearches;
+  window.TagFilter = TagFilter;
+}

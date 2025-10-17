@@ -129,15 +129,8 @@ const UI_PREFERENCES = {
   compactMode: false,
 };
 
-// Export configuration
-export { FEATURES, FEATURE_SETTINGS, ANALYTICS_CONFIG, UI_PREFERENCES };
-
-// Voor backwards compatibility (als modules niet worden gebruikt)
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = {
-    FEATURES,
-    FEATURE_SETTINGS,
-    ANALYTICS_CONFIG,
-    UI_PREFERENCES,
-  };
-}
+// Make globally available (no export needed for regular script tags)
+window.FEATURES = FEATURES;
+window.FEATURE_SETTINGS = FEATURE_SETTINGS;
+window.ANALYTICS_CONFIG = ANALYTICS_CONFIG;
+window.UI_PREFERENCES = UI_PREFERENCES;

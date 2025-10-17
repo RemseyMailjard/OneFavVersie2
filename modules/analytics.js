@@ -352,3 +352,8 @@ class AppAnalytics {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = AppAnalytics;
 }
+
+// Make globally available for browser
+if (typeof window !== "undefined") {
+  window.AppAnalytics = AppAnalytics;
+}

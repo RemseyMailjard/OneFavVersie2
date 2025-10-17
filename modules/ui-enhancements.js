@@ -410,3 +410,10 @@ if (typeof module !== "undefined" && module.exports) {
     AppNotes,
   };
 }
+
+// Make globally available for browser
+if (typeof window !== "undefined") {
+  window.UIEnhancements = UIEnhancements;
+  window.KeyboardShortcuts = KeyboardShortcuts;
+  window.AppNotes = AppNotes;
+}

@@ -222,3 +222,8 @@ class FuzzySearch {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = FuzzySearch;
 }
+
+// Make globally available for browser
+if (typeof window !== "undefined") {
+  window.FuzzySearch = FuzzySearch;
+}
