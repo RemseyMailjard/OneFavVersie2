@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
 </head>
 
-<body class="min-h-screen antialiased transition-colors duration-200">
+<body class="bg-gray-100 min-h-screen flex flex-col antialiased transition-colors duration-200">
     <!-- Achtergrond: wissel tussen wit en grijs -->
     <!-- bg-white = wit | bg-gray-100 = lichtgrijs -->
     <!-- <body class="min-h-screen bg-gray-100 antialiased transition-colors duration-200"> -->
@@ -212,7 +212,7 @@
                 </div>
 
                 <!-- Apps Grid -->
-                <div id="appsGrid" class="grid grid-cols-4 gap-2 px-4 py-2"
+                <div id="appsGrid" class="grid grid-cols-4 gap-3 px-4 py-4"
                     style="max-height: 400px; overflow-y: auto;">
                     <!-- Apps worden hier dynamisch geladen -->
                     <div class="col-span-4 py-8 text-center">
@@ -914,21 +914,22 @@
 
                 <!-- Pinned Apps Section -->
                 <div id="homePagePinnedSection" class="hidden mb-6">
-                    <div id="homePagePinnedApps" class="grid grid-cols-4 gap-2 sm:grid-cols-5 px-4">
+                    <div id="homePagePinnedApps" class="grid grid-cols-4 gap-3 sm:grid-cols-5 px-4">
                         <!-- Gepinde apps komen hier -->
                     </div>
                 </div>
 
-                <!-- Apps Grid -->
-                <div id="homePageAppsGrid" class="grid grid-cols-4 gap-2 sm:grid-cols-5 px-4 py-2"
-                    style="max-height: 500px; overflow-y: auto;">
-                    <!-- Apps worden hier dynamisch geladen -->
-                    <div class="col-span-4 sm:col-span-5 py-8 text-center">
-                        <div
-                            class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600">
+                <!-- Apps Grid - v2.html styling -->
+                <main class="mx-auto w-full max-w-md flex-1 px-4 py-4">
+                    <div id="homePageAppsGrid" class="grid grid-cols-4 gap-3 sm:grid-cols-5">
+                        <!-- Apps worden hier dynamisch geladen -->
+                        <div class="col-span-4 sm:col-span-5 py-8 text-center">
+                            <div
+                                class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600">
+                            </div>
                         </div>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
 

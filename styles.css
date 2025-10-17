@@ -1,5 +1,20 @@
 /* Custom styles voor het project */
 
+/* v2.html Safe Area Support */
+:root { 
+    --sat: env(safe-area-inset-top); 
+    --sab: env(safe-area-inset-bottom); 
+}
+
+/* v2.html Scrollbar hiding */
+.no-scrollbar::-webkit-scrollbar { 
+    display: none; 
+}
+.no-scrollbar { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
 /* Grid layout utilities for app cards */
 .grid-3-cols {
     grid-template-columns: repeat(3, minmax(0, 1fr));

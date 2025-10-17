@@ -352,7 +352,7 @@ function loadPinnedApps() {
 function createAppCard(app, isPinnedButton = false) {
   const cardDiv = document.createElement("div");
   cardDiv.className =
-    "card app-item relative flex flex-col items-center gap-0.5 p-1.5 rounded-xl bg-transparent hover:bg-gray-100/50 dark:hover:bg-slate-800/50 transition-colors duration-200 group";
+    "card app-item group flex flex-col items-center gap-1 p-2 rounded-2xl bg-white border shadow-sm hover:shadow transition";
   cardDiv.setAttribute(
     "data-id",
     app.id || app.name.toLowerCase().replace(/\s+/g, "-")
@@ -372,10 +372,10 @@ function createAppCard(app, isPinnedButton = false) {
     </svg>
   `;
 
-  // Pin button
+  // Pin button - hidden for v2.html aesthetic
   const pinBtn = document.createElement("button");
   pinBtn.className =
-    "pin-btn absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-700 border shadow-sm text-gray-400 hover:!text-yellow-500 transition-all duration-200 z-10 flex items-center justify-center";
+    "pin-btn absolute -top-1 -right-1 w-5 h-5 text-xs rounded-full opacity-0 bg-white border shadow-sm text-gray-400 hover:!text-yellow-500 transition-all duration-200 z-10 flex items-center justify-center hidden";
   pinBtn.setAttribute("title", "Pin/Unpin favoriet");
   pinBtn.setAttribute("aria-label", "Pin favoriet");
 
@@ -412,10 +412,10 @@ function createAppCard(app, isPinnedButton = false) {
   }
   openBtn.setAttribute("title", tooltipText);
 
-  // Icon - use img element for modern card styling
+  // Icon - exact v2.html styling
   const iconImg = document.createElement("img");
   iconImg.className =
-    "w-14 h-14 rounded-2xl object-cover shadow-sm pointer-events-none bg-white dark:bg-slate-700";
+    "w-12 h-12 rounded-xl object-contain border bg-white pointer-events-none";
   iconImg.setAttribute("alt", `${app.name} icoon`);
 
   // Check if favicons are enabled and set icon source
@@ -433,15 +433,15 @@ function createAppCard(app, isPinnedButton = false) {
         if (app.iconPath) {
           iconImg.src = app.iconPath;
         } else if (app.color && app.icon) {
-          // Create SVG fallback
+          // Create SVG fallback - v2.html styling
           const iconContainer = document.createElement("div");
-          iconContainer.className = `w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${app.color.bg}`;
+          iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center border bg-white ${app.color.bg}`;
 
           const svg = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "svg"
           );
-          svg.setAttribute("class", `h-7 w-7 ${app.color.text}`);
+          svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
           svg.setAttribute("fill", "currentColor");
           svg.setAttribute("viewBox", app.icon.viewBox);
 
@@ -522,19 +522,19 @@ function createAppCard(app, isPinnedButton = false) {
     iconContainer.appendChild(svg);
     openBtn.appendChild(iconContainer);
   } else {
-    // Create a simple colored div as fallback
+    // Create a simple colored div as fallback - v2.html styling
     const fallbackDiv = document.createElement("div");
-    fallbackDiv.className = `w-14 h-14 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-sm ${
+    fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold border bg-white ${
       app.color?.bg || "bg-gray-500"
     }`;
     fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
     openBtn.appendChild(fallbackDiv);
   }
 
-  // App name label
+  // App name label - exact v2.html styling
   const nameSpan = document.createElement("span");
   nameSpan.className =
-    "w-full text-center text-[10px] leading-[12px] font-normal text-gray-900 dark:text-white line-clamp-2 pointer-events-none px-0.5";
+    "w-full text-center text-[11px] leading-tight font-medium truncate pointer-events-none";
   nameSpan.textContent = app.name;
   openBtn.appendChild(nameSpan);
 
