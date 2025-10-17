@@ -3112,12 +3112,34 @@ function setupAutocomplete() {
           return;
         }
 
-        // Last resort: default Google search
-        console.log("🔍 No match found, defaulting to Google search");
-        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(
-          query
-        )}`;
-        window.open(googleUrl, "_blank");
+        // Last resort: use current AI mode for search
+        const currentMode = aiModes[currentAIMode];
+        console.log(`🔍 No match found, using ${currentMode.name} search`);
+
+        // Build search URL based on current AI mode
+        let searchUrl;
+        const encodedQuery = encodeURIComponent(query);
+
+        switch (currentAIMode) {
+          case "gpt":
+            searchUrl = `https://chat.openai.com/?q=${encodedQuery}`;
+            break;
+          case "claude":
+            searchUrl = `https://claude.ai/new?q=${encodedQuery}`;
+            break;
+          case "gemini":
+            searchUrl = `https://gemini.google.com/app?q=${encodedQuery}`;
+            break;
+          case "perplexity":
+            searchUrl = `https://www.perplexity.ai/?q=${encodedQuery}`;
+            break;
+          case "google":
+          default:
+            searchUrl = `https://www.google.com/search?q=${encodedQuery}`;
+            break;
+        }
+
+        window.open(searchUrl, "_blank");
         searchInput.value = "";
         hideAutocomplete();
       }
@@ -3389,12 +3411,34 @@ function setupHomePageAutocomplete() {
           return;
         }
 
-        // Last resort: default Google search
-        console.log("🔍 No match found, defaulting to Google search");
-        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(
-          query
-        )}`;
-        window.open(googleUrl, "_blank");
+        // Last resort: use current AI mode for search
+        const currentMode = aiModes[currentAIMode];
+        console.log(`🔍 No match found, using ${currentMode.name} search`);
+
+        // Build search URL based on current AI mode
+        let searchUrl;
+        const encodedQuery = encodeURIComponent(query);
+
+        switch (currentAIMode) {
+          case "gpt":
+            searchUrl = `https://chat.openai.com/?q=${encodedQuery}`;
+            break;
+          case "claude":
+            searchUrl = `https://claude.ai/new?q=${encodedQuery}`;
+            break;
+          case "gemini":
+            searchUrl = `https://gemini.google.com/app?q=${encodedQuery}`;
+            break;
+          case "perplexity":
+            searchUrl = `https://www.perplexity.ai/?q=${encodedQuery}`;
+            break;
+          case "google":
+          default:
+            searchUrl = `https://www.google.com/search?q=${encodedQuery}`;
+            break;
+        }
+
+        window.open(searchUrl, "_blank");
         searchInput.value = "";
         dropdown.classList.add("hidden");
       }
