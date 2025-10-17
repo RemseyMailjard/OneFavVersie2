@@ -7,6 +7,7 @@ let appStats = {}; // Usage statistics
 let selectedColor = "blue";
 let selectedCollectionColor = "blue";
 let currentCategory = "all";
+let currentHomePageCategory = "all"; // Track homepage category separately
 let editingCollectionId = null;
 
 // Prevent infinite loops flags
@@ -4286,6 +4287,9 @@ function setupChipRowCategories() {
 
     const category = btn.getAttribute("data-category");
     if (category) {
+      // Update current homepage category
+      currentHomePageCategory = category;
+
       // Update active button styling
       document.querySelectorAll(".homepage-chip-btn").forEach((button) => {
         button.classList.remove("active");
@@ -4327,6 +4331,9 @@ function setupChipRowCategories() {
  * Filter homepage apps by category
  */
 function filterHomePageByCategory(category) {
+  // Update current homepage category
+  currentHomePageCategory = category;
+
   // Update active button
   document.querySelectorAll(".homepage-category-btn").forEach((btn) => {
     btn.classList.remove("active", "bg-blue-500", "text-white");
@@ -4438,10 +4445,17 @@ function renderHomePageApps(apps) {
 
   appsGrid.innerHTML = "";
 
-  // Filter out pinned apps
-  const unpinnedApps = apps.filter((app) => !isPinned(app.name));
+  // For "all" category, show all apps. For specific categories, filter out pinned apps to avoid duplication
+  let appsToShow;
+  if (currentHomePageCategory === "all") {
+    // If showing all apps, show everything including pinned apps
+    appsToShow = apps;
+  } else {
+    // For specific categories, filter out pinned apps to avoid duplication since they show in pinned section
+    appsToShow = apps.filter((app) => !isPinned(app.name));
+  }
 
-  if (unpinnedApps.length === 0) {
+  if (appsToShow.length === 0) {
     appsGrid.innerHTML = `
       <div class="col-span-4 py-8 text-center">
         <p class="text-sm text-gray-500 dark:text-gray-400">Geen apps in deze categorie</p>
@@ -4452,7 +4466,7 @@ function renderHomePageApps(apps) {
   }
 
   // Apply saved order for homepage apps
-  const sortedApps = applySavedHomePageOrder(unpinnedApps);
+  const sortedApps = applySavedHomePageOrder(appsToShow);
 
   sortedApps.forEach((app) => {
     const appButton = createAppButton(app);
