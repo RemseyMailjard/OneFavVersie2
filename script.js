@@ -510,6 +510,30 @@ function setupKeyboardShortcuts() {
         collectionsModal?.classList.remove("flex");
       }
     }
+
+    // Ctrl+Q of Cmd+Q - Toggle Apps Dashboard
+    if ((e.ctrlKey || e.metaKey) && e.key === "q") {
+      e.preventDefault();
+      const dashboard = document.getElementById("appsDashboardWidget");
+      const toggle = document.getElementById("showAppsDashboardToggle");
+
+      if (dashboard && toggle) {
+        const isHidden = dashboard.classList.contains("hidden");
+
+        if (isHidden) {
+          // Show dashboard
+          dashboard.classList.remove("hidden");
+          toggle.checked = true;
+          localStorage.setItem("showAppsDashboard", "true");
+          renderAppsDashboard(); // Re-render when showing
+        } else {
+          // Hide dashboard
+          dashboard.classList.add("hidden");
+          toggle.checked = false;
+          localStorage.setItem("showAppsDashboard", "false");
+        }
+      }
+    }
   });
 }
 
