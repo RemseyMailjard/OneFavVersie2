@@ -350,15 +350,19 @@ function createAppButton(app, isPinnedButton = false) {
   button.setAttribute("aria-label", `Open ${app.name}`);
   button.setAttribute("data-name", app.name);
 
-  // Draggable alleen inschakelen wanneer Alt ingedrukt wordt
-  // Standaard uit om conflicten met SortableJS te voorkomen
+  // Draggable management voor desktop drag vs reordering
+  // Desktop: Alt+click of long-press (500ms) voor desktop drag
+  // Mobiel: Long-press (500ms) voor desktop drag, normale touch voor reordering
   button.setAttribute("draggable", "false");
 
   let dragStartTime = 0;
   let isDragToDesktop = false;
   let altKeyPressed = false;
+  let longPressTimer = null;
+  let isLongPress = false;
+  let touchStartTime = 0;
 
-  // Track Alt key state
+  // Desktop: Track Alt key state
   button.addEventListener("mousedown", (e) => {
     altKeyPressed = e.altKey;
     if (altKeyPressed) {
@@ -374,6 +378,72 @@ function createAppButton(app, isPinnedButton = false) {
       button.style.cursor = "";
     }
     altKeyPressed = false;
+  });
+
+  // Touch: Long-press for desktop drag
+  button.addEventListener("touchstart", (e) => {
+    touchStartTime = Date.now();
+    isLongPress = false;
+
+    // Start long-press timer (500ms)
+    longPressTimer = setTimeout(() => {
+      isLongPress = true;
+      button.setAttribute("draggable", "true");
+
+      // Visual feedback for long-press
+      button.style.transform = "scale(1.05)";
+      button.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
+      button.classList.add("long-press-active");
+
+      // Haptic feedback if available
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+
+      console.log("📱 Long-press detected: Desktop drag enabled");
+    }, 500);
+  });
+
+  button.addEventListener("touchend", (e) => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+
+    // Reset visual feedback
+    button.style.transform = "";
+    button.style.boxShadow = "";
+    button.classList.remove("long-press-active");
+
+    // Short delay before resetting draggable to allow drag to complete
+    setTimeout(() => {
+      if (!isLongPress) {
+        button.setAttribute("draggable", "false");
+      }
+      isLongPress = false;
+    }, 100);
+  });
+
+  button.addEventListener("touchmove", (e) => {
+    // Cancel long-press if user moves finger
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  });
+
+  button.addEventListener("touchcancel", (e) => {
+    // Cancel long-press on touch cancel
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+
+    // Reset visual feedback
+    button.style.transform = "";
+    button.style.boxShadow = "";
+    button.classList.remove("long-press-active");
+    isLongPress = false;
   });
 
   button.addEventListener("dragstart", (e) => {
