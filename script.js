@@ -350,11 +350,39 @@ function createAppButton(app, isPinnedButton = false) {
   button.setAttribute("aria-label", `Open ${app.name}`);
   button.setAttribute("data-name", app.name);
 
-  // Maak app draggable naar desktop
-  button.setAttribute("draggable", "true");
+  // Draggable alleen inschakelen wanneer Alt ingedrukt wordt
+  // Standaard uit om conflicten met SortableJS te voorkomen
+  button.setAttribute("draggable", "false");
+
+  let dragStartTime = 0;
+  let isDragToDesktop = false;
+  let altKeyPressed = false;
+
+  // Track Alt key state
+  button.addEventListener("mousedown", (e) => {
+    altKeyPressed = e.altKey;
+    if (altKeyPressed) {
+      button.setAttribute("draggable", "true");
+      button.style.cursor = "copy";
+      console.log("🎯 Alt+mousedown: Desktop drag enabled");
+    }
+  });
+
+  button.addEventListener("mouseup", (e) => {
+    if (!altKeyPressed) {
+      button.setAttribute("draggable", "false");
+      button.style.cursor = "";
+    }
+    altKeyPressed = false;
+  });
+
   button.addEventListener("dragstart", (e) => {
-    if (app.url) {
-      // Stel data in voor drag naar desktop
+    dragStartTime = Date.now();
+
+    // Only allow desktop drag when Alt key is pressed
+    if (e.altKey && app.url) {
+      // Alt + drag = drag to desktop
+      isDragToDesktop = true;
       e.dataTransfer.effectAllowed = "copyLink";
       e.dataTransfer.setData("text/uri-list", app.url);
       e.dataTransfer.setData("text/plain", app.url);
@@ -365,12 +393,20 @@ function createAppButton(app, isPinnedButton = false) {
 
       // Visual feedback
       button.style.opacity = "0.5";
-      console.log(`🔗 Drag started: ${app.name} - ${app.url}`);
+      console.log(`🔗 Alt+Drag to desktop: ${app.name} - ${app.url}`);
+    } else {
+      // Prevent conflicting drag when Alt is not pressed
+      console.log(`� Blocking drag - Alt not pressed or no URL`);
+      e.preventDefault();
+      return false;
     }
   });
 
   button.addEventListener("dragend", (e) => {
-    button.style.opacity = "1";
+    if (isDragToDesktop) {
+      button.style.opacity = "1";
+      isDragToDesktop = false;
+    }
   });
 
   // Pin indicator
@@ -1166,25 +1202,90 @@ function showErrorMessage() {
 function initSortable() {
   const appsGrid = document.querySelector("#appsGrid");
 
-  if (!appsGrid || typeof Sortable === "undefined") {
-    console.error("SortableJS niet geladen of grid niet gevonden");
+  if (!appsGrid) {
+    console.error("Apps grid niet gevonden voor SortableJS");
     return;
   }
 
-  Sortable.create(appsGrid, {
+  if (typeof Sortable === "undefined") {
+    console.error("SortableJS library niet geladen");
+    return;
+  }
+
+  // Destroy existing sortable instance if any
+  if (appsGrid.sortableInstance) {
+    console.log("🔄 Destroying existing SortableJS instance");
+    appsGrid.sortableInstance.destroy();
+  }
+
+  console.log("🔄 Initializing SortableJS for apps grid");
+
+  // Create new sortable instance
+  const sortableInstance = Sortable.create(appsGrid, {
     animation: 150,
     ghostClass: "sortable-ghost",
     dragClass: "sortable-drag",
+    chosenClass: "sortable-chosen",
     delay: 100,
     delayOnTouchOnly: true,
     touchStartThreshold: 5,
+    forceFallback: false,
+    preventOnFilter: false,
+
+    // Only allow dragging on the app items, not the loading indicator
+    draggable: ".app-item",
+
+    onStart: function (evt) {
+      console.log(
+        "🔄 SortableJS drag started",
+        evt.item.getAttribute("data-name")
+      );
+      evt.item.classList.add("sortable-dragging");
+    },
 
     onEnd: function (evt) {
-      console.log("App verplaatst van", evt.oldIndex, "naar", evt.newIndex);
-      saveAppOrder();
+      console.log("🔄 App verplaatst van", evt.oldIndex, "naar", evt.newIndex);
+      evt.item.classList.remove("sortable-dragging");
+
+      // Only save if position actually changed
+      if (evt.oldIndex !== evt.newIndex) {
+        saveAppOrder();
+      }
     },
   });
+
+  // Store reference for cleanup
+  appsGrid.sortableInstance = sortableInstance;
+  console.log("✅ SortableJS initialized successfully");
 }
+
+/**
+ * Debug functie voor het testen van drag & drop
+ * Roep aan vanuit console: window.debugSortable()
+ */
+window.debugSortable = function () {
+  const appsGrid = document.querySelector("#appsGrid");
+  console.log("🔍 SortableJS Debug Info:");
+  console.log("Apps Grid:", appsGrid);
+  console.log("SortableJS loaded:", typeof Sortable !== "undefined");
+  console.log("Sortable instance:", appsGrid?.sortableInstance);
+  console.log(
+    "App items count:",
+    appsGrid?.querySelectorAll(".app-item").length
+  );
+  console.log(
+    "Draggable elements:",
+    appsGrid?.querySelectorAll('[draggable="true"]').length
+  );
+
+  if (appsGrid?.sortableInstance) {
+    console.log("✅ SortableJS is active");
+  } else {
+    console.log("❌ SortableJS not initialized");
+    console.log("Trying to reinitialize...");
+    initSortable();
+  }
+};
 
 /**
  * Sla de nieuwe volgorde van apps op in localStorage
