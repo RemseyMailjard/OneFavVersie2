@@ -351,7 +351,7 @@ function createAppButton(app, isPinnedButton = false) {
   button.setAttribute("data-name", app.name);
 
   // Eenvoudige draggable setup - altijd desktop drag mogelijk
-  // Geen Alt-toets vereist, geen long-press vereist
+  // Gewoon slepen = desktop shortcut maken
   // Gewoon slepen = desktop shortcut maken
   button.setAttribute("draggable", "true");
 
