@@ -3088,18 +3088,25 @@ function renderAppsDashboard() {
       .querySelector(".dashboard-category-btn.active")
       ?.getAttribute("data-dashboard-category") || "all";
 
-  // Filter apps based on category
-  let filteredApps = allApps;
+  // Show PINNED apps instead of just top apps - like Fav Apps
+  let displayApps = [];
+  
+  // Get pinned apps from allApps array
+  const pinnedAppsData = allApps.filter((app) => pinnedApps.includes(app.name));
+  
+  // Filter by category if needed
   if (activeCategory !== "all") {
-    filteredApps = allApps.filter((app) => app.category === activeCategory);
+    displayApps = pinnedAppsData.filter((app) => app.category === activeCategory);
+  } else {
+    displayApps = pinnedAppsData;
   }
 
-  // Get top 9 apps (3x3 grid)
-  const topApps = filteredApps.slice(0, 9);
+  // Limit to 9 apps (3x3 grid)
+  displayApps = displayApps.slice(0, 9);
 
   // Update counter
   if (counter) {
-    counter.textContent = `${topApps.length}/${filteredApps.length}`;
+    counter.textContent = `${displayApps.length}/9`;
   }
 
   // Setup category filter if not done yet
@@ -3110,27 +3117,40 @@ function renderAppsDashboard() {
   // Clear current apps
   dashboardList.innerHTML = "";
 
-  if (topApps.length === 0) {
+  if (displayApps.length === 0) {
     dashboardList.innerHTML = `
       <div class="col-span-3 text-center py-4">
-        <p class="text-xs text-gray-400 dark:text-gray-500">Geen apps in deze categorie</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500">Geen gefavoriete apps</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pin apps via het menu</p>
       </div>
     `;
     return;
   }
 
-  // Create app buttons
-  topApps.forEach((app) => {
-    const appButton = document.createElement("button");
-    appButton.className =
-      "group flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors";
-    appButton.title = app.name;
-    appButton.addEventListener("click", () => openApp(app));
+  // Create app buttons with pin/unpin functionality
+  displayApps.forEach((app) => {
+    const appButton = document.createElement("div");
+    appButton.className = "group relative flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors";
+    
+    // Pin/Unpin button (like in Fav Apps)
+    const pinButton = document.createElement("button");
+    pinButton.className = "absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10";
+    pinButton.innerHTML = "×";
+    pinButton.title = "Unpin app";
+    pinButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      togglePinnedApp(app.name);
+    });
+
+    // Main app click area
+    const appClickArea = document.createElement("button");
+    appClickArea.className = "flex flex-col items-center gap-1 w-full";
+    appClickArea.title = app.name;
+    appClickArea.addEventListener("click", () => openApp(app));
 
     // Icon container
     const iconContainer = document.createElement("div");
-    iconContainer.className =
-      "w-8 h-8 flex items-center justify-center rounded-lg";
+    iconContainer.className = "w-8 h-8 flex items-center justify-center rounded-lg";
 
     // Create icon (same logic as Quick Apps)
     const useFavicons = localStorage.getItem("useFavicons") !== "false";
@@ -3160,14 +3180,19 @@ function renderAppsDashboard() {
 
     // App name (abbreviated)
     const nameSpan = document.createElement("span");
-    nameSpan.className =
-      "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full text-center";
-    nameSpan.textContent =
-      app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
+    nameSpan.className = "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full text-center";
+    nameSpan.textContent = app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
 
-    appButton.appendChild(iconContainer);
-    appButton.appendChild(nameSpan);
+    // Assemble the app click area
+    appClickArea.appendChild(iconContainer);
+    appClickArea.appendChild(nameSpan);
+
+    // Assemble the full app button
+    appButton.appendChild(pinButton);
+    appButton.appendChild(appClickArea);
+    
     dashboardList.appendChild(appButton);
+  });
   });
 }
 
