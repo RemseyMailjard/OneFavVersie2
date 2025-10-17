@@ -3950,7 +3950,7 @@ function setupHomePageCategories(apps) {
       .join(" ");
     btn.textContent = `${emoji} ${displayName}`;
 
-  btn.addEventListener("click", () => filterHomePageByCategory(cat));
+    btn.addEventListener("click", () => filterHomePageByCategory(cat));
 
     categoryFilter.appendChild(btn);
   });
@@ -3967,13 +3967,24 @@ function setupHomePageCategories(apps) {
     // Replace to avoid duplicate listeners
     categoryFilter.replaceChild(newAll, allBtn);
   }
+
+  // Robustness: event delegation so clicks always trigger the filter
+  categoryFilter.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-category]");
+    if (!btn) return;
+    const cat = btn.getAttribute("data-category");
+    if (cat) filterHomePageByCategory(cat);
+  });
 }
 
 /**
  * Filter homepage apps by category
  */
 function filterHomePageByCategory(category) {
-  console.log("🧭 filterHomePageByCategory called", { category, allAppsLength: allApps.length });
+  console.log("🧭 filterHomePageByCategory called", {
+    category,
+    allAppsLength: allApps.length,
+  });
   // Update active button
   document.querySelectorAll(".homepage-category-btn").forEach((btn) => {
     btn.classList.remove("active", "bg-blue-500", "text-white");
@@ -4002,8 +4013,15 @@ function filterHomePageByCategory(category) {
   if (category === "all") {
     renderHomePageApps(allApps);
   } else {
-    const filtered = allApps.filter((app) => (app.category || "").toString() === category);
-    console.log("🔎 filtered apps count:", filtered.length, "for category:", category);
+    const filtered = allApps.filter(
+      (app) => (app.category || "").toString() === category
+    );
+    console.log(
+      "🔎 filtered apps count:",
+      filtered.length,
+      "for category:",
+      category
+    );
     renderHomePageApps(filtered);
   }
 }
