@@ -4011,13 +4011,26 @@ function filterHomePageByCategory(category) {
 
   // Filter apps
   if (category === "all") {
+    console.log("✅ Showing ALL apps");
     renderHomePageApps(allApps);
   } else {
-    const filtered = allApps.filter(
-      (app) => (app.category || "").toString() === category
-    );
+    console.log("🔍 Filtering by category:", category);
+    console.log("📦 Total apps before filter:", allApps.length);
+
+    // Debug: print first few apps with their categories
+    allApps.slice(0, 5).forEach((app) => {
+      console.log(`  - ${app.name}: category="${app.category}"`);
+    });
+
+    const filtered = allApps.filter((app) => {
+      const matches = (app.category || "").toString() === category;
+      if (matches) {
+        console.log(`  ✓ ${app.name} matches category ${category}`);
+      }
+      return matches;
+    });
     console.log(
-      "🔎 filtered apps count:",
+      "🔎 Filtered apps count:",
       filtered.length,
       "for category:",
       category
@@ -4080,13 +4093,18 @@ function updateHomePageAppCounter(visible, total) {
  * Render homepage apps
  */
 function renderHomePageApps(apps) {
+  console.log("🎨 renderHomePageApps called with", apps.length, "apps");
   const appsGrid = document.getElementById("homePageAppsGrid");
-  if (!appsGrid) return;
+  if (!appsGrid) {
+    console.error("❌ homePageAppsGrid element not found!");
+    return;
+  }
 
   appsGrid.innerHTML = "";
 
   // Filter out pinned apps
   const unpinnedApps = apps.filter((app) => !isPinned(app.name));
+  console.log("📌 Unpinned apps:", unpinnedApps.length, "out of", apps.length);
 
   if (unpinnedApps.length === 0) {
     appsGrid.innerHTML = `
@@ -4097,6 +4115,7 @@ function renderHomePageApps(apps) {
     return;
   }
 
+  console.log("🖼️ Rendering apps:", unpinnedApps.map((a) => a.name).join(", "));
   unpinnedApps.forEach((app) => {
     const appButton = createAppButton(app);
     appsGrid.appendChild(appButton);
