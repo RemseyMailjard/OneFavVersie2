@@ -425,110 +425,89 @@ function createAppCard(app, isPinnedButton = false) {
     try {
       const url = new URL(app.url);
       const domain = url.hostname;
-      // Use higher resolution favicon
-      iconImg.src = `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}`;
 
-      // Fallback to predefined icon paths if they exist
-      iconImg.addEventListener("error", () => {
-        if (app.iconPath) {
-          iconImg.src = app.iconPath;
-        } else if (app.color && app.icon) {
-          // Create SVG fallback - v2.html styling
-          const iconContainer = document.createElement("div");
-          iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center border bg-white ${app.color.bg}`;
+      // Use consistent favicon API with better error handling
+      iconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
 
-          const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg"
-          );
-          svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
-          svg.setAttribute("fill", "currentColor");
-          svg.setAttribute("viewBox", app.icon.viewBox);
+      // Add error handling for failed favicon loads
+      iconImg.addEventListener(
+        "error",
+        () => {
+          // First fallback: try different favicon service
+          const altImg = new Image();
+          altImg.src = `https://icon.horse/icon/${domain}`;
 
-          const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path"
-          );
-          path.setAttribute("d", app.icon.path);
+          altImg.onload = () => {
+            iconImg.src = altImg.src;
+          };
 
-          svg.appendChild(path);
-          iconContainer.appendChild(svg);
-          iconImg.parentNode.replaceChild(iconContainer, iconImg);
-        } else {
-          // Create a simple colored div as fallback
-          const fallbackDiv = document.createElement("div");
-          fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold ${
-            app.color?.bg || "bg-gray-500"
-          }`;
-          fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
-          iconImg.parentNode.replaceChild(fallbackDiv, iconImg);
-        }
-      });
+          altImg.onerror = () => {
+            // Final fallback: use local icon or create letter icon
+            if (app.iconPath) {
+              iconImg.src = app.iconPath;
+            } else {
+              createLetterFallback();
+            }
+          };
+        },
+        { once: true }
+      );
+
       openBtn.appendChild(iconImg);
-    } catch (error) {
-      // Use local icon path if available or create fallback
-      if (app.iconPath) {
-        iconImg.src = app.iconPath;
-        openBtn.appendChild(iconImg);
-      } else if (app.color && app.icon) {
-        // Use SVG icon for apps without URL
-        const iconContainer = document.createElement("div");
-        iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center ${app.color.bg}`;
 
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg"
-        );
-        svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
-        svg.setAttribute("fill", "currentColor");
-        svg.setAttribute("viewBox", app.icon.viewBox);
-
-        const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        path.setAttribute("d", app.icon.path);
-
-        svg.appendChild(path);
-        iconContainer.appendChild(svg);
-        openBtn.appendChild(iconContainer);
-      } else {
-        // Create a simple colored div as fallback
+      function createLetterFallback() {
         const fallbackDiv = document.createElement("div");
-        fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold ${
+        fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold border bg-white ${
           app.color?.bg || "bg-gray-500"
         }`;
         fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
-        openBtn.appendChild(fallbackDiv);
+        iconImg.parentNode.replaceChild(fallbackDiv, iconImg);
+      }
+    } catch (error) {
+      // Fallback for invalid URLs
+      if (app.iconPath) {
+        iconImg.src = app.iconPath;
+        openBtn.appendChild(iconImg);
+      } else {
+        createSVGIcon();
       }
     }
   } else if (app.iconPath) {
     iconImg.src = app.iconPath;
     openBtn.appendChild(iconImg);
-  } else if (app.color && app.icon) {
-    // Use SVG icon for apps without URL
-    const iconContainer = document.createElement("div");
-    iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center ${app.color.bg}`;
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
-    svg.setAttribute("fill", "currentColor");
-    svg.setAttribute("viewBox", app.icon.viewBox);
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", app.icon.path);
-
-    svg.appendChild(path);
-    iconContainer.appendChild(svg);
-    openBtn.appendChild(iconContainer);
   } else {
-    // Create a simple colored div as fallback - v2.html styling
-    const fallbackDiv = document.createElement("div");
-    fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold border bg-white ${
-      app.color?.bg || "bg-gray-500"
-    }`;
-    fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
-    openBtn.appendChild(fallbackDiv);
+    createSVGIcon();
+  }
+
+  function createSVGIcon() {
+    if (app.color && app.icon) {
+      // Create SVG icon - v2.html styling
+      const iconContainer = document.createElement("div");
+      iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center border bg-white ${app.color.bg}`;
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+      svg.setAttribute("fill", "currentColor");
+      svg.setAttribute("viewBox", app.icon.viewBox);
+
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      path.setAttribute("d", app.icon.path);
+
+      svg.appendChild(path);
+      iconContainer.appendChild(svg);
+      openBtn.appendChild(iconContainer);
+    } else {
+      // Create letter fallback - v2.html styling
+      const fallbackDiv = document.createElement("div");
+      fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold border bg-white ${
+        app.color?.bg || "bg-gray-500"
+      }`;
+      fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
+      openBtn.appendChild(fallbackDiv);
+    }
   }
 
   // App name label - exact v2.html styling
@@ -764,35 +743,45 @@ function createAppButton(app, isPinnedButton = false) {
       favicon.className = "h-8 w-8 rounded-sm";
       favicon.alt = `${app.name} icon`;
 
-      // Try Google's favicon service first
-      favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+      // Try Google's favicon service with consistent parameters
+      favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
 
-      // Fallback to SVG on error (prevent multiple loads)
+      // Better fallback handling
       let errorHandled = false;
       favicon.addEventListener("error", () => {
         if (errorHandled) return;
         errorHandled = true;
 
-        // Remove failed favicon
-        favicon.remove();
+        // Try alternative favicon service
+        const altImg = new Image();
+        altImg.src = `https://icon.horse/icon/${domain}`;
 
-        // Create SVG fallback
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg"
-        );
-        svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
-        svg.setAttribute("fill", "currentColor");
-        svg.setAttribute("viewBox", app.icon.viewBox);
+        altImg.onload = () => {
+          favicon.src = altImg.src;
+          iconContainer.appendChild(favicon);
+        };
 
-        const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        path.setAttribute("d", app.icon.path);
+        altImg.onerror = () => {
+          // Final fallback to SVG icon
+          favicon.remove();
 
-        svg.appendChild(path);
-        iconContainer.appendChild(svg);
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("viewBox", app.icon.viewBox);
+
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute("d", app.icon.path);
+
+          svg.appendChild(path);
+          iconContainer.appendChild(svg);
+        };
       });
 
       iconContainer.appendChild(favicon);
@@ -3028,8 +3017,8 @@ function setupGridSizeToggle() {
   const radios = document.querySelectorAll('input[name="gridSize"]');
   if (!radios || radios.length === 0) return;
 
-  // Load saved preference (default: medium)
-  const savedSize = localStorage.getItem("gridSize") || "medium";
+  // Load saved preference (default: v4)
+  const savedSize = localStorage.getItem("gridSize") || "v4";
 
   // Set the correct radio button as checked
   radios.forEach((radio) => {
@@ -3232,7 +3221,7 @@ function renderInlineFavs() {
         const u = new URL(app.url);
         const img = document.createElement("img");
         img.className = "h-4 w-4 rounded-sm";
-        img.src = `https://www.google.com/s2/favicons?sz=64&domain=${u.hostname}`;
+        img.src = `https://www.google.com/s2/favicons?sz=32&domain=${u.hostname}`;
         img.alt = app.name;
         iconWrap.appendChild(img);
       } catch (err) {
@@ -3503,7 +3492,7 @@ function renderAppsDashboard() {
         const favicon = document.createElement("img");
         favicon.className = "w-6 h-6 rounded-sm";
         favicon.alt = `${app.name} icon`;
-        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
 
         favicon.addEventListener("error", () => {
           favicon.remove();
@@ -4218,7 +4207,7 @@ function renderHomePageSuggestions(suggestions) {
         const favicon = document.createElement("img");
         favicon.className = "h-6 w-6 rounded-sm";
         favicon.alt = `${suggestion.app.name} icon`;
-        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
         favicon.addEventListener("error", () => {
           favicon.remove();
           const svg = document.createElementNS(
@@ -4400,7 +4389,7 @@ function renderAutocompleteSuggestions(suggestions) {
         const favicon = document.createElement("img");
         favicon.className = "h-5 w-5 rounded-sm";
         favicon.alt = `${suggestion.app.name} icon`;
-        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
         favicon.addEventListener("error", () => {
           favicon.remove();
           const svg = document.createElementNS(
@@ -4922,7 +4911,7 @@ function renderHomePageFavApps() {
         const favicon = document.createElement("img");
         favicon.className = "h-8 w-8 rounded-sm";
         favicon.alt = `${app.name} icon`;
-        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
 
         favicon.addEventListener("error", () => {
           favicon.remove();
@@ -5705,7 +5694,7 @@ async function initializeApp() {
     loadPinnedApps();
 
     // Apply grid layout
-    const gridSize = localStorage.getItem("gridSize") || "medium";
+    const gridSize = localStorage.getItem("gridSize") || "v4";
     applyGridSize(gridSize);
     loadCustomApps();
 
@@ -5739,7 +5728,7 @@ async function initializeApp() {
     setupAppsVisibilityToggle();
 
     // Apply grid size
-    const savedSize = localStorage.getItem("gridSize") || "medium";
+    const savedSize = localStorage.getItem("gridSize") || "v4";
     applyGridSize(savedSize);
 
     // Render inline favs
