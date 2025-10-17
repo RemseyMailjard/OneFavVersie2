@@ -2952,7 +2952,7 @@ function setupAppsDashboardMinimize() {
     shortcutLauncher.addEventListener("click", (e) => {
       e.stopPropagation();
       const isGridHidden = appsGrid.classList.contains("hidden");
-      
+
       if (isGridHidden) {
         appsGrid.classList.remove("hidden");
         renderAppsDashboard(); // Load apps when showing
