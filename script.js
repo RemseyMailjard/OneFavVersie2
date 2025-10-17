@@ -131,6 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupContextMenu();
   setupQuickAppsMinimize();
   setupAppsDashboardMinimize();
+  setupAppsDashboardDrag();
   renderQuickApps();
   renderAppsDashboard();
   console.log("✅ UI systems geïnitialiseerd");
@@ -2860,8 +2861,8 @@ function setupShowShortcutsToggle() {
 
   if (!toggle || !widget) return;
 
-  // Load saved preference (default: true)
-  const showShortcuts = localStorage.getItem("showShortcuts") !== "false";
+  // Load saved preference (default: false)
+  const showShortcuts = localStorage.getItem("showShortcuts") === "true";
   toggle.checked = showShortcuts;
 
   // Apply initial visibility
@@ -3097,6 +3098,126 @@ function setupAppsDashboardMinimize() {
     if (toggle) {
       toggle.checked = false;
       localStorage.setItem("showAppsDashboard", "false");
+    }
+  });
+}
+
+// Setup drag functionality for Apps Dashboard Widget
+function setupAppsDashboardDrag() {
+  const widget = document.getElementById("appsDashboardWidget");
+  const dragHandle = document.getElementById("dashboardDragHandle");
+
+  if (!widget || !dragHandle) return;
+
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let initialX = 0;
+  let initialY = 0;
+
+  // Load saved position
+  const savedPosition = localStorage.getItem("appsDashboardPosition");
+  if (savedPosition) {
+    const { x, y } = JSON.parse(savedPosition);
+    widget.style.left = x + "px";
+    widget.style.top = y + "px";
+  }
+
+  dragHandle.addEventListener("mousedown", startDrag);
+
+  function startDrag(e) {
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    const rect = widget.getBoundingClientRect();
+    initialX = rect.left;
+    initialY = rect.top;
+
+    // Disable transition during drag
+    widget.style.transition = "none";
+
+    // Prevent text selection
+    e.preventDefault();
+
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", endDrag);
+
+    // Change cursor
+    document.body.style.cursor = "grabbing";
+    dragHandle.style.cursor = "grabbing";
+  }
+
+  function drag(e) {
+    if (!isDragging) return;
+
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+
+    let newX = initialX + deltaX;
+    let newY = initialY + deltaY;
+
+    // Constrain to viewport
+    const rect = widget.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width;
+    const maxY = window.innerHeight - rect.height;
+
+    newX = Math.max(0, Math.min(newX, maxX));
+    newY = Math.max(0, Math.min(newY, maxY));
+
+    widget.style.left = newX + "px";
+    widget.style.top = newY + "px";
+  }
+
+  function endDrag() {
+    if (!isDragging) return;
+
+    isDragging = false;
+
+    // Re-enable transition
+    widget.style.transition = "all 0.3s ease";
+
+    // Reset cursor
+    document.body.style.cursor = "";
+    dragHandle.style.cursor = "move";
+
+    // Save position
+    const rect = widget.getBoundingClientRect();
+    localStorage.setItem(
+      "appsDashboardPosition",
+      JSON.stringify({
+        x: rect.left,
+        y: rect.top,
+      })
+    );
+
+    document.removeEventListener("mousemove", drag);
+    document.removeEventListener("mouseup", endDrag);
+  }
+
+  // Touch support for mobile
+  dragHandle.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    startDrag({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      preventDefault: () => e.preventDefault(),
+    });
+  });
+
+  document.addEventListener("touchmove", (e) => {
+    if (isDragging) {
+      const touch = e.touches[0];
+      drag({
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+    }
+  });
+
+  document.addEventListener("touchend", () => {
+    if (isDragging) {
+      endDrag();
     }
   });
 }

@@ -404,6 +404,18 @@ body {
     color: white !important;
 }
 
+/* Dashboard drag handle */
+#dashboardDragHandle {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#dashboardDragHandle:active {
+    cursor: grabbing !important;
+}
+
 /* Dashboard widget slide animation */
 #appsDashboardWidget {
     animation: dashboardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
