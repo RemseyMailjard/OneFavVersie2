@@ -2,8 +2,11 @@
 let allApps = [];
 let customApps = [];
 let pinnedApps = [];
-let selectedColor = 'blue';
-let currentCategory = 'all';
+let collections = [];
+let selectedColor = "blue";
+let selectedCollectionColor = "blue";
+let currentCategory = "all";
+let editingCollectionId = null;
 
 // App menu toggle functionaliteit
 document.addEventListener("DOMContentLoaded", () => {
@@ -21,11 +24,17 @@ document.addEventListener("DOMContentLoaded", () => {
   loadApps();
   loadPinnedApps();
   loadCustomApps();
+  loadCollections();
   loadTheme();
 
   // Setup event listeners
   setupEventListeners();
   setupKeyboardShortcuts();
+
+  // Make functions globally available for inline onclick handlers
+  window.openCollection = openCollection;
+  window.editCollection = editCollection;
+  window.deleteCollection = deleteCollection;
 });
 
 /**
@@ -112,6 +121,68 @@ function setupEventListeners() {
     });
   });
 
+  // Collection color picker
+  document.querySelectorAll(".collection-color-picker").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      document
+        .querySelectorAll(".collection-color-picker")
+        .forEach((b) => b.classList.remove("ring-4"));
+      e.currentTarget.classList.add("ring-4");
+      selectedCollectionColor = e.currentTarget.getAttribute(
+        "data-collection-color"
+      );
+    });
+  });
+
+  // Collections Modal
+  const collectionsBtn = document.getElementById("collectionsBtn");
+  const collectionsModal = document.getElementById("collectionsModal");
+  const closeCollections = document.getElementById("closeCollections");
+  const createCollectionBtn = document.getElementById("createCollectionBtn");
+  const collectionFormModal = document.getElementById("collectionFormModal");
+  const cancelCollection = document.getElementById("cancelCollection");
+  const collectionForm = document.getElementById("collectionForm");
+
+  if (collectionsBtn) {
+    collectionsBtn.addEventListener("click", () => {
+      collectionsModal?.classList.remove("hidden");
+      collectionsModal?.classList.add("flex");
+      renderCollectionsList();
+    });
+  }
+
+  if (closeCollections) {
+    closeCollections.addEventListener("click", () => {
+      collectionsModal?.classList.add("hidden");
+      collectionsModal?.classList.remove("flex");
+    });
+  }
+
+  if (createCollectionBtn) {
+    createCollectionBtn.addEventListener("click", () => {
+      editingCollectionId = null;
+      document.getElementById("collectionFormTitle").textContent =
+        "Nieuwe Collection";
+      collectionForm?.reset();
+      selectedCollectionColor = "blue";
+      renderAppSelectionList();
+      collectionFormModal?.classList.remove("hidden");
+      collectionFormModal?.classList.add("flex");
+    });
+  }
+
+  if (cancelCollection) {
+    cancelCollection.addEventListener("click", () => {
+      collectionFormModal?.classList.add("hidden");
+      collectionFormModal?.classList.remove("flex");
+      editingCollectionId = null;
+    });
+  }
+
+  if (collectionForm) {
+    collectionForm.addEventListener("submit", handleCollectionSubmit);
+  }
+
   // Export/Import
   if (exportBtn) {
     exportBtn.addEventListener("click", exportConfiguration);
@@ -164,6 +235,14 @@ function setupEventListeners() {
       settingsModal?.classList.remove("flex");
       customAppModal?.classList.add("hidden");
       customAppModal?.classList.remove("flex");
+      const collectionsModal = document.getElementById("collectionsModal");
+      collectionsModal?.classList.add("hidden");
+      collectionsModal?.classList.remove("flex");
+      const collectionFormModal = document.getElementById(
+        "collectionFormModal"
+      );
+      collectionFormModal?.classList.add("hidden");
+      collectionFormModal?.classList.remove("flex");
     }
   });
 }
@@ -178,7 +257,7 @@ function setupKeyboardShortcuts() {
       e.preventDefault();
       const searchInput = document.getElementById("appSearch");
       const appMenu = document.getElementById("appMenu");
-      
+
       if (appMenu?.classList.contains("hidden")) {
         document.getElementById("appMenuBtn")?.click();
       }
@@ -203,6 +282,21 @@ function setupKeyboardShortcuts() {
     if ((e.ctrlKey || e.metaKey) && e.key === "t") {
       e.preventDefault();
       toggleTheme();
+    }
+
+    // Ctrl+G of Cmd+G - Open Collections
+    if ((e.ctrlKey || e.metaKey) && e.key === "g") {
+      e.preventDefault();
+      const collectionsModal = document.getElementById("collectionsModal");
+      const isHidden = collectionsModal?.classList.contains("hidden");
+      if (isHidden) {
+        collectionsModal?.classList.remove("hidden");
+        collectionsModal?.classList.add("flex");
+        renderCollectionsList();
+      } else {
+        collectionsModal?.classList.add("hidden");
+        collectionsModal?.classList.remove("flex");
+      }
     }
   });
 }
@@ -244,6 +338,7 @@ async function loadApps() {
     // Render apps
     renderApps(allApps);
     renderPinnedApps();
+    renderCollectionsQuickAccess();
 
     // Initialiseer sortable na het renderen
     initSortable();
@@ -265,16 +360,16 @@ function setupCategories(apps) {
 
   // Keep "Alle" button, add other categories
   const allBtn = categoryFilter.querySelector('[data-category="all"]');
-  
+
   categories.forEach((cat) => {
     const btn = document.createElement("button");
     btn.setAttribute("data-category", cat);
     btn.className =
       "category-btn whitespace-nowrap rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300";
     btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-    
+
     btn.addEventListener("click", () => filterByCategory(cat));
-    
+
     categoryFilter.appendChild(btn);
   });
 
@@ -293,13 +388,23 @@ function filterByCategory(category) {
   // Update active button
   document.querySelectorAll(".category-btn").forEach((btn) => {
     btn.classList.remove("active", "bg-blue-500", "text-white");
-    btn.classList.add("bg-gray-200", "text-gray-700", "dark:bg-gray-700", "dark:text-gray-300");
+    btn.classList.add(
+      "bg-gray-200",
+      "text-gray-700",
+      "dark:bg-gray-700",
+      "dark:text-gray-300"
+    );
   });
 
   const activeBtn = document.querySelector(`[data-category="${category}"]`);
   if (activeBtn) {
     activeBtn.classList.add("active", "bg-blue-500", "text-white");
-    activeBtn.classList.remove("bg-gray-200", "text-gray-700", "dark:bg-gray-700", "dark:text-gray-300");
+    activeBtn.classList.remove(
+      "bg-gray-200",
+      "text-gray-700",
+      "dark:bg-gray-700",
+      "dark:text-gray-300"
+    );
   }
 
   // Filter apps
@@ -383,7 +488,7 @@ function isPinned(appName) {
  */
 function togglePin(appName) {
   const index = pinnedApps.indexOf(appName);
-  
+
   if (index > -1) {
     pinnedApps.splice(index, 1);
   } else {
@@ -391,7 +496,11 @@ function togglePin(appName) {
   }
 
   savePinnedApps();
-  renderApps(allApps.filter((app) => currentCategory === "all" || app.category === currentCategory));
+  renderApps(
+    allApps.filter(
+      (app) => currentCategory === "all" || app.category === currentCategory
+    )
+  );
   renderPinnedApps();
 }
 
@@ -425,8 +534,7 @@ function createAppButton(app, isPinnedButton = false) {
   // Pin indicator
   if (isPinned(app.name) && !isPinnedButton) {
     const pinBadge = document.createElement("div");
-    pinBadge.className =
-      "absolute top-1 right-1 text-yellow-500";
+    pinBadge.className = "absolute top-1 right-1 text-yellow-500";
     pinBadge.innerHTML = "📌";
     button.appendChild(pinBadge);
   }
@@ -573,7 +681,7 @@ function handleCustomAppSubmit(e) {
 
   customApps.push(newApp);
   saveCustomApps();
-  
+
   // Close modal and reset form
   document.getElementById("customAppModal").classList.add("hidden");
   document.getElementById("customAppModal").classList.remove("flex");
@@ -607,6 +715,7 @@ function exportConfiguration() {
   const config = {
     customApps,
     pinnedApps,
+    collections,
     appOrder: localStorage.getItem("appOrder"),
     theme: localStorage.getItem("theme"),
   };
@@ -614,12 +723,14 @@ function exportConfiguration() {
   const dataStr = JSON.stringify(config, null, 2);
   const dataBlob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(dataBlob);
-  
+
   const link = document.createElement("a");
   link.href = url;
-  link.download = `onefav-config-${new Date().toISOString().split("T")[0]}.json`;
+  link.download = `onefav-config-${
+    new Date().toISOString().split("T")[0]
+  }.json`;
   link.click();
-  
+
   URL.revokeObjectURL(url);
 }
 
@@ -630,20 +741,26 @@ function importConfiguration() {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = ".json";
-  
+
   input.onchange = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       try {
         const config = JSON.parse(event.target.result);
-        
+
         if (config.customApps) {
           localStorage.setItem("customApps", JSON.stringify(config.customApps));
         }
         if (config.pinnedApps) {
           localStorage.setItem("pinnedApps", JSON.stringify(config.pinnedApps));
+        }
+        if (config.collections) {
+          localStorage.setItem(
+            "customCollections",
+            JSON.stringify(config.collections)
+          );
         }
         if (config.appOrder) {
           localStorage.setItem("appOrder", config.appOrder);
@@ -651,17 +768,17 @@ function importConfiguration() {
         if (config.theme) {
           localStorage.setItem("theme", config.theme);
         }
-        
+
         alert("Configuratie succesvol geïmporteerd!");
         location.reload();
       } catch (error) {
         alert("Fout bij importeren: " + error.message);
       }
     };
-    
+
     reader.readAsText(file);
   };
-  
+
   input.click();
 }
 
@@ -865,4 +982,433 @@ function applySavedOrder(apps) {
     console.error("Fout bij laden opgeslagen volgorde:", error);
     return apps;
   }
+}
+
+/**
+ * ==========================================
+ * COLLECTIONS MANAGEMENT
+ * ==========================================
+ */
+
+/**
+ * Laad collections vanuit JSON bestand en merge met localStorage
+ */
+async function loadCollections() {
+  try {
+    // Laad eerst de default collections uit JSON
+    const response = await fetch("collections.json");
+
+    if (response.ok) {
+      const data = await response.json();
+      const defaultCollections = data.collections || [];
+
+      // Check of we custom collections in localStorage hebben
+      const saved = localStorage.getItem("customCollections");
+      const customCollections = saved ? JSON.parse(saved) : [];
+
+      // Merge default en custom collections
+      // Custom collections overschrijven defaults met dezelfde ID
+      const mergedCollections = [...defaultCollections];
+
+      customCollections.forEach((customCol) => {
+        const index = mergedCollections.findIndex(
+          (col) => col.id === customCol.id
+        );
+        if (index >= 0) {
+          // Overschrijf default collection
+          mergedCollections[index] = customCol;
+        } else {
+          // Voeg nieuwe custom collection toe
+          mergedCollections.push(customCol);
+        }
+      });
+
+      collections = mergedCollections;
+
+      // Render collections in de UI
+      renderCollectionsQuickAccess();
+    } else {
+      console.warn("collections.json niet gevonden, gebruik localStorage");
+      loadCollectionsFromLocalStorage();
+    }
+  } catch (error) {
+    console.error("Fout bij laden collections uit JSON:", error);
+    loadCollectionsFromLocalStorage();
+  }
+
+  return collections;
+}
+
+/**
+ * Laad collections alleen uit localStorage (fallback)
+ */
+function loadCollectionsFromLocalStorage() {
+  const saved = localStorage.getItem("customCollections");
+  if (saved) {
+    try {
+      collections = JSON.parse(saved);
+    } catch (error) {
+      console.error("Fout bij laden collections:", error);
+      collections = [];
+    }
+  }
+}
+
+/**
+ * Sla collections op in localStorage
+ * Alleen custom/gewijzigde collections worden opgeslagen
+ */
+function saveCollections() {
+  // Sla alle collections op (inclusief gewijzigde defaults)
+  localStorage.setItem("customCollections", JSON.stringify(collections));
+}
+
+/**
+ * Check of een collection uit JSON komt of custom is
+ */
+function isDefaultCollection(collectionId) {
+  // Je kunt hier een lijst van default IDs bijhouden
+  const defaultIds = ["morning-routine", "work-tools", "content-creation"];
+  return defaultIds.includes(collectionId);
+}
+
+/**
+ * Haal volledige app objecten op voor een collection
+ * @param {Object} collection - Collection object met apps array
+ * @returns {Array} Array van app objecten uit apps.json
+ */
+function getCollectionApps(collection) {
+  if (!collection || !collection.apps) return [];
+  
+  return collection.apps
+    .map((appName) => allApps.find((app) => app.name === appName))
+    .filter((app) => app !== undefined); // Filter out apps die niet gevonden zijn
+}
+
+/**
+ * Valideer of alle apps in een collection bestaan
+ * @param {Object} collection - Collection object
+ * @returns {Object} Object met valid en missing apps
+ */
+function validateCollectionApps(collection) {
+  const validApps = [];
+  const missingApps = [];
+  
+  collection.apps.forEach((appName) => {
+    const app = allApps.find((a) => a.name === appName);
+    if (app) {
+      validApps.push(app);
+    } else {
+      missingApps.push(appName);
+    }
+  });
+  
+  return { validApps, missingApps };
+}
+
+/**
+ * Render de lijst met collections in de Collections modal
+ */
+function renderCollectionsList() {
+  const listContainer = document.getElementById("collectionsList");
+  if (!listContainer) return;
+
+  listContainer.innerHTML = "";
+
+  if (collections.length === 0) {
+    listContainer.innerHTML = `
+      <div class="text-center py-12">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Nog geen collections aangemaakt</p>
+      </div>
+    `;
+    return;
+  }
+
+  collections.forEach((collection) => {
+    const item = document.createElement("div");
+    item.className = `collection-item flex items-center justify-between p-4 rounded-lg bg-${collection.color}-50 dark:bg-${collection.color}-900/20 border border-${collection.color}-200 dark:border-${collection.color}-800`;
+
+    const isDefault = isDefaultCollection(collection.id);
+    const defaultBadge = isDefault
+      ? '<span class="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-400">Default</span>'
+      : "";
+
+    item.innerHTML = `
+      <div class="flex-1 cursor-pointer" data-collection-id="${collection.id}">
+        <h4 class="font-semibold text-${collection.color}-900 dark:text-${
+      collection.color
+    }-100 flex items-center">${collection.name}${defaultBadge}</h4>
+        <p class="text-sm text-${collection.color}-700 dark:text-${
+      collection.color
+    }-300">${collection.description || ""}</p>
+        <p class="text-xs text-${collection.color}-600 dark:text-${
+      collection.color
+    }-400 mt-1">${collection.apps.length} apps</p>
+      </div>
+      <div class="flex gap-2 ml-4">
+        <button 
+          onclick="openCollection('${collection.id}')"
+          class="px-3 py-1 text-sm bg-${
+            collection.color
+          }-600 text-white rounded hover:bg-${
+      collection.color
+    }-700 transition-colors"
+          title="Open alle apps"
+        >
+          Open All
+        </button>
+        <button 
+          onclick="editCollection('${collection.id}')"
+          class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          title="Bewerk collection"
+        >
+          ✏️
+        </button>
+        <button 
+          onclick="deleteCollection('${collection.id}')"
+          class="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+          title="Verwijder collection"
+        >
+          🗑️
+        </button>
+      </div>
+    `;
+
+    listContainer.appendChild(item);
+  });
+}
+
+/**
+ * Render app selectie checkboxes in het Collection Form
+ */
+function renderAppSelectionList() {
+  const container = document.getElementById("appSelectionList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (allApps.length === 0) {
+    container.innerHTML =
+      '<p class="text-sm text-gray-500 dark:text-gray-400">Geen apps beschikbaar</p>';
+    return;
+  }
+
+  allApps.forEach((app) => {
+    const label = document.createElement("label");
+    label.className =
+      "flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.name = "collectionApp";
+    checkbox.value = app.name;
+    checkbox.className =
+      "w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500";
+
+    const appInfo = document.createElement("div");
+    appInfo.className = "flex items-center gap-2";
+    appInfo.innerHTML = `
+      <div class="${app.color} rounded p-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="${app.icon.viewBox}" fill="currentColor">
+          <path d="${app.icon.path}" />
+        </svg>
+      </div>
+      <span class="text-sm text-gray-700 dark:text-gray-200">${app.name}</span>
+    `;
+
+    label.appendChild(checkbox);
+    label.appendChild(appInfo);
+    container.appendChild(label);
+  });
+}
+
+/**
+ * Render collections in het quick access gedeelte van het app menu
+ */
+function renderCollectionsQuickAccess() {
+  const container = document.getElementById("collectionsQuickAccess");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (collections.length === 0) {
+    container.innerHTML =
+      '<p class="text-xs text-gray-400 dark:text-gray-500 italic">Geen collections</p>';
+    return;
+  }
+
+  collections.slice(0, 5).forEach((collection) => {
+    const button = document.createElement("button");
+    button.className = `flex items-center gap-2 px-3 py-2 rounded-lg bg-${collection.color}-50 dark:bg-${collection.color}-900/20 border border-${collection.color}-200 dark:border-${collection.color}-800 hover:bg-${collection.color}-100 dark:hover:bg-${collection.color}-900/30 transition-colors text-left w-full`;
+    button.innerHTML = `
+      <span class="text-${collection.color}-600 dark:text-${collection.color}-400">📁</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium text-${collection.color}-900 dark:text-${collection.color}-100 truncate">${collection.name}</div>
+        <div class="text-xs text-${collection.color}-600 dark:text-${collection.color}-400">${collection.apps.length} apps</div>
+      </div>
+    `;
+    button.onclick = () => openCollection(collection.id);
+    container.appendChild(button);
+  });
+}
+
+/**
+ * Open alle apps in een collection
+ */
+function openCollection(collectionId) {
+  const collection = collections.find((c) => c.id === collectionId);
+  if (!collection) {
+    console.error("Collection niet gevonden:", collectionId);
+    return;
+  }
+
+  collection.apps.forEach((appName) => {
+    const app = allApps.find((a) => a.name === appName);
+    if (app && app.url) {
+      window.open(app.url, "_blank");
+    }
+  });
+
+  // Sluit app menu
+  const appMenu = document.getElementById("appMenu");
+  appMenu?.classList.add("hidden");
+  appMenu?.classList.remove("menu-enter");
+}
+
+/**
+ * Bewerk een bestaande collection
+ */
+function editCollection(collectionId) {
+  const collection = collections.find((c) => c.id === collectionId);
+  if (!collection) return;
+
+  editingCollectionId = collectionId;
+
+  // Vul formulier
+  const nameInput = document.getElementById("collectionName");
+  const descInput = document.getElementById("collectionDescription");
+
+  if (nameInput) nameInput.value = collection.name;
+  if (descInput) descInput.value = collection.description || "";
+
+  // Selecteer kleur
+  selectedCollectionColor = collection.color;
+  document.querySelectorAll(".collection-color-picker").forEach((btn) => {
+    btn.classList.remove("ring-4");
+  });
+  const colorBtn = document.querySelector(
+    `.collection-color-picker[data-collection-color="${collection.color}"]`
+  );
+  if (colorBtn) {
+    colorBtn.classList.add("ring-4");
+  }
+
+  // Vink apps aan
+  renderAppSelectionList();
+  setTimeout(() => {
+    document
+      .querySelectorAll('input[name="collectionApp"]')
+      .forEach((checkbox) => {
+        checkbox.checked = collection.apps.includes(checkbox.value);
+      });
+  }, 100);
+
+  // Open form modal
+  const collectionsModal = document.getElementById("collectionsModal");
+  collectionsModal?.classList.add("hidden");
+  collectionsModal?.classList.remove("flex");
+
+  const formModal = document.getElementById("collectionFormModal");
+  formModal?.classList.remove("hidden");
+  formModal?.classList.add("flex");
+}
+
+/**
+ * Verwijder een collection
+ */
+function deleteCollection(collectionId) {
+  const collection = collections.find((c) => c.id === collectionId);
+  if (!collection) return;
+
+  if (confirm(`Weet je zeker dat je "${collection.name}" wilt verwijderen?`)) {
+    collections = collections.filter((c) => c.id !== collectionId);
+    saveCollections();
+    renderCollectionsList();
+    renderCollectionsQuickAccess();
+  }
+}
+
+/**
+ * Handle collection form submit (create or edit)
+ */
+function handleCollectionSubmit(e) {
+  e.preventDefault();
+
+  const nameInput = document.getElementById("collectionName");
+  const descInput = document.getElementById("collectionDescription");
+  const selectedApps = Array.from(
+    document.querySelectorAll('input[name="collectionApp"]:checked')
+  ).map((cb) => cb.value);
+
+  const name = nameInput?.value.trim();
+  const description = descInput?.value.trim();
+
+  if (!name) {
+    alert("Voer een naam in voor de collection");
+    return;
+  }
+
+  if (selectedApps.length === 0) {
+    alert("Selecteer minimaal één app");
+    return;
+  }
+
+  if (editingCollectionId) {
+    // Bewerk bestaande collection
+    const collection = collections.find((c) => c.id === editingCollectionId);
+    if (collection) {
+      collection.name = name;
+      collection.description = description;
+      collection.color = selectedCollectionColor;
+      collection.apps = selectedApps;
+    }
+    editingCollectionId = null;
+  } else {
+    // Maak nieuwe collection
+    const newCollection = {
+      id: Date.now().toString(),
+      name: name,
+      description: description,
+      color: selectedCollectionColor,
+      apps: selectedApps,
+    };
+    collections.push(newCollection);
+  }
+
+  saveCollections();
+  renderCollectionsList();
+  renderCollectionsQuickAccess();
+
+  // Reset form
+  nameInput.value = "";
+  descInput.value = "";
+  selectedCollectionColor = "blue";
+  document.querySelectorAll(".collection-color-picker").forEach((btn) => {
+    btn.classList.remove("ring-4");
+  });
+  document
+    .querySelector('.collection-color-picker[data-collection-color="blue"]')
+    ?.classList.add("ring-4");
+
+  // Sluit form modal, open collections modal
+  const formModal = document.getElementById("collectionFormModal");
+  formModal?.classList.add("hidden");
+  formModal?.classList.remove("flex");
+
+  const collectionsModal = document.getElementById("collectionsModal");
+  collectionsModal?.classList.remove("hidden");
+  collectionsModal?.classList.add("flex");
 }

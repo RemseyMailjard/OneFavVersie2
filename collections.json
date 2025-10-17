@@ -1,0 +1,38 @@
+{
+    "collections": [
+        {
+            "id": "morning-routine",
+            "name": "Morning Routine",
+            "description": "Apps die ik elke ochtend gebruik",
+            "color": "blue",
+            "apps": [
+                "Gmail",
+                "Calendar",
+                "YouTube"
+            ]
+        },
+        {
+            "id": "work-tools",
+            "name": "Work Tools",
+            "description": "Essentiële werk applicaties",
+            "color": "purple",
+            "apps": [
+                "Gmail",
+                "Drive",
+                "Docs",
+                "Sheets"
+            ]
+        },
+        {
+            "id": "content-creation",
+            "name": "Content Creation",
+            "description": "Voor het maken van content",
+            "color": "orange",
+            "apps": [
+                "YouTube",
+                "Photos",
+                "Slides"
+            ]
+        }
+    ]
+}

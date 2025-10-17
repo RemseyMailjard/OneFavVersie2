@@ -50,6 +50,19 @@
             </svg>
         </button>
 
+        <!-- Collections Button -->
+        <button id="collectionsBtn" type="button"
+            class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            aria-label="Collections" title="App Collections (Ctrl+G)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+            </svg>
+        </button>
+
         <!-- Waffel icoon button -->
         <button id="appMenuBtn" type="button"
             class="group relative rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -116,6 +129,14 @@
                             Alle
                         </button>
                         <!-- Categorieën worden dynamisch geladen -->
+                    </div>
+                </div>
+
+                <!-- Collections Section -->
+                <div id="collectionsSection" class="hidden border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+                    <p class="mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400">📁 Collections</p>
+                    <div id="collectionsQuickAccess" class="space-y-2">
+                        <!-- Collections worden hier dynamisch geladen -->
                     </div>
                 </div>
 
@@ -250,6 +271,8 @@
                                 class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+N</kbd></div>
                         <div class="flex justify-between"><span>Theme wisselen</span><kbd
                                 class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+T</kbd></div>
+                        <div class="flex justify-between"><span>Collections beheren</span><kbd
+                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+G</kbd></div>
                     </div>
                 </div>
                 <button type="button" id="closeSettings"
@@ -257,6 +280,110 @@
                     Sluiten
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Collections Modal -->
+    <div id="collectionsModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800"
+            style="max-height: 90vh; overflow-y: auto;">
+            <div class="mb-6 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">📁 App Collections</h3>
+                <button id="createCollectionBtn" type="button"
+                    class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
+                    + Nieuwe Collection
+                </button>
+            </div>
+
+            <!-- Collections List -->
+            <div id="collectionsList" class="space-y-4">
+                <!-- Collections worden hier dynamisch geladen -->
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" id="closeCollections"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                    Sluiten
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Collection Modal -->
+    <div id="collectionFormModal"
+        class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100" id="collectionFormTitle">Nieuwe
+                Collection</h3>
+            <form id="collectionForm" class="space-y-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Collection
+                        Naam</label>
+                    <input type="text" id="collectionName" required
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Bijv. Morning Routine, Work Tools" />
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Beschrijving
+                        (optioneel)</label>
+                    <textarea id="collectionDescription" rows="2"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Wat is het doel van deze collection?"></textarea>
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Kleur</label>
+                    <div class="grid grid-cols-8 gap-2">
+                        <button type="button" data-collection-color="blue"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-blue-500 ring-2 ring-transparent hover:ring-blue-600"
+                            title="Blauw"></button>
+                        <button type="button" data-collection-color="purple"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-purple-500 ring-2 ring-transparent hover:ring-purple-600"
+                            title="Paars"></button>
+                        <button type="button" data-collection-color="pink"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-pink-500 ring-2 ring-transparent hover:ring-pink-600"
+                            title="Roze"></button>
+                        <button type="button" data-collection-color="red"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-red-500 ring-2 ring-transparent hover:ring-red-600"
+                            title="Rood"></button>
+                        <button type="button" data-collection-color="orange"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-orange-500 ring-2 ring-transparent hover:ring-orange-600"
+                            title="Oranje"></button>
+                        <button type="button" data-collection-color="yellow"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-yellow-500 ring-2 ring-transparent hover:ring-yellow-600"
+                            title="Geel"></button>
+                        <button type="button" data-collection-color="green"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-green-500 ring-2 ring-transparent hover:ring-green-600"
+                            title="Groen"></button>
+                        <button type="button" data-collection-color="teal"
+                            class="collection-color-picker h-10 w-10 rounded-full bg-teal-500 ring-2 ring-transparent hover:ring-teal-600"
+                            title="Turquoise"></button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Selecteer
+                        Apps</label>
+                    <div class="max-h-64 overflow-y-auto rounded-lg border border-gray-300 p-3 dark:border-gray-600">
+                        <div id="appSelectionList" class="grid grid-cols-2 gap-2">
+                            <!-- App checkboxes worden hier dynamisch geladen -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" id="cancelCollection"
+                        class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                        Annuleer
+                    </button>
+                    <button type="submit"
+                        class="flex-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
+                        Opslaan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
