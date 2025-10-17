@@ -625,6 +625,21 @@
 
             <!-- Fav Apps Geïntegreerd op Homepage -->
             <div class="mt-12">
+                <!-- Header met tip -->
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Mijn Favorieten</h2>
+                    <button id="quickAddFromHomepage" type="button"
+                        class="flex items-center gap-1.5 rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-600 hover:shadow-md"
+                        title="Voeg een app toe (Ctrl+N)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none"
+                            stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        App toevoegen
+                    </button>
+                </div>
+
                 <!-- Category Filter -->
                 <div class="mb-4">
                     <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1" id="homePageCategoryFilter">
@@ -900,6 +915,25 @@
             </a>
         </p>
     </footer>
+
+    <!-- Floating Action Button (FAB) om snel een app toe te voegen -->
+    <button id="quickAddAppFAB" type="button"
+        class="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-all duration-200 hover:bg-blue-600 hover:scale-110 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 group"
+        aria-label="Voeg snel een app toe (Ctrl+N)" title="Voeg app toe (Ctrl+N)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            class="h-6 w-6 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        <!-- Tooltip -->
+        <span
+            class="absolute bottom-full right-0 mb-2 hidden group-hover:block whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white shadow-lg dark:bg-gray-700">
+            Voeg app toe (Ctrl+N)
+            <span
+                class="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></span>
+        </span>
+    </button>
 
     <!-- External JavaScript -->
     <script src="script.js" defer></script>

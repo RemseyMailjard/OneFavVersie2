@@ -4231,6 +4231,40 @@ function setupMainButtons() {
   if (themeToggle) {
     themeToggle.addEventListener("click", toggleTheme);
   }
+
+  // Quick Add App FAB
+  const quickAddAppFAB = document.getElementById("quickAddAppFAB");
+  if (quickAddAppFAB) {
+    quickAddAppFAB.addEventListener("click", () => {
+      const modal = document.getElementById("customAppModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        // Focus on the name input
+        setTimeout(() => {
+          const nameInput = document.getElementById("customAppName");
+          if (nameInput) nameInput.focus();
+        }, 100);
+      }
+    });
+  }
+
+  // Quick Add from Homepage button
+  const quickAddFromHomepage = document.getElementById("quickAddFromHomepage");
+  if (quickAddFromHomepage) {
+    quickAddFromHomepage.addEventListener("click", () => {
+      const modal = document.getElementById("customAppModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        // Focus on the name input
+        setTimeout(() => {
+          const nameInput = document.getElementById("customAppName");
+          if (nameInput) nameInput.focus();
+        }, 100);
+      }
+    });
+  }
 }
 
 // Setup form handlers
@@ -4610,6 +4644,18 @@ async function initializeApp() {
     // Render apps dashboard
     renderAppsDashboard();
     setupDashboardCategoryFilter();
+
+    // Add pulse animation to FAB after a short delay (to draw attention)
+    setTimeout(() => {
+      const fab = document.getElementById("quickAddAppFAB");
+      if (fab) {
+        fab.classList.add("pulse");
+        // Remove pulse class after animation completes
+        setTimeout(() => {
+          fab.classList.remove("pulse");
+        }, 6000); // 3 pulses × 2s = 6s
+      }
+    }, 1500);
 
     console.log("✅ OneFav initialized successfully!");
   } catch (error) {
