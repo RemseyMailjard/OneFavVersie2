@@ -522,16 +522,45 @@ body {
 }
 
 /* Homepage chip buttons */
+.homepage-chip-btn {
+    border-color: rgb(229 231 235) !important; /* gray-200 - neutrale border */
+    background-color: rgb(255 255 255) !important; /* witte achtergrond */
+    color: rgb(75 85 99) !important; /* gray-600 - neutrale tekst */
+    font-weight: 400; /* normale font weight */
+    -webkit-user-select: none;
+    user-select: none;
+    transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1), 
+                background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.homepage-chip-btn:hover {
+    background-color: rgb(249 250 251) !important; /* gray-50 - subtiele hover */
+    border-color: rgb(209 213 219) !important; /* gray-300 */
+}
+
 .homepage-chip-btn.active {
-    background-color: rgb(125 211 252) !important; /* sky-300 */
-    border-color: rgb(14 165 233) !important; /* sky-500 */
-    color: rgb(14 116 144) !important; /* sky-700 */
+    border-color: rgb(125 211 252) !important; /* sky-300 - lichtblauw outline alleen */
+    background-color: rgb(255 255 255) !important; /* wit - zelfde als normale buttons */
+    color: rgb(3 105 161) !important; /* sky-700 - donkerblauw tekst */
+    font-weight: 500; /* medium weight voor actieve */
 }
 
 .dark .homepage-chip-btn.active {
-    background-color: rgb(12 74 110 / 0.3) !important; /* sky-900/30 */
-    border-color: rgb(3 105 161) !important; /* sky-700 */
-    color: rgb(125 211 252) !important; /* sky-300 */
+    background-color: rgb(30 41 59) !important; /* slate-800 - zelfde donkere achtergrond als normale buttons */
+    border-color: rgb(125 211 252) !important; /* sky-300 - lichtblauw outline */
+    color: rgb(125 211 252) !important; /* sky-300 - lichtblauw tekst in dark mode */
+}
+
+.dark .homepage-chip-btn {
+    border-color: rgb(75 85 99) !important; /* gray-600 - neutrale border in dark mode */
+    background-color: rgb(30 41 59) !important; /* slate-800 - donkere achtergrond */
+    color: rgb(156 163 175) !important; /* gray-400 - neutrale tekst in dark mode */
+}
+
+.dark .homepage-chip-btn:hover {
+    background-color: rgb(55 65 81) !important; /* gray-700 - subtiele hover in dark mode */
+    border-color: rgb(107 114 128) !important; /* gray-500 */
 }
 
 /* Context menu */
