@@ -19,7 +19,8 @@
                 "bg": "bg-green-100",
                 "text": "text-green-600"
             },
-            "url": "https://chat.openai.com"
+            "url": "https://chat.openai.com",
+            "description": "Geavanceerde AI-chatbot van OpenAI voor conversaties en creativiteit."
         },
         {
             "name": "Gmail",
@@ -59,7 +60,8 @@
                 "bg": "bg-blue-100",
                 "text": "text-blue-600"
             },
-            "url": "https://outlook.com"
+            "url": "https://outlook.com",
+            "description": "Email verzenden, plannen en taken instellen."
         },
         {
             "name": "Teams",
@@ -79,7 +81,8 @@
                 "bg": "bg-purple-100",
                 "text": "text-purple-600"
             },
-            "url": "https://teams.microsoft.com"
+            "url": "https://teams.microsoft.com",
+            "description": "Vergaderen, delen en chatten."
         },
         {
             "name": "OneDrive",
@@ -99,7 +102,8 @@
                 "bg": "bg-blue-100",
                 "text": "text-blue-600"
             },
-            "url": "https://onedrive.live.com"
+            "url": "https://onedrive.live.com",
+            "description": "Toegang tot bestanden vanaf elk apparaat."
         },
         {
             "name": "Copilot",
@@ -119,7 +123,8 @@
                 "bg": "bg-cyan-100",
                 "text": "text-cyan-600"
             },
-            "url": "https://copilot.microsoft.com"
+            "url": "https://copilot.microsoft.com",
+            "description": "AI-assistent van Microsoft voor web, werk en creativiteit."
         },
         {
             "name": "YouTube",
@@ -139,7 +144,8 @@
                 "bg": "bg-red-100",
                 "text": "text-red-600"
             },
-            "url": "https://youtube.com"
+            "url": "https://youtube.com",
+            "description": "Video's bekijken, delen en uploaden."
         },
         {
             "name": "LinkedIn",
@@ -159,7 +165,8 @@
                 "bg": "bg-blue-100",
                 "text": "text-blue-600"
             },
-            "url": "https://linkedin.com"
+            "url": "https://linkedin.com",
+            "description": "Professioneel netwerken en zakelijke connecties."
         },
         {
             "name": "Settings",
@@ -199,7 +206,593 @@
                 "bg": "bg-orange-100",
                 "text": "text-orange-600"
             },
-            "url": "https://claude.ai"
+            "url": "https://claude.ai",
+            "description": "AI-assistent van Anthropic, veilig en nuttig voor diverse taken."
+        },
+        {
+            "name": "GPT Store",
+            "url": "https://chatgpt.com/gpts",
+            "category": "GPTs",
+            "tags": [
+                "ai",
+                "gpts",
+                "store"
+            ],
+            "iconPath": "https://cdn.oaistatic.com/_next/static/media/apple-touch-icon.59f2e898.png",
+            "description": "Ontdek en gebruik custom GPTs gemaakt door de community."
+        },
+        {
+            "name": "Mijn GPTs",
+            "url": "https://chatgpt.com/gpts/mine",
+            "category": "GPTs",
+            "tags": [
+                "ai",
+                "gpts",
+                "persoonlijk"
+            ],
+            "iconPath": "https://cdn.oaistatic.com/_next/static/media/apple-touch-icon.59f2e898.png",
+            "description": "Beheer en gebruik je eigen aangemaakte GPTs."
+        },
+        {
+            "name": "GitHub",
+            "url": "https://github.com",
+            "category": "🤖 Apps",
+            "tags": [
+                "code",
+                "development"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=github.com",
+            "description": "Code delen en samenwerken met versiebeheer."
+        },
+        {
+            "name": "Perplexity",
+            "url": "https://perplexity.ai",
+            "category": "AI-tools",
+            "tags": [
+                "ai",
+                "search"
+            ],
+            "iconPath": "app-icons/perplexity.jpeg",
+            "description": "AI-zoekmachine die antwoorden geeft met bronvermelding."
+        },
+        {
+            "name": "SharePoint",
+            "url": "https://sharepoint.com",
+            "category": "🏢 M365",
+            "tags": [
+                "intranet",
+                "collaboration"
+            ],
+            "iconPath": "app-icons/Sharepoint.svg",
+            "description": "Content, kennis en apps delen binnen uw organisatie."
+        },
+        {
+            "name": "Gemini",
+            "url": "https://gemini.google.com",
+            "category": "AI-tools",
+            "tags": [
+                "ai",
+                "google"
+            ],
+            "iconPath": "https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg",
+            "description": "Google's nieuwste AI-model voor conversaties en productiviteit."
+        },
+        {
+            "name": "Windows Updates",
+            "url": "ms-settings:windowsupdate",
+            "category": "🪟 Windows",
+            "tags": [
+                "system",
+                "updates"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Open Windows Update voor systeem updates."
+        },
+        {
+            "name": "AutoGPT",
+            "url": "https://news.agpt.co/",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "autonomous"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=agpt.co",
+            "description": "Autonome AI-agents die doelen zelfstandig bereiken."
+        },
+        {
+            "name": "Notion",
+            "url": "https://notion.so",
+            "category": "🤖 Apps",
+            "tags": [
+                "productivity",
+                "notes"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=notion.so",
+            "description": "All-in-one workspace voor notities, taken en projecten."
+        },
+        {
+            "name": "Midjourney",
+            "url": "https://midjourney.com",
+            "category": "AI-tools",
+            "tags": [
+                "ai",
+                "image",
+                "art"
+            ],
+            "iconPath": "app-icons/midjourney.svg",
+            "description": "AI-beeldgenerator voor creatieve en artistieke afbeeldingen."
+        },
+        {
+            "name": "Word",
+            "url": "https://www.office.com/launch/word",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "documenten"
+            ],
+            "iconPath": "app-icons/Word.svg",
+            "description": "Documenten maken en bewerken."
+        },
+        {
+            "name": "Excel",
+            "url": "https://www.office.com/launch/excel",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "spreadsheets"
+            ],
+            "iconPath": "app-icons/ExceL.svg",
+            "description": "Spreadsheets maken en data analyseren."
+        },
+        {
+            "name": "PowerPoint",
+            "url": "https://www.office.com/launch/powerpoint",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "presentaties"
+            ],
+            "iconPath": "app-icons/PowerPoint.svg",
+            "description": "Presentaties maken en delen."
+        },
+        {
+            "name": "OneNote",
+            "url": "https://www.onenote.com/notebooks",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "notities"
+            ],
+            "iconPath": "app-icons/OneNote.svg",
+            "description": "Aantekeningen maken en delen."
+        },
+        {
+            "name": "Planner",
+            "url": "https://tasks.office.com/",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "taken"
+            ],
+            "iconPath": "app-icons/microsoft-planner.avif",
+            "description": "Teamwerk organiseren en taken toewijzen."
+        },
+        {
+            "name": "Forms",
+            "url": "https://forms.office.com/",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "enquetes"
+            ],
+            "iconPath": "app-icons/microsoft-forms.png",
+            "description": "Enquêtes en quizzen maken en resultaten bekijken."
+        },
+        {
+            "name": "Power BI",
+            "url": "https://app.powerbi.com/",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "analytics"
+            ],
+            "iconPath": "app-icons/powerbi.avif",
+            "description": "Creëer dynamische en boeiende gegevensdashboards."
+        },
+        {
+            "name": "Power Apps",
+            "url": "https://make.powerapps.com/",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "low-code"
+            ],
+            "iconPath": "app-icons/PowerApps.svg",
+            "description": "Bouw mobiele apps en web-apps met uw data."
+        },
+        {
+            "name": "Power Automate",
+            "url": "https://make.powerautomate.com/",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "automation"
+            ],
+            "iconPath": "app-icons/powerautomate.webp",
+            "description": "Synchroniseer bestanden om uw werk te vereenvoudigen."
+        },
+        {
+            "name": "Loop",
+            "url": "https://loop.microsoft.com/",
+            "category": "🏢 M365",
+            "tags": [
+                "microsoft",
+                "samenwerken"
+            ],
+            "iconPath": "app-icons/loop.png",
+            "description": "Samen ideeën verzamelen, pagina's maken en besluiten nemen."
+        },
+        {
+            "name": "Windows Instellingen",
+            "url": "ms-settings:",
+            "category": "🪟 Windows",
+            "tags": [
+                "windows",
+                "settings"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Open Windows Instellingen voor systeem configuratie."
+        },
+        {
+            "name": "Windows Terminal",
+            "url": "wt://",
+            "category": "🪟 Windows",
+            "tags": [
+                "windows",
+                "terminal"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Open Windows Terminal voor command-line toegang."
+        },
+        {
+            "name": "Snip & Sketch",
+            "url": "ms-screenclip:",
+            "category": "🪟 Windows",
+            "tags": [
+                "windows",
+                "screenshot"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Maak schermafbeeldingen en annoteer ze direct."
+        },
+        {
+            "name": "Notepad",
+            "url": "ms-notepad:",
+            "category": "🪟 Windows",
+            "tags": [
+                "windows",
+                "text"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Open Notepad voor snel tekstbewerking."
+        },
+        {
+            "name": "Microsoft Edge",
+            "url": "microsoft-edge:",
+            "category": "🪟 Windows",
+            "tags": [
+                "microsoft",
+                "browser"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Open Microsoft Edge browser."
+        },
+        {
+            "name": "Windows Beveiliging",
+            "url": "windowsdefender:",
+            "category": "🪟 Windows",
+            "tags": [
+                "windows",
+                "security"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.com",
+            "description": "Open Windows Beveiliging voor virus- en bedreigingsbescherming."
+        },
+        {
+            "name": "NotebookLM",
+            "url": "https://notebooklm.google.com/",
+            "category": "AI-tools",
+            "tags": [
+                "ai",
+                "research"
+            ],
+            "iconPath": "app-icons/notebooklm.png",
+            "description": "AI-onderzoeksassistent van Google voor notities en documenten."
+        },
+        {
+            "name": "Google Veo 3",
+            "url": "https://aistudio.google.com/apps/bundled/genai_videos_with_veo",
+            "category": "AI-tools",
+            "tags": [
+                "ai",
+                "video"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=aistudio.google.com",
+            "description": "AI-videogenerator van Google voor het maken van professionele video's."
+        },
+        {
+            "name": "Google AI Studio",
+            "url": "https://aistudio.google.com/",
+            "category": "AI-tools",
+            "tags": [
+                "ai",
+                "development"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=aistudio.google.com",
+            "description": "Bouw en prototype AI-applicaties met Gemini modellen."
+        },
+        {
+            "name": "n8n AI Agents",
+            "url": "https://n8n.io/",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "automation",
+                "workflows"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=n8n.io",
+            "description": "Workflow automatisering met AI-agent integraties."
+        },
+        {
+            "name": "LangChain",
+            "url": "https://www.langchain.com/",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "development"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=langchain.com",
+            "description": "Bouw LLM-applicaties en agents met tools en geheugen."
+        },
+        {
+            "name": "CrewAI",
+            "url": "https://www.crewai.com/",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "agents"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=crewai.com",
+            "description": "Platform voor het coördineren van collaboratieve AI-agents."
+        },
+        {
+            "name": "Replit AI Agents",
+            "url": "https://replit.com/site/ai",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "code"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=replit.com",
+            "description": "AI-agents die code schrijven, debuggen en uitvoeren."
+        },
+        {
+            "name": "AutoGen",
+            "url": "https://microsoft.github.io/autogen/",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "microsoft"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=microsoft.github.io",
+            "description": "Framework voor het bouwen van multi-agent conversaties."
+        },
+        {
+            "name": "Zapier AI Actions",
+            "url": "https://actions.zapier.com/",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "automation",
+                "workflows"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=zapier.com",
+            "description": "Verbind AI-agents met 6000+ apps en automatiseer workflows."
+        },
+        {
+            "name": "Schrijf Buddy",
+            "url": "https://chatgpt.com/g/g-67e68d58c640819190a19139af19bd50",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "schrijven"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com",
+            "description": "ChatGPT assistent voor het schrijven van teksten en content."
+        },
+        {
+            "name": "E-mail Buddy",
+            "url": "https://chatgpt.com/g/g-67e29f2fa0e48191bcefa2a4b988e9ef-e-mail-buddy",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "email"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com",
+            "description": "ChatGPT assistent voor het schrijven en optimaliseren van e-mails."
+        },
+        {
+            "name": "Reistijd Buddy",
+            "url": "https://chatgpt.com/g/g-67e672e8c6548191a9dcae13bfd5cc26-reistijd-buddy",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "reizen"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com",
+            "description": "ChatGPT assistent voor reisplanning en reistijd berekeningen."
+        },
+        {
+            "name": "Moneybird Assistent",
+            "url": "https://chatgpt.com/g/g-67e6d03efcf0819186db39c990012576-moneybird-assistent",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "boekhouding"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com",
+            "description": "ChatGPT assistent voor Moneybird boekhoudkundige vragen."
+        },
+        {
+            "name": "IT Trainer",
+            "url": "https://chatgpt.com/g/g-Mp0Huo3GX-it-trainer",
+            "category": "🧠 AI-agents",
+            "tags": [
+                "ai",
+                "training"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com",
+            "description": "ChatGPT assistent voor IT training en technische ondersteuning."
+        },
+        {
+            "name": "X (Twitter)",
+            "url": "https://twitter.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "nieuws"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=twitter.com",
+            "description": "Volg het laatste nieuws en deel je gedachten."
+        },
+        {
+            "name": "Facebook",
+            "url": "https://www.facebook.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "vrienden"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=facebook.com",
+            "description": "Verbind met vrienden en familie, deel foto's en updates."
+        },
+        {
+            "name": "Instagram",
+            "url": "https://www.instagram.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "foto's",
+                "stories"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=instagram.com",
+            "description": "Deel foto's, stories en reels met je volgers."
+        },
+        {
+            "name": "TikTok",
+            "url": "https://www.tiktok.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "video",
+                "entertainment"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=tiktok.com",
+            "description": "Ontdek en deel korte video's met creatieve content."
+        },
+        {
+            "name": "Snapchat",
+            "url": "https://web.snapchat.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "foto's",
+                "messaging"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=snapchat.com",
+            "description": "Stuur tijdelijke foto's en berichten naar vrienden."
+        },
+        {
+            "name": "Discord",
+            "url": "https://discord.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "gaming",
+                "communities"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=discord.com",
+            "description": "Chat met communities en vrienden via tekst, spraak en video."
+        },
+        {
+            "name": "Reddit",
+            "url": "https://www.reddit.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "communities",
+                "discussie"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=reddit.com",
+            "description": "Ontdek communities en discussies over elk onderwerp."
+        },
+        {
+            "name": "Pinterest",
+            "url": "https://www.pinterest.com/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "inspiratie",
+                "foto's"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=pinterest.com",
+            "description": "Vind en bewaar ideeën voor recepten, interieur, mode en meer."
+        },
+        {
+            "name": "WhatsApp Web",
+            "url": "https://web.whatsapp.com/",
+            "category": "Social Media",
+            "tags": [
+                "messaging",
+                "chat",
+                "familie"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=whatsapp.com",
+            "description": "Verstuur berichten, foto's en documenten via de browser."
+        },
+        {
+            "name": "Telegram Web",
+            "url": "https://web.telegram.org/",
+            "category": "Social Media",
+            "tags": [
+                "messaging",
+                "chat",
+                "veilig"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=telegram.org",
+            "description": "Veilige messaging met end-to-end encryptie en grote groepen."
+        },
+        {
+            "name": "Mastodon",
+            "url": "https://mastodon.social/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "decentraal",
+                "open-source"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=mastodon.social",
+            "description": "Decentraal social media platform zonder algoritmes."
+        },
+        {
+            "name": "Threads",
+            "url": "https://www.threads.net/",
+            "category": "Social Media",
+            "tags": [
+                "social",
+                "meta",
+                "tekstberichten"
+            ],
+            "iconPath": "https://www.google.com/s2/favicons?sz=64&domain=threads.net",
+            "description": "Deel tekstberichten en join conversaties van Meta."
         }
     ]
 }
