@@ -449,9 +449,11 @@ function createAppButton(app, isPinnedButton = false) {
   button.addEventListener("dragstart", (e) => {
     dragStartTime = Date.now();
 
-    // Only allow desktop drag when Alt key is pressed
-    if (e.altKey && app.url) {
-      // Alt + drag = drag to desktop
+    // Desktop drag allowed when:
+    // 1. Alt key is pressed (desktop)
+    // 2. Long-press was detected (mobile)
+    if ((e.altKey || isLongPress) && app.url) {
+      // Alt + drag (desktop) or long-press + drag (mobile) = drag to desktop
       isDragToDesktop = true;
       e.dataTransfer.effectAllowed = "copyLink";
       e.dataTransfer.setData("text/uri-list", app.url);
@@ -463,7 +465,12 @@ function createAppButton(app, isPinnedButton = false) {
 
       // Visual feedback
       button.style.opacity = "0.5";
-      console.log(`🔗 Alt+Drag to desktop: ${app.name} - ${app.url}`);
+      
+      if (e.altKey) {
+        console.log(`🔗 Alt+Drag to desktop: ${app.name} - ${app.url}`);
+      } else {
+        console.log(`📱 Long-press+Drag to desktop: ${app.name} - ${app.url}`);
+      }
     } else {
       // Prevent conflicting drag when Alt is not pressed
       console.log(`� Blocking drag - Alt not pressed or no URL`);
