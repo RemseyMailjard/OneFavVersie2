@@ -1,5 +1,48 @@
 /* Custom styles voor het project */
 
+/* Grid layout utilities for app cards */
+.grid-3-cols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-4-cols {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid-5-cols {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.grid-6-cols {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.grid-8-cols {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+    .sm\:grid-3-cols {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .sm\:grid-4-cols {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    
+    .sm\:grid-5-cols {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    
+    .sm\:grid-6-cols {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+    
+    .sm\:grid-8-cols {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+}
+
 /* Dark mode support */
 :root {
     color-scheme: light dark;

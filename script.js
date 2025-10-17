@@ -253,7 +253,7 @@ function renderApps(apps) {
 
   // Maak voor elke app een button element
   unpinnedApps.forEach((app) => {
-    const appButton = createAppButton(app);
+    const appButton = createAppCard(app);
     appsGrid.appendChild(appButton);
   });
 
@@ -342,19 +342,397 @@ function loadPinnedApps() {
 }
 
 /**
- * Maak een app button element
+ * Update grid layout based on user preference
+ */
+function updateGridLayout() {
+  const gridSize = localStorage.getItem("gridSize") || "4-5"; // Default: 4 mobile, 5 desktop
+  const homePageAppsGrid = document.getElementById("homePageAppsGrid");
+  const homePagePinnedApps = document.getElementById("homePagePinnedApps");
+
+  if (!homePageAppsGrid) return;
+
+  // Remove existing grid classes
+  const gridClasses = [
+    "grid-cols-3",
+    "grid-cols-4",
+    "grid-cols-5",
+    "grid-cols-6",
+    "grid-cols-8",
+    "sm:grid-cols-3",
+    "sm:grid-cols-4",
+    "sm:grid-cols-5",
+    "sm:grid-cols-6",
+    "sm:grid-cols-8",
+  ];
+
+  [homePageAppsGrid, homePagePinnedApps].forEach((grid) => {
+    if (grid) {
+      gridClasses.forEach((cls) => grid.classList.remove(cls));
+    }
+  });
+
+  // Apply new grid classes based on preference
+  let mobileClass, desktopClass;
+
+  switch (gridSize) {
+    case "3-4":
+      mobileClass = "grid-cols-3";
+      desktopClass = "sm:grid-cols-4";
+      break;
+    case "4-5":
+      mobileClass = "grid-cols-4";
+      desktopClass = "sm:grid-cols-5";
+      break;
+    case "4-6":
+      mobileClass = "grid-cols-4";
+      desktopClass = "sm:grid-cols-6";
+      break;
+    case "5-8":
+      mobileClass = "grid-cols-5";
+      desktopClass = "sm:grid-cols-8";
+      break;
+    default:
+      mobileClass = "grid-cols-4";
+      desktopClass = "sm:grid-cols-5";
+  }
+
+  [homePageAppsGrid, homePagePinnedApps].forEach((grid) => {
+    if (grid) {
+      grid.classList.add(mobileClass, desktopClass);
+    }
+  });
+
+  // Update loading state column span
+  const loadingStates = document.querySelectorAll(
+    "#homePageAppsGrid .col-span-4, #homePageAppsGrid .col-span-5"
+  );
+  loadingStates.forEach((state) => {
+    state.classList.remove(
+      "col-span-4",
+      "col-span-5",
+      "sm:col-span-5",
+      "sm:col-span-6",
+      "sm:col-span-8"
+    );
+    const desktopCols = desktopClass.split("-").pop();
+    const mobileCols = mobileClass.split("-").pop();
+    state.classList.add(`col-span-${mobileCols}`, `sm:col-span-${desktopCols}`);
+  });
+}
+
+/**
+ * Create modern app card with new styling
+ */
+function createAppCard(app, isPinnedButton = false) {
+  const cardDiv = document.createElement("div");
+  cardDiv.className =
+    "card relative flex flex-col items-center gap-1 p-2 rounded-2xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow dark:hover:shadow-lg transition group";
+  cardDiv.setAttribute(
+    "data-id",
+    app.id || app.name.toLowerCase().replace(/\s+/g, "-")
+  );
+  cardDiv.setAttribute("data-name", app.name);
+  cardDiv.setAttribute("data-category", app.category || "other");
+
+  // Mobile drag handle (hidden but functional)
+  const mobileDragHandle = document.createElement("div");
+  mobileDragHandle.className =
+    "mobile-drag-handle absolute top-2 left-2 opacity-0 md:hidden transition-opacity duration-200 z-20";
+  mobileDragHandle.setAttribute("title", "Houd ingedrukt om te verslepen");
+  mobileDragHandle.style.display = "none !important";
+  mobileDragHandle.innerHTML = `
+    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+    </svg>
+  `;
+
+  // Pin button
+  const pinBtn = document.createElement("button");
+  pinBtn.className =
+    "pin-btn absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 text-gray-300 hover:!text-yellow-500 hover:!bg-yellow-50 dark:text-gray-600 dark:hover:!bg-yellow-900/30 transition-all duration-200 z-10";
+  pinBtn.setAttribute("title", "Pin/Unpin favoriet");
+  pinBtn.setAttribute("aria-label", "Pin favoriet");
+
+  // Add pin/unpin functionality
+  pinBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    togglePin(app.name);
+  });
+
+  // Update pin button appearance based on current state
+  const updatePinButton = () => {
+    if (isPinned(app.name)) {
+      pinBtn.innerHTML = "📌";
+      pinBtn.setAttribute("title", "Unpin favoriet");
+    } else {
+      pinBtn.innerHTML = "📍";
+      pinBtn.setAttribute("title", "Pin favoriet");
+    }
+  };
+  updatePinButton();
+
+  // Main open button
+  const openBtn = document.createElement("button");
+  openBtn.className = "open-btn group flex flex-col items-center gap-1";
+
+  // Create title with description for tooltip
+  let tooltipText = app.name;
+  if (app.url) {
+    tooltipText += ` — ${app.url}`;
+  }
+  if (app.description) {
+    tooltipText += `\n${app.description}`;
+  }
+  openBtn.setAttribute("title", tooltipText);
+
+  // Icon - use img element for modern card styling
+  const iconImg = document.createElement("img");
+  iconImg.className =
+    "w-12 h-12 rounded-xl object-contain border dark:border-slate-600 bg-white dark:bg-slate-700 pointer-events-none";
+  iconImg.setAttribute("alt", `${app.name} icoon`);
+
+  // Check if favicons are enabled and set icon source
+  const useFavicons = localStorage.getItem("useFavicons") !== "false";
+
+  if (useFavicons && app.url) {
+    try {
+      const url = new URL(app.url);
+      const domain = url.hostname;
+      // Use higher resolution favicon
+      iconImg.src = `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}`;
+
+      // Fallback to predefined icon paths if they exist
+      iconImg.addEventListener("error", () => {
+        if (app.iconPath) {
+          iconImg.src = app.iconPath;
+        } else if (app.color && app.icon) {
+          // Create SVG fallback
+          const iconContainer = document.createElement("div");
+          iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center ${app.color.bg}`;
+
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
+          );
+          svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("viewBox", app.icon.viewBox);
+
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute("d", app.icon.path);
+
+          svg.appendChild(path);
+          iconContainer.appendChild(svg);
+          iconImg.parentNode.replaceChild(iconContainer, iconImg);
+        } else {
+          // Create a simple colored div as fallback
+          const fallbackDiv = document.createElement("div");
+          fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold ${
+            app.color?.bg || "bg-gray-500"
+          }`;
+          fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
+          iconImg.parentNode.replaceChild(fallbackDiv, iconImg);
+        }
+      });
+      openBtn.appendChild(iconImg);
+    } catch (error) {
+      // Use local icon path if available or create fallback
+      if (app.iconPath) {
+        iconImg.src = app.iconPath;
+        openBtn.appendChild(iconImg);
+      } else if (app.color && app.icon) {
+        // Use SVG icon for apps without URL
+        const iconContainer = document.createElement("div");
+        iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center ${app.color.bg}`;
+
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("viewBox", app.icon.viewBox);
+
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute("d", app.icon.path);
+
+        svg.appendChild(path);
+        iconContainer.appendChild(svg);
+        openBtn.appendChild(iconContainer);
+      } else {
+        // Create a simple colored div as fallback
+        const fallbackDiv = document.createElement("div");
+        fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold ${
+          app.color?.bg || "bg-gray-500"
+        }`;
+        fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
+        openBtn.appendChild(fallbackDiv);
+      }
+    }
+  } else if (app.iconPath) {
+    iconImg.src = app.iconPath;
+    openBtn.appendChild(iconImg);
+  } else if (app.color && app.icon) {
+    // Use SVG icon for apps without URL
+    const iconContainer = document.createElement("div");
+    iconContainer.className = `w-12 h-12 rounded-xl flex items-center justify-center ${app.color.bg}`;
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", `h-6 w-6 ${app.color.text}`);
+    svg.setAttribute("fill", "currentColor");
+    svg.setAttribute("viewBox", app.icon.viewBox);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", app.icon.path);
+
+    svg.appendChild(path);
+    iconContainer.appendChild(svg);
+    openBtn.appendChild(iconContainer);
+  } else {
+    // Create a simple colored div as fallback
+    const fallbackDiv = document.createElement("div");
+    fallbackDiv.className = `w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold ${
+      app.color?.bg || "bg-gray-500"
+    }`;
+    fallbackDiv.textContent = app.name.charAt(0).toUpperCase();
+    openBtn.appendChild(fallbackDiv);
+  }
+
+  // App name label
+  const nameSpan = document.createElement("span");
+  nameSpan.className =
+    "w-full text-center text-[11px] leading-tight font-medium dark:text-white line-clamp-2 pointer-events-none";
+  nameSpan.textContent = app.name;
+  openBtn.appendChild(nameSpan);
+
+  // Desktop drag indicator (hidden but functional)
+  const dragIndicator = document.createElement("span");
+  dragIndicator.className = "drag-indicator hidden md:block";
+  dragIndicator.setAttribute("aria-hidden", "true");
+  dragIndicator.style.display = "none !important";
+  dragIndicator.textContent = "⠿";
+
+  // Click handler for opening the app
+  openBtn.addEventListener("click", (e) => {
+    if (!cardDiv.classList.contains("sortable-drag")) {
+      trackAppUsage(app.name); // Track usage
+      if (app.url) {
+        window.open(app.url, "_blank");
+      }
+    }
+  });
+
+  // Context menu (right-click)
+  cardDiv.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    showContextMenu(e, app.name);
+  });
+
+  // Draggable setup for desktop shortcuts
+  cardDiv.setAttribute("draggable", "true");
+
+  let dragStartTime = 0;
+  let isDragToDesktop = false;
+
+  cardDiv.addEventListener("dragstart", (e) => {
+    dragStartTime = Date.now();
+
+    if (app.url) {
+      isDragToDesktop = true;
+      e.dataTransfer.effectAllowed = "copyLink";
+      e.dataTransfer.setData("text/uri-list", app.url);
+      e.dataTransfer.setData("text/plain", app.url);
+      e.dataTransfer.setData(
+        "DownloadURL",
+        `application/internet-shortcut:${app.name}.url:${app.url}`
+      );
+
+      cardDiv.style.opacity = "0.5";
+      console.log(`🔗 Drag to desktop: ${app.name} - ${app.url}`);
+    } else {
+      console.log(`🚫 Blocking drag - no URL available`);
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  cardDiv.addEventListener("dragend", (e) => {
+    if (isDragToDesktop) {
+      cardDiv.style.opacity = "1";
+      isDragToDesktop = false;
+      console.log(`✅ Desktop drag completed for ${app.name}`);
+    }
+  });
+
+  // Assemble the card
+  cardDiv.appendChild(mobileDragHandle);
+  cardDiv.appendChild(pinBtn);
+  cardDiv.appendChild(openBtn);
+  cardDiv.appendChild(dragIndicator);
+
+  return cardDiv;
+}
+
+/**
+ * Maak een app button element (Old Version - Will be replaced by createAppCard)
  */
 function createAppButton(app, isPinnedButton = false) {
-  const button = document.createElement("button");
-  button.className =
-    "app-item flex flex-col items-center gap-2 rounded-lg p-3 text-center transition hover:bg-gray-50 cursor-grab active:cursor-grabbing relative group dark:hover:bg-gray-700";
-  button.setAttribute("aria-label", `Open ${app.name}`);
-  button.setAttribute("data-name", app.name);
+  const cardDiv = document.createElement("div");
+  cardDiv.className =
+    "card relative flex flex-col items-center gap-1 p-2 rounded-2xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow dark:hover:shadow-lg transition group";
+  cardDiv.setAttribute(
+    "data-id",
+    app.id || app.name.toLowerCase().replace(/\s+/g, "-")
+  );
+  cardDiv.setAttribute("data-name", app.name);
 
-  // Eenvoudige draggable setup - altijd desktop drag mogelijk
-  // Gewoon slepen = desktop shortcut maken
-  // Gewoon slepen = desktop shortcut maken
-  button.setAttribute("draggable", "true");
+  // Mobile drag handle (hidden but functional)
+  const mobileDragHandle = document.createElement("div");
+  mobileDragHandle.className =
+    "mobile-drag-handle absolute top-2 left-2 opacity-0 md:hidden transition-opacity duration-200 z-20";
+  mobileDragHandle.setAttribute("title", "Houd ingedrukt om te verslepen");
+  mobileDragHandle.style.display = "none !important";
+  mobileDragHandle.innerHTML = `
+    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+    </svg>
+  `;
+
+  // Pin button
+  const pinBtn = document.createElement("button");
+  pinBtn.className =
+    "pin-btn absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 text-gray-300 hover:!text-yellow-500 hover:!bg-yellow-50 dark:text-gray-600 dark:hover:!bg-yellow-900/30 transition-all duration-200 z-10";
+  pinBtn.setAttribute("title", "Pin/Unpin favoriet");
+  pinBtn.setAttribute("aria-label", "Pin favoriet");
+
+  // Add pin/unpin functionality
+  pinBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    togglePin(app.name);
+  });
+
+  // Update pin button appearance based on current state
+  const updatePinButton = () => {
+    if (isPinned(app.name)) {
+      pinBtn.innerHTML = "📌";
+      pinBtn.setAttribute("title", "Unpin favoriet");
+    } else {
+      pinBtn.innerHTML = "📍";
+      pinBtn.setAttribute("title", "Pin favoriet");
+    }
+  };
+  updatePinButton();
+
+  // Draggable setup for desktop shortcuts
+  cardDiv.setAttribute("draggable", "true");
 
   let dragStartTime = 0;
   let isDragToDesktop = false;
@@ -4457,7 +4835,7 @@ function renderHomePageApps(apps) {
 
   if (appsToShow.length === 0) {
     appsGrid.innerHTML = `
-      <div class="col-span-4 py-8 text-center">
+      <div class="col-span-4 sm:col-span-5 py-8 text-center">
         <p class="text-sm text-gray-500 dark:text-gray-400">Geen apps in deze categorie</p>
       </div>
     `;
@@ -4469,7 +4847,7 @@ function renderHomePageApps(apps) {
   const sortedApps = applySavedHomePageOrder(appsToShow);
 
   sortedApps.forEach((app) => {
-    const appButton = createAppButton(app);
+    const appButton = createAppCard(app);
     appsGrid.appendChild(appButton);
   });
 
@@ -4500,7 +4878,7 @@ function renderHomePagePinnedApps() {
   pinnedAppsGrid.innerHTML = "";
 
   pinned.forEach((app) => {
-    const appButton = createAppButton(app, true);
+    const appButton = createAppCard(app, true);
     pinnedAppsGrid.appendChild(appButton);
   });
 }
@@ -5328,6 +5706,9 @@ async function initializeApp() {
     // Load stats
     loadAppStats();
     loadPinnedApps();
+
+    // Update grid layout
+    updateGridLayout();
     loadCustomApps();
 
     // Load search engines
