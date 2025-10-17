@@ -12,6 +12,7 @@ let editingCollectionId = null;
 // AI Mode state
 let currentAIMode = "gpt"; // Default: ChatGPT
 const aiModes = {
+  google: { name: "Google", prefix: "g:", icon: "🔍", color: "text-blue-600" },
   gpt: { name: "ChatGPT", prefix: "gpt:", icon: "🤖", color: "text-green-600" },
   claude: {
     name: "Claude",
@@ -126,9 +127,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupHighlightSearchToggle();
   setupShowShortcutsToggle();
   setupShowQuickAppsToggle();
+  setupShowAppLauncherToggle();
   setupContextMenu();
   setupQuickAppsMinimize();
   renderQuickApps();
+  renderAppLauncher();
   console.log("✅ UI systems geïnitialiseerd");
 
   // Make functions globally available for inline onclick handlers
@@ -732,6 +735,7 @@ function togglePin(appName) {
   );
   renderPinnedApps();
   renderQuickApps(); // Update Quick Apps widget
+  renderAppLauncher(); // Update App Launcher
 }
 
 /**
@@ -2760,6 +2764,7 @@ function setupUseFaviconsToggle() {
     );
     renderPinnedApps();
     renderQuickApps(); // Update Quick Apps widget
+    renderAppLauncher(); // Update App Launcher
   });
 }
 
@@ -3043,6 +3048,140 @@ function setupQuickAppsMinimize() {
       localStorage.setItem("showQuickApps", "false");
     }
   });
+}
+
+// Setup App Launcher Bar toggle
+function setupShowAppLauncherToggle() {
+  const toggle = document.getElementById("showAppLauncherToggle");
+  const launcher = document.getElementById("appLauncherBar");
+
+  if (!toggle || !launcher) return;
+
+  // Load saved state
+  const saved = localStorage.getItem("showAppLauncher");
+  const enabled = saved !== "false"; // Default to true
+
+  toggle.checked = enabled;
+  if (enabled) {
+    launcher.classList.remove("hidden");
+  } else {
+    launcher.classList.add("hidden");
+  }
+
+  // Listen for changes
+  toggle.addEventListener("change", (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem("showAppLauncher", enabled.toString());
+
+    if (enabled) {
+      launcher.classList.remove("hidden");
+      renderAppLauncher(); // Re-render when showing
+    } else {
+      launcher.classList.add("hidden");
+    }
+  });
+}
+
+// Render App Launcher Bar
+function renderAppLauncher() {
+  const launcherList = document.getElementById("launcherAppsList");
+  if (!launcherList) return;
+
+  // Get top 8 most used/important apps - could be based on usage stats or predefined list
+  let topApps = [];
+
+  // Get pinned apps first (max 4)
+  const pinned = allApps.filter((app) => app.isPinned).slice(0, 4);
+  topApps.push(...pinned);
+
+  // Fill remaining slots with popular apps from different categories
+  if (topApps.length < 8) {
+    const remaining = 8 - topApps.length;
+    const popularApps = allApps
+      .filter((app) => !app.isPinned)
+      .filter((app) =>
+        ["favorieten", "ai-tools", "microsoft-365"].includes(app.category)
+      )
+      .slice(0, remaining);
+    topApps.push(...popularApps);
+  }
+
+  // Clear current apps
+  launcherList.innerHTML = "";
+
+  if (topApps.length === 0) {
+    launcherList.innerHTML = `
+      <div class="text-center py-2">
+        <p class="text-xs text-gray-400 dark:text-gray-500">Geen apps beschikbaar</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Create app buttons
+  topApps.forEach((app) => {
+    const appButton = document.createElement("button");
+    appButton.className = "launcher-app group";
+    appButton.title = app.name;
+    appButton.addEventListener("click", () => openApp(app));
+
+    // Icon container
+    const iconContainer = document.createElement("div");
+    iconContainer.className = "launcher-app-icon";
+
+    const useFavicons = localStorage.getItem("useFavicons") !== "false";
+
+    if (useFavicons && app.url) {
+      try {
+        const url = new URL(app.url);
+        const domain = url.hostname;
+
+        const favicon = document.createElement("img");
+        favicon.className = "w-8 h-8 rounded-sm";
+        favicon.alt = `${app.name} icon`;
+        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+        favicon.addEventListener("error", () => {
+          favicon.remove();
+          // Use SVG icon as fallback instead of just letter
+          createSVGIcon(iconContainer, app);
+        });
+
+        iconContainer.appendChild(favicon);
+      } catch (error) {
+        // Use SVG icon as fallback
+        createSVGIcon(iconContainer, app);
+      }
+    } else {
+      // Use SVG icon from app data
+      createSVGIcon(iconContainer, app);
+    }
+
+    appButton.appendChild(iconContainer);
+    launcherList.appendChild(appButton);
+  });
+}
+
+// Helper function to create SVG icons for launcher
+function createSVGIcon(container, app) {
+  if (app.icon && app.icon.path) {
+    // Create SVG from app data
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "w-6 h-6");
+    svg.setAttribute("fill", "currentColor");
+    svg.setAttribute("viewBox", app.icon.viewBox || "0 0 24 24");
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", app.icon.path);
+
+    svg.appendChild(path);
+    container.appendChild(svg);
+    container.className += ` ${app.color.bg} ${app.color.text}`;
+  } else {
+    // Fallback to first letter if no icon data
+    container.textContent = app.name.charAt(0).toUpperCase();
+    container.className += ` ${app.color.bg} ${app.color.text}`;
+  }
 }
 
 // Autocomplete state
