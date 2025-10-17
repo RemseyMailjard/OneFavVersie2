@@ -347,7 +347,7 @@ function loadPinnedApps() {
 function createAppCard(app, isPinnedButton = false) {
   const cardDiv = document.createElement("div");
   cardDiv.className =
-    "card relative flex flex-col items-center gap-0.5 p-1.5 rounded-xl bg-transparent hover:bg-gray-100/50 dark:hover:bg-slate-800/50 transition-colors duration-200 group";
+    "card app-item relative flex flex-col items-center gap-0.5 p-1.5 rounded-xl bg-transparent hover:bg-gray-100/50 dark:hover:bg-slate-800/50 transition-colors duration-200 group";
   cardDiv.setAttribute(
     "data-id",
     app.id || app.name.toLowerCase().replace(/\s+/g, "-")
@@ -599,7 +599,7 @@ function createAppCard(app, isPinnedButton = false) {
 function createAppButton(app, isPinnedButton = false) {
   const cardDiv = document.createElement("div");
   cardDiv.className =
-    "card relative flex flex-col items-center gap-1 p-2 rounded-2xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow dark:hover:shadow-lg transition group";
+    "card app-item relative flex flex-col items-center gap-1 p-2 rounded-2xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow dark:hover:shadow-lg transition group";
   cardDiv.setAttribute(
     "data-id",
     app.id || app.name.toLowerCase().replace(/\s+/g, "-")
