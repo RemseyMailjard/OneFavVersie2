@@ -16,6 +16,9 @@
 /* Basis styling */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    /* Achtergrond kleur - wissel tussen wit en grijs */
+    background-color: #ffffff; /* Wit */
+    /* background-color: #f3f4f6; */ /* Grijs - uitgecommenteerd */
 }
 
 /* Custom animaties voor dropdown menu */
