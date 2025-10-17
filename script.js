@@ -69,12 +69,12 @@ async function ensureAppsLoaded() {
   if (allApps && allApps.length > 0) {
     return; // Already loaded
   }
-  
+
   if (isLoadingApps) {
     console.warn("⚠️ Apps already loading, skipping...");
     return;
   }
-  
+
   await loadApps();
 }
 
