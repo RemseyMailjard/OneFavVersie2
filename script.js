@@ -80,8 +80,6 @@ const searchEngines = {
 
 // App menu toggle functionaliteit
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🚀 DOMContentLoaded - Start initialisatie");
-
   const appMenuBtn = document.getElementById("appMenuBtn");
   const appMenu = document.getElementById("appMenu");
   const themeToggle = document.getElementById("themeToggle");
@@ -470,34 +468,41 @@ function setupDropZone() {
  */
 function setupKeyboardShortcuts() {
   document.addEventListener("keydown", (e) => {
-    // Ctrl+K of Cmd+K - Open Command Palette
-    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+    // Normalize key to avoid case issues
+    const key = e.key ? e.key.toLowerCase() : "";
+
+    // Ctrl/Cmd + K - Open Command Palette
+    if ((e.ctrlKey || e.metaKey) && key === "k") {
       e.preventDefault();
       openCommandPalette();
+      return;
     }
 
-    // Ctrl+M of Cmd+M - Toggle menu
-    if ((e.ctrlKey || e.metaKey) && e.key === "m") {
+    // Ctrl/Cmd + M - Toggle main menu
+    if ((e.ctrlKey || e.metaKey) && key === "m") {
       e.preventDefault();
       document.getElementById("appMenuBtn")?.click();
+      return;
     }
 
-    // Ctrl+Shift+A of Cmd+Shift+A - Custom app toevoegen (Add)
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "A") {
+    // Ctrl/Cmd + Shift + A - Add custom app
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && key === "a") {
       e.preventDefault();
       const customAppModal = document.getElementById("customAppModal");
       customAppModal?.classList.remove("hidden");
       customAppModal?.classList.add("flex");
+      return;
     }
 
-    // Ctrl+Shift+D of Cmd+Shift+D - Toggle theme (Dark mode)
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "D") {
+    // Ctrl/Cmd + Shift + D - Toggle theme
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && key === "d") {
       e.preventDefault();
       toggleTheme();
+      return;
     }
 
-    // Ctrl+G of Cmd+G - Open Collections
-    if ((e.ctrlKey || e.metaKey) && e.key === "g") {
+    // Ctrl/Cmd + G - Open Collections
+    if ((e.ctrlKey || e.metaKey) && key === "g") {
       e.preventDefault();
       const collectionsModal = document.getElementById("collectionsModal");
       const isHidden = collectionsModal?.classList.contains("hidden");
@@ -509,30 +514,29 @@ function setupKeyboardShortcuts() {
         collectionsModal?.classList.add("hidden");
         collectionsModal?.classList.remove("flex");
       }
+      return;
     }
 
-    // Ctrl+Q of Cmd+Q - Toggle Apps Dashboard
-    if ((e.ctrlKey || e.metaKey) && e.key === "q") {
+    // Ctrl/Cmd + Q - Toggle Apps Dashboard
+    if ((e.ctrlKey || e.metaKey) && key === "q") {
       e.preventDefault();
       const dashboard = document.getElementById("appsDashboardWidget");
       const toggle = document.getElementById("showAppsDashboardToggle");
 
       if (dashboard && toggle) {
         const isHidden = dashboard.classList.contains("hidden");
-
         if (isHidden) {
-          // Show dashboard
           dashboard.classList.remove("hidden");
           toggle.checked = true;
           localStorage.setItem("showAppsDashboard", "true");
-          renderAppsDashboard(); // Re-render when showing
+          renderAppsDashboard();
         } else {
-          // Hide dashboard
           dashboard.classList.add("hidden");
           toggle.checked = false;
           localStorage.setItem("showAppsDashboard", "false");
         }
       }
+      return;
     }
   });
 }
@@ -3090,13 +3094,15 @@ function renderAppsDashboard() {
 
   // Show PINNED apps instead of just top apps - like Fav Apps
   let displayApps = [];
-  
+
   // Get pinned apps from allApps array
   const pinnedAppsData = allApps.filter((app) => pinnedApps.includes(app.name));
-  
+
   // Filter by category if needed
   if (activeCategory !== "all") {
-    displayApps = pinnedAppsData.filter((app) => app.category === activeCategory);
+    displayApps = pinnedAppsData.filter(
+      (app) => app.category === activeCategory
+    );
   } else {
     displayApps = pinnedAppsData;
   }
@@ -3130,11 +3136,13 @@ function renderAppsDashboard() {
   // Create app buttons with pin/unpin functionality
   displayApps.forEach((app) => {
     const appButton = document.createElement("div");
-    appButton.className = "group relative flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors";
-    
+    appButton.className =
+      "group relative flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors";
+
     // Pin/Unpin button (like in Fav Apps)
     const pinButton = document.createElement("button");
-    pinButton.className = "absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10";
+    pinButton.className =
+      "absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10";
     pinButton.innerHTML = "×";
     pinButton.title = "Unpin app";
     pinButton.addEventListener("click", (e) => {
@@ -3150,7 +3158,8 @@ function renderAppsDashboard() {
 
     // Icon container
     const iconContainer = document.createElement("div");
-    iconContainer.className = "w-8 h-8 flex items-center justify-center rounded-lg";
+    iconContainer.className =
+      "w-8 h-8 flex items-center justify-center rounded-lg";
 
     // Create icon (same logic as Quick Apps)
     const useFavicons = localStorage.getItem("useFavicons") !== "false";
@@ -3180,8 +3189,10 @@ function renderAppsDashboard() {
 
     // App name (abbreviated)
     const nameSpan = document.createElement("span");
-    nameSpan.className = "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full text-center";
-    nameSpan.textContent = app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
+    nameSpan.className =
+      "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full text-center";
+    nameSpan.textContent =
+      app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
 
     // Assemble the app click area
     appClickArea.appendChild(iconContainer);
@@ -3190,11 +3201,10 @@ function renderAppsDashboard() {
     // Assemble the full app button
     appButton.appendChild(pinButton);
     appButton.appendChild(appClickArea);
-    
+
     dashboardList.appendChild(appButton);
   });
-  };
-
+}
 
 // Helper function to create SVG icons for dashboard
 function createDashboardSVGIcon(container, app) {
