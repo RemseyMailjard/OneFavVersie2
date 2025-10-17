@@ -126,13 +126,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupGridSizeToggle();
   setupHighlightSearchToggle();
   setupShowShortcutsToggle();
-  setupShowQuickAppsToggle();
   setupShowAppsDashboardToggle();
   setupContextMenu();
-  setupQuickAppsMinimize();
   setupAppsDashboardMinimize();
   setupAppsDashboardDrag();
-  renderQuickApps();
   renderAppsDashboard();
   console.log("✅ UI systems geïnitialiseerd");
 
@@ -736,7 +733,6 @@ function togglePin(appName) {
     )
   );
   renderPinnedApps();
-  renderQuickApps(); // Update Quick Apps widget
   renderAppsDashboard(); // Update Apps Dashboard
 }
 
@@ -2886,172 +2882,6 @@ function setupShowShortcutsToggle() {
 }
 
 // Setup Quick Apps Widget visibility toggle
-function setupShowQuickAppsToggle() {
-  const toggle = document.getElementById("showQuickAppsToggle");
-  const widget = document.getElementById("quickAppsWidget");
-
-  if (!toggle || !widget) return;
-
-  // Load saved preference (default: true)
-  const showQuickApps = localStorage.getItem("showQuickApps") !== "false";
-  toggle.checked = showQuickApps;
-
-  // Apply initial visibility
-  if (showQuickApps) {
-    widget.classList.remove("hidden");
-  } else {
-    widget.classList.add("hidden");
-  }
-
-  // Listen for changes
-  toggle.addEventListener("change", (e) => {
-    const enabled = e.target.checked;
-    localStorage.setItem("showQuickApps", enabled.toString());
-
-    if (enabled) {
-      widget.classList.remove("hidden");
-      renderQuickApps(); // Re-render when showing
-    } else {
-      widget.classList.add("hidden");
-    }
-  });
-}
-
-// Render Quick Apps Widget
-function renderQuickApps() {
-  const quickAppsList = document.getElementById("quickAppsList");
-  if (!quickAppsList) return;
-
-  // Get pinned apps from allApps array (max 9 for 3x3 grid)
-  const pinned = allApps
-    .filter((app) => pinnedApps.includes(app.name))
-    .slice(0, 9);
-
-  if (pinned.length === 0) {
-    quickAppsList.innerHTML = `
-      <div class="col-span-3 text-center py-4">
-        <p class="text-xs text-gray-400 dark:text-gray-500">Geen pinned apps</p>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pin apps in het menu</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Render pinned apps
-  quickAppsList.innerHTML = "";
-
-  pinned.forEach((app) => {
-    const appButton = document.createElement("button");
-    appButton.className =
-      "flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group relative";
-    appButton.title = app.name;
-
-    // Icon container
-    const iconContainer = document.createElement("div");
-    iconContainer.className = `flex h-10 w-10 items-center justify-center rounded-full ${app.color.bg}`;
-
-    // Use favicon if enabled
-    const useFavicons = localStorage.getItem("useFavicons") !== "false";
-
-    if (useFavicons && app.url) {
-      try {
-        const url = new URL(app.url);
-        const domain = url.hostname;
-
-        const favicon = document.createElement("img");
-        favicon.className = "h-6 w-6 rounded-sm";
-        favicon.alt = `${app.name} icon`;
-        favicon.src = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-
-        favicon.addEventListener("error", () => {
-          favicon.remove();
-          const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg"
-          );
-          svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
-          svg.setAttribute("fill", "currentColor");
-          svg.setAttribute("viewBox", app.icon.viewBox);
-          const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path"
-          );
-          path.setAttribute("d", app.icon.path);
-          svg.appendChild(path);
-          iconContainer.appendChild(svg);
-        });
-
-        iconContainer.appendChild(favicon);
-      } catch (error) {
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg"
-        );
-        svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
-        svg.setAttribute("fill", "currentColor");
-        svg.setAttribute("viewBox", app.icon.viewBox);
-        const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        path.setAttribute("d", app.icon.path);
-        svg.appendChild(path);
-        iconContainer.appendChild(svg);
-      }
-    } else {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("class", `h-5 w-5 ${app.color.text}`);
-      svg.setAttribute("fill", "currentColor");
-      svg.setAttribute("viewBox", app.icon.viewBox);
-      const path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      path.setAttribute("d", app.icon.path);
-      svg.appendChild(path);
-      iconContainer.appendChild(svg);
-    }
-
-    // App name (abbreviated)
-    const nameSpan = document.createElement("span");
-    nameSpan.className =
-      "text-xs text-gray-600 dark:text-gray-300 truncate max-w-full";
-    nameSpan.textContent =
-      app.name.length > 8 ? app.name.substring(0, 7) + "..." : app.name;
-
-    appButton.appendChild(iconContainer);
-    appButton.appendChild(nameSpan);
-
-    // Click to open
-    if (app.url) {
-      appButton.addEventListener("click", () => {
-        trackAppUsage(app.name);
-        window.open(app.url, "_blank");
-      });
-    }
-
-    quickAppsList.appendChild(appButton);
-  });
-}
-
-// Setup minimize button for Quick Apps Widget
-function setupQuickAppsMinimize() {
-  const closeBtn = document.getElementById("closeQuickApps");
-  const widget = document.getElementById("quickAppsWidget");
-
-  if (!closeBtn || !widget) return;
-
-  closeBtn.addEventListener("click", () => {
-    widget.classList.add("hidden");
-    // Update toggle in settings
-    const toggle = document.getElementById("showQuickAppsToggle");
-    if (toggle) {
-      toggle.checked = false;
-      localStorage.setItem("showQuickApps", "false");
-    }
-  });
-}
-
 // Setup Apps Dashboard toggle
 function setupShowAppsDashboardToggle() {
   const toggle = document.getElementById("showAppsDashboardToggle");
