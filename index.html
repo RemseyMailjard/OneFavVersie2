@@ -698,10 +698,17 @@
         </span>
     </button>
 
-    <!-- Apps Dashboard Widget (Links) -->
+    <!-- Apps Dashboard Widget (Links) - Minimale Shortcut Launcher -->
     <div id="appsDashboardWidget" class="fixed top-20 left-6 z-40 transition-all duration-300 hidden">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+        <!-- Minimale Shortcut Icon Launcher -->
+        <button id="shortcutLauncher" 
+            class="bg-white dark:bg-gray-800 rounded-full shadow-xl border border-gray-200 dark:border-gray-700 p-3 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 hover:scale-110 transition-all duration-200 group">
+            <span class="text-lg">⌨️</span>
+        </button>
+
+        <!-- Apps Grid (verborgen tot click) -->
+        <div id="dashboardAppsGrid"
+            class="hidden absolute top-14 left-0 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
             <!-- Drag Handle -->
             <div id="dashboardDragHandle"
                 class="flex items-center justify-between p-2 cursor-move hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-xl border-b border-gray-100 dark:border-gray-600">
