@@ -377,16 +377,10 @@ function setupDropZone() {
  */
 function setupKeyboardShortcuts() {
   document.addEventListener("keydown", (e) => {
-    // Ctrl+K of Cmd+K - Focus zoekbalk
+    // Ctrl+K of Cmd+K - Open Command Palette
     if ((e.ctrlKey || e.metaKey) && e.key === "k") {
       e.preventDefault();
-      const searchInput = document.getElementById("appSearch");
-      const appMenu = document.getElementById("appMenu");
-
-      if (appMenu?.classList.contains("hidden")) {
-        document.getElementById("appMenuBtn")?.click();
-      }
-      searchInput?.focus();
+      openCommandPalette();
     }
 
     // Ctrl+M of Cmd+M - Toggle menu
@@ -1616,3 +1610,320 @@ function handleCollectionSubmit(e) {
   collectionsModal?.classList.remove("hidden");
   collectionsModal?.classList.add("flex");
 }
+
+/**
+ * ==========================================
+ * COMMAND PALETTE
+ * ==========================================
+ */
+
+let commandPaletteSelectedIndex = 0;
+let commandPaletteResults = [];
+
+/**
+ * Open Command Palette
+ */
+function openCommandPalette() {
+  const palette = document.getElementById("commandPalette");
+  const input = document.getElementById("commandPaletteInput");
+
+  palette?.classList.remove("hidden");
+  palette?.classList.add("flex");
+  input?.focus();
+
+  // Render initial commands
+  renderCommandPaletteResults("");
+}
+
+/**
+ * Close Command Palette
+ */
+function closeCommandPalette() {
+  const palette = document.getElementById("commandPalette");
+  const input = document.getElementById("commandPaletteInput");
+
+  palette?.classList.add("hidden");
+  palette?.classList.remove("flex");
+  if (input) input.value = "";
+  commandPaletteSelectedIndex = 0;
+}
+
+/**
+ * Get all available commands
+ */
+function getCommands() {
+  return [
+    {
+      icon: "➕",
+      title: "New App",
+      description: "Create a new custom app",
+      action: () => {
+        closeCommandPalette();
+        document.getElementById("addCustomApp")?.click();
+      },
+      keywords: ["new", "add", "create", "app", "custom"],
+    },
+    {
+      icon: "📁",
+      title: "New Collection",
+      description: "Create a new collection",
+      action: () => {
+        closeCommandPalette();
+        document.getElementById("collectionsBtn")?.click();
+        setTimeout(
+          () => document.getElementById("createCollectionBtn")?.click(),
+          100
+        );
+      },
+      keywords: ["new", "collection", "group", "create"],
+    },
+    {
+      icon: "🌙",
+      title: "Toggle Dark Mode",
+      description: "Switch between light and dark theme",
+      action: () => {
+        closeCommandPalette();
+        toggleTheme();
+      },
+      keywords: ["dark", "light", "theme", "mode", "toggle"],
+    },
+    {
+      icon: "⚙️",
+      title: "Settings",
+      description: "Open settings modal",
+      action: () => {
+        closeCommandPalette();
+        document.getElementById("settingsBtn")?.click();
+      },
+      keywords: ["settings", "preferences", "config"],
+    },
+    {
+      icon: "💾",
+      title: "Export Configuration",
+      description: "Download your settings as JSON",
+      action: () => {
+        closeCommandPalette();
+        exportConfiguration();
+      },
+      keywords: ["export", "download", "backup", "save"],
+    },
+    {
+      icon: "📥",
+      title: "Import Configuration",
+      description: "Upload settings from JSON",
+      action: () => {
+        closeCommandPalette();
+        importConfiguration();
+      },
+      keywords: ["import", "upload", "restore", "load"],
+    },
+    {
+      icon: "🔄",
+      title: "Reset App Order",
+      description: "Reset apps to default order",
+      action: () => {
+        closeCommandPalette();
+        resetAppOrder();
+      },
+      keywords: ["reset", "order", "default"],
+    },
+    {
+      icon: "📊",
+      title: "View Collections",
+      description: "Manage your app collections",
+      action: () => {
+        closeCommandPalette();
+        document.getElementById("collectionsBtn")?.click();
+      },
+      keywords: ["collections", "groups", "view", "manage"],
+    },
+  ];
+}
+
+/**
+ * Fuzzy search implementation
+ */
+function fuzzyMatch(text, query) {
+  text = text.toLowerCase();
+  query = query.toLowerCase();
+
+  let queryIndex = 0;
+  let textIndex = 0;
+  const matches = [];
+
+  while (queryIndex < query.length && textIndex < text.length) {
+    if (text[textIndex] === query[queryIndex]) {
+      matches.push(textIndex);
+      queryIndex++;
+    }
+    textIndex++;
+  }
+
+  // All characters must be found
+  if (queryIndex !== query.length) {
+    return null;
+  }
+
+  // Calculate score (lower is better)
+  let score = textIndex;
+  for (let i = 1; i < matches.length; i++) {
+    score += matches[i] - matches[i - 1];
+  }
+
+  return { matches, score };
+}
+
+/**
+ * Highlight matched characters
+ */
+function highlightMatches(text, matches) {
+  if (!matches || matches.length === 0) return text;
+
+  let result = "";
+  for (let i = 0; i < text.length; i++) {
+    if (matches.includes(i)) {
+      result += `<span class="text-blue-600 dark:text-blue-400 font-semibold">${text[i]}</span>`;
+    } else {
+      result += text[i];
+    }
+  }
+  return result;
+}
+
+/**
+ * Render Command Palette results
+ */
+function renderCommandPaletteResults(query) {
+  const resultsContainer = document.getElementById("commandPaletteResults");
+  if (!resultsContainer) return;
+
+  const commands = getCommands();
+
+  // Add apps to commands
+  const appCommands = allApps.map((app) => ({
+    icon: "🚀",
+    title: app.name,
+    description: app.url ? new URL(app.url).hostname : app.category,
+    action: () => {
+      closeCommandPalette();
+      if (app.url) {
+        window.open(app.url, "_blank");
+      }
+    },
+    keywords: [app.name.toLowerCase(), app.category, app.url || ""],
+  }));
+
+  const allCommands = [...commands, ...appCommands];
+
+  // Filter and sort by fuzzy match
+  if (query.trim() === "") {
+    commandPaletteResults = commands; // Show only system commands when empty
+  } else {
+    commandPaletteResults = allCommands
+      .map((cmd) => {
+        const titleMatch = fuzzyMatch(cmd.title, query);
+        const keywordMatch = cmd.keywords.some((kw) => fuzzyMatch(kw, query));
+
+        if (titleMatch || keywordMatch) {
+          return {
+            ...cmd,
+            titleMatch,
+            score: titleMatch ? titleMatch.score : 1000,
+          };
+        }
+        return null;
+      })
+      .filter((cmd) => cmd !== null)
+      .sort((a, b) => a.score - b.score);
+  }
+
+  // Render results
+  resultsContainer.innerHTML = "";
+
+  if (commandPaletteResults.length === 0) {
+    resultsContainer.innerHTML = `
+      <div class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+        <p class="text-sm">No results found for "${query}"</p>
+      </div>
+    `;
+    return;
+  }
+
+  commandPaletteResults.forEach((cmd, index) => {
+    const item = document.createElement("button");
+    item.className = `w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left ${
+      index === commandPaletteSelectedIndex
+        ? "bg-gray-100 dark:bg-gray-700"
+        : ""
+    }`;
+
+    const highlightedTitle = cmd.titleMatch
+      ? highlightMatches(cmd.title, cmd.titleMatch.matches)
+      : cmd.title;
+
+    item.innerHTML = `
+      <span class="text-2xl flex-shrink-0">${cmd.icon}</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">${highlightedTitle}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">${cmd.description}</div>
+      </div>
+    `;
+
+    item.addEventListener("click", () => cmd.action());
+    resultsContainer.appendChild(item);
+  });
+
+  commandPaletteSelectedIndex = 0;
+}
+
+/**
+ * Setup Command Palette event listeners
+ */
+function setupCommandPalette() {
+  const palette = document.getElementById("commandPalette");
+  const input = document.getElementById("commandPaletteInput");
+
+  if (!input || !palette) return;
+
+  // Input event
+  input.addEventListener("input", (e) => {
+    renderCommandPaletteResults(e.target.value);
+  });
+
+  // Keyboard navigation
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeCommandPalette();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      commandPaletteSelectedIndex = Math.min(
+        commandPaletteSelectedIndex + 1,
+        commandPaletteResults.length - 1
+      );
+      renderCommandPaletteResults(input.value);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      commandPaletteSelectedIndex = Math.max(
+        commandPaletteSelectedIndex - 1,
+        0
+      );
+      renderCommandPaletteResults(input.value);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (commandPaletteResults[commandPaletteSelectedIndex]) {
+        commandPaletteResults[commandPaletteSelectedIndex].action();
+      }
+    }
+  });
+
+  // Click outside to close
+  palette.addEventListener("click", (e) => {
+    if (e.target === palette) {
+      closeCommandPalette();
+    }
+  });
+}
+
+// Initialize Command Palette
+setupCommandPalette();
