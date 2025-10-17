@@ -1079,7 +1079,7 @@ function isDefaultCollection(collectionId) {
  */
 function getCollectionApps(collection) {
   if (!collection || !collection.apps) return [];
-  
+
   return collection.apps
     .map((appName) => allApps.find((app) => app.name === appName))
     .filter((app) => app !== undefined); // Filter out apps die niet gevonden zijn
@@ -1093,7 +1093,7 @@ function getCollectionApps(collection) {
 function validateCollectionApps(collection) {
   const validApps = [];
   const missingApps = [];
-  
+
   collection.apps.forEach((appName) => {
     const app = allApps.find((a) => a.name === appName);
     if (app) {
@@ -1102,7 +1102,7 @@ function validateCollectionApps(collection) {
       missingApps.push(appName);
     }
   });
-  
+
   return { validApps, missingApps };
 }
 
@@ -1129,45 +1129,78 @@ function renderCollectionsList() {
 
   collections.forEach((collection) => {
     const item = document.createElement("div");
-    item.className = `collection-item flex items-center justify-between p-4 rounded-lg bg-${collection.color}-50 dark:bg-${collection.color}-900/20 border border-${collection.color}-200 dark:border-${collection.color}-800`;
+    item.className = `collection-item p-4 rounded-lg bg-${collection.color}-50 dark:bg-${collection.color}-900/20 border border-${collection.color}-200 dark:border-${collection.color}-800`;
 
     const isDefault = isDefaultCollection(collection.id);
     const defaultBadge = isDefault
       ? '<span class="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-400">Default</span>'
       : "";
+    
+    // Haal app objecten op uit apps.json
+    const { validApps, missingApps } = validateCollectionApps(collection);
+    
+    // Maak app preview (iconen)
+    const appPreview = validApps.slice(0, 5).map(app => `
+      <div class="${app.color.bg} ${app.color.text} rounded p-1 inline-flex" title="${app.name}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="${app.icon.viewBox}" fill="currentColor">
+          <path d="${app.icon.path}" />
+        </svg>
+      </div>
+    `).join('');
+    
+    const moreApps = validApps.length > 5 ? `<span class="text-xs text-${collection.color}-600 dark:text-${collection.color}-400">+${validApps.length - 5} meer</span>` : '';
+    
+    const warningBadge = missingApps.length > 0 
+      ? `<span class="ml-2 text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full" title="Sommige apps niet gevonden">⚠️ ${missingApps.length} missing</span>`
+      : '';
 
     item.innerHTML = `
-      <div class="flex-1 cursor-pointer" data-collection-id="${collection.id}">
-        <h4 class="font-semibold text-${collection.color}-900 dark:text-${
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex-1">
+          <h4 class="font-semibold text-${collection.color}-900 dark:text-${
       collection.color
-    }-100 flex items-center">${collection.name}${defaultBadge}</h4>
-        <p class="text-sm text-${collection.color}-700 dark:text-${
+    }-100 flex items-center">${collection.name}${defaultBadge}${warningBadge}</h4>
+          <p class="text-sm text-${collection.color}-700 dark:text-${
       collection.color
     }-300">${collection.description || ""}</p>
-        <p class="text-xs text-${collection.color}-600 dark:text-${
+        </div>
+        <div class="flex gap-2 ml-4">
+          <button 
+            onclick="openCollection('${collection.id}')"
+            class="px-3 py-1 text-sm bg-${
+              collection.color
+            }-600 text-white rounded hover:bg-${
       collection.color
-    }-400 mt-1">${collection.apps.length} apps</p>
+    }-700 transition-colors whitespace-nowrap"
+            title="Open alle apps"
+          >
+            Open All
+          </button>
+          <button 
+            onclick="editCollection('${collection.id}')"
+            class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            title="Bewerk collection"
+          >
+            ✏️
+          </button>
+          <button 
+            onclick="deleteCollection('${collection.id}')"
+            class="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+            title="Verwijder collection"
+          >
+            🗑️
+          </button>
+        </div>
       </div>
-      <div class="flex gap-2 ml-4">
-        <button 
-          onclick="openCollection('${collection.id}')"
-          class="px-3 py-1 text-sm bg-${
-            collection.color
-          }-600 text-white rounded hover:bg-${
-      collection.color
-    }-700 transition-colors"
-          title="Open alle apps"
-        >
-          Open All
-        </button>
-        <button 
-          onclick="editCollection('${collection.id}')"
-          class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-          title="Bewerk collection"
-        >
-          ✏️
-        </button>
-        <button 
+      <div class="flex items-center gap-2 mt-2 flex-wrap">
+        ${appPreview}
+        ${moreApps}
+      </div>
+    `;
+
+    listContainer.appendChild(item);
+  });
+}
           onclick="deleteCollection('${collection.id}')"
           class="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
           title="Verwijder collection"
@@ -1265,12 +1298,30 @@ function openCollection(collectionId) {
     return;
   }
 
-  collection.apps.forEach((appName) => {
-    const app = allApps.find((a) => a.name === appName);
-    if (app && app.url) {
+  // Valideer en haal app objecten op uit apps.json
+  const { validApps, missingApps } = validateCollectionApps(collection);
+
+  // Waarschuwing als er apps ontbreken
+  if (missingApps.length > 0) {
+    console.warn(
+      `⚠️ De volgende apps uit collection "${collection.name}" zijn niet gevonden in apps.json:`,
+      missingApps
+    );
+  }
+
+  // Open alleen de gevonden apps
+  validApps.forEach((app) => {
+    if (app.url) {
       window.open(app.url, "_blank");
     }
   });
+
+  // Feedback naar gebruiker
+  if (validApps.length > 0) {
+    console.log(
+      `✅ ${validApps.length} app(s) geopend uit collection "${collection.name}"`
+    );
+  }
 
   // Sluit app menu
   const appMenu = document.getElementById("appMenu");
