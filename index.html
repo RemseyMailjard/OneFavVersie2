@@ -160,8 +160,26 @@
                 </div>
 
                 <!-- Category Filter -->
-                <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
-                    <div class="flex gap-2 overflow-x-auto pb-1" id="categoryFilter">
+                <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700 relative group">
+                    <!-- Linker scroll button -->
+                    <button id="scrollLeftMenuBtn" type="button"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden"
+                        aria-label="Scroll left">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Rechter scroll button -->
+                    <button id="scrollRightMenuBtn" type="button"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden"
+                        aria-label="Scroll right">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                    
+                    <div class="flex gap-2 overflow-x-auto pb-1 scroll-smooth" id="categoryFilter">
                         <button data-category="all"
                             class="category-btn active whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-xs font-medium text-white transition">
                             Alle
@@ -608,13 +626,40 @@
             <!-- Fav Apps Geïntegreerd op Homepage -->
             <div class="mt-12">
                 <!-- Category Filter -->
-                <div class="mb-4">
-                    <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1" id="homePageCategoryFilter">
+                <div class="mb-4 relative group">
+                    <!-- Linker scroll button -->
+                    <button id="scrollLeftHomeBtn" type="button"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden"
+                        aria-label="Scroll left">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700 dark:text-gray-300"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Rechter scroll button -->
+                    <button id="scrollRightHomeBtn" type="button"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden"
+                        aria-label="Scroll right">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700 dark:text-gray-300"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1 scroll-smooth"
+                        id="homePageCategoryFilter">
                         <button data-category="all"
                             class="homepage-category-btn active whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-xs font-medium text-white transition">
                             📱 Alle apps
                         </button>
                         <!-- Categorieën worden dynamisch geladen -->
+                    </div>
+
+                    <!-- Scroll indicator dots -->
+                    <div class="flex justify-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        id="scrollIndicatorHome">
+                        <!-- Dots worden dynamisch toegevoegd via JavaScript -->
                     </div>
                 </div>
 
