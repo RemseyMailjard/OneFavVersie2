@@ -351,7 +351,7 @@ function createAppButton(app, isPinnedButton = false) {
   if (app.url) {
     const tooltip = document.createElement("div");
     tooltip.className =
-      "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block pointer-events-none z-50";
+      "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 pointer-events-none z-50 transition-opacity duration-200";
     tooltip.innerHTML = `
       <div class="bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap shadow-lg dark:bg-gray-700">
         ${new URL(app.url).hostname}
@@ -359,6 +359,28 @@ function createAppButton(app, isPinnedButton = false) {
       </div>
     `;
     button.appendChild(tooltip);
+
+    // Add custom hover handlers to prevent flickering
+    let hoverTimeout = null;
+    button.addEventListener("mouseenter", () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+      hoverTimeout = setTimeout(() => {
+        tooltip.classList.remove("opacity-0");
+        tooltip.classList.add("opacity-100");
+      }, 200); // 200ms delay before showing tooltip
+    });
+
+    button.addEventListener("mouseleave", () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+      tooltip.classList.remove("opacity-100");
+      tooltip.classList.add("opacity-0");
+    });
 
     button.addEventListener("click", (e) => {
       if (!button.classList.contains("sortable-drag")) {

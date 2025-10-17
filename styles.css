@@ -152,15 +152,37 @@ body {
     }
 }
 
-/* Tooltip animatie */
+/* Tooltip animatie - improved stability */
 .group:hover .group-hover\:block {
-    animation: tooltipFadeIn 0.15s ease-out;
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+/* Better tooltip transition for stability */
+.tooltip-stable {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Prevent tooltip flickering by adding pointer-events-none and z-index */
+.group .tooltip,
+.group [class*="tooltip"] {
+    pointer-events: none;
+    z-index: 50;
+}
+
+/* App item stability improvements */
+.app-item {
+    position: relative;
+    pointer-events: auto;
+}
+
+.app-item .tooltip {
+    pointer-events: none;
 }
 
 @keyframes tooltipFadeIn {
     from {
         opacity: 0;
-        transform: translate(-50%, 4px);
+        transform: translate(-50%, 8px);
     }
     to {
         opacity: 1;

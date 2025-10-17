@@ -1,0 +1,57 @@
+# 🔁 Automatische FTP-deploy van gewijzigde websitebestanden naar Cloud86
+name: Deploy Website to Cloud86
+
+# 🚀 Trigger deze workflow bij elke push naar de 'main' branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-ftp:
+    name: 🔄 Deploy only changed files via FTP and remove deleted ones
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Stap 1: Haal de laatste versie van de code uit de GitHub-repository
+      - name: 📥 Checkout source code from GitHub
+        uses: actions/checkout@v4
+
+      # 🚚 Stap 2: Upload enkel gewijzigde bestanden en verwijder verwijderde bestanden op de server
+      - name: 🚚 Upload changed files via FTP (incremental deployment with cleanup)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          # 🔐 Gegevens zijn opgeslagen als GitHub Secrets
+          server: ${{ secrets.FTP_SERVER }}         # IP-adres of hostnaam van Cloud86
+          username: ${{ secrets.FTP_USERNAME }}     # FTP-gebruikersnaam
+          password: ${{ secrets.FTP_PASSWORD }}     # FTP-wachtwoord
+
+          # 📁 Doelmap op de server (bijv. ‘httpdocs/2/’)
+          server-dir: onefav.app/
+
+          # 🧹 Verwijder serverbestanden die niet meer in je repo staan
+          dangerous-clean-folders: true
+
+          # 🔄 Upload alleen bestanden die zijn toegevoegd of gewijzigd (geen volledige herupload)
+          dangerous-clean-slate: false
+
+          # 🚫 Sluit onnodige bestanden en directories uit van deployment
+          exclude: |
+            **/.git*                # Git metadata
+            **/.github/**          # GitHub workflow bestanden
+            **/*.md                # Alle Markdown bestanden (documentatie)
+            **/LICENSE             # Licentie-informatie
+            **/package*.json       # Node.js projectdefinities
+            **/node_modules/**     # Node.js dependencies
+            **/*.log               # Logbestanden
+            **/.env                # Omgevingsvariabelen (nooit uploaden)
+            **/.env.*              # Extra env-configs
+            **/.DS_Store           # macOS systeembestand
+            **/Thumbs.db           # Windows systeembestand
+            **/*.pem               # Chrome extension private keys
+            **/*.crx               # Chrome extension packages
+            **/chrome-extension.pem # Chrome extension signing key
+            **/chrome-extension.crx # Chrome extension package
+            **/screenshots/        # Store assets
+            **/store-assets/       # Promotional materials
+            **/promotional-assets/ # Marketing materials
