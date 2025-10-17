@@ -262,6 +262,114 @@ function setupEventListeners() {
       collectionFormModal?.classList.remove("flex");
     }
   });
+
+  // Setup drag & drop zone voor apps grid
+  setupDropZone();
+}
+
+/**
+ * Setup drop zone voor het slepen van links naar de app grid
+ */
+function setupDropZone() {
+  const appsGrid = document.getElementById("appsGrid");
+  const appMenu = document.getElementById("appMenu");
+
+  if (!appsGrid || !appMenu) return;
+
+  let dropIndicator = null;
+
+  // Maak drop indicator element
+  const createDropIndicator = () => {
+    if (!dropIndicator) {
+      dropIndicator = document.createElement("div");
+      dropIndicator.className =
+        "col-span-4 rounded-lg border-2 border-dashed border-blue-400 bg-blue-50 dark:bg-blue-900/20 p-8 text-center hidden";
+      dropIndicator.innerHTML = `
+        <div class="flex flex-col items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Sleep een link hiernaartoe</p>
+          <p class="text-xs text-blue-500 dark:text-blue-500">We maken er automatisch een app van!</p>
+        </div>
+      `;
+      appsGrid.appendChild(dropIndicator);
+    }
+    return dropIndicator;
+  };
+
+  // Prevent default drag over hele document
+  document.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+
+  document.addEventListener("drop", (e) => {
+    e.preventDefault();
+  });
+
+  // App menu drop zone
+  appMenu.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    const indicator = createDropIndicator();
+    indicator.classList.remove("hidden");
+  });
+
+  appMenu.addEventListener("dragleave", (e) => {
+    // Alleen verbergen als we echt het app menu verlaten
+    if (e.target === appMenu) {
+      if (dropIndicator) {
+        dropIndicator.classList.add("hidden");
+      }
+    }
+  });
+
+  appMenu.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  });
+
+  appMenu.addEventListener("drop", (e) => {
+    e.preventDefault();
+
+    if (dropIndicator) {
+      dropIndicator.classList.add("hidden");
+    }
+
+    // Haal URL op uit drop data
+    const url =
+      e.dataTransfer.getData("text/uri-list") ||
+      e.dataTransfer.getData("text/plain");
+
+    if (url && url.startsWith("http")) {
+      // Extraheer domein naam voor app naam
+      try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace("www.", "");
+        const appName = hostname.split(".")[0];
+        const capitalizedName =
+          appName.charAt(0).toUpperCase() + appName.slice(1);
+
+        // Open custom app modal met pre-filled data
+        const customAppModal = document.getElementById("customAppModal");
+        const nameInput = document.getElementById("customAppName");
+        const urlInput = document.getElementById("customAppUrl");
+
+        if (nameInput) nameInput.value = capitalizedName;
+        if (urlInput) urlInput.value = url;
+
+        customAppModal?.classList.remove("hidden");
+        customAppModal?.classList.add("flex");
+
+        console.log(`✅ Link gedropt: ${capitalizedName} - ${url}`);
+
+        // Focus op naam input voor aanpassing
+        setTimeout(() => nameInput?.focus(), 100);
+      } catch (error) {
+        console.error("Ongeldige URL gedropt:", error);
+        alert("Ongeldige URL. Sleep een geldige link naar het app menu.");
+      }
+    }
+  });
 }
 
 /**
@@ -547,7 +655,7 @@ function createAppButton(app, isPinnedButton = false) {
     "app-item flex flex-col items-center gap-2 rounded-lg p-3 text-center transition hover:bg-gray-50 cursor-grab active:cursor-grabbing relative group dark:hover:bg-gray-700";
   button.setAttribute("aria-label", `Open ${app.name}`);
   button.setAttribute("data-name", app.name);
-  
+
   // Maak app draggable naar desktop
   button.setAttribute("draggable", "true");
   button.addEventListener("dragstart", (e) => {
@@ -556,14 +664,17 @@ function createAppButton(app, isPinnedButton = false) {
       e.dataTransfer.effectAllowed = "copyLink";
       e.dataTransfer.setData("text/uri-list", app.url);
       e.dataTransfer.setData("text/plain", app.url);
-      e.dataTransfer.setData("DownloadURL", `application/internet-shortcut:${app.name}.url:${app.url}`);
-      
+      e.dataTransfer.setData(
+        "DownloadURL",
+        `application/internet-shortcut:${app.name}.url:${app.url}`
+      );
+
       // Visual feedback
       button.style.opacity = "0.5";
       console.log(`🔗 Drag started: ${app.name} - ${app.url}`);
     }
   });
-  
+
   button.addEventListener("dragend", (e) => {
     button.style.opacity = "1";
   });
