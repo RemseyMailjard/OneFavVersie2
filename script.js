@@ -547,6 +547,26 @@ function createAppButton(app, isPinnedButton = false) {
     "app-item flex flex-col items-center gap-2 rounded-lg p-3 text-center transition hover:bg-gray-50 cursor-grab active:cursor-grabbing relative group dark:hover:bg-gray-700";
   button.setAttribute("aria-label", `Open ${app.name}`);
   button.setAttribute("data-name", app.name);
+  
+  // Maak app draggable naar desktop
+  button.setAttribute("draggable", "true");
+  button.addEventListener("dragstart", (e) => {
+    if (app.url) {
+      // Stel data in voor drag naar desktop
+      e.dataTransfer.effectAllowed = "copyLink";
+      e.dataTransfer.setData("text/uri-list", app.url);
+      e.dataTransfer.setData("text/plain", app.url);
+      e.dataTransfer.setData("DownloadURL", `application/internet-shortcut:${app.name}.url:${app.url}`);
+      
+      // Visual feedback
+      button.style.opacity = "0.5";
+      console.log(`🔗 Drag started: ${app.name} - ${app.url}`);
+    }
+  });
+  
+  button.addEventListener("dragend", (e) => {
+    button.style.opacity = "1";
+  });
 
   // Pin indicator
   if (isPinned(app.name) && !isPinnedButton) {
