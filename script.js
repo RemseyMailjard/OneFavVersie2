@@ -87,6 +87,12 @@ async function loadApps() {
     // Render apps
     renderApps(allApps);
     renderPinnedApps();
+
+    // Render homepage apps
+    renderHomePageApps(allApps);
+    renderHomePagePinnedApps();
+    updateHomePageAppCounter(allApps.length);
+
     // renderCollectionsQuickAccess(); // Wordt nu aangeroepen na loadCollections()
 
     // Initialiseer sortable na het renderen
@@ -3892,13 +3898,10 @@ function setupHomePageApps() {
     });
   }
 
-  // Setup categories
+  // Setup categories (categories are set up, but apps are rendered in loadApps())
   setupHomePageCategories(allApps);
 
-  // Initial render
-  renderHomePageApps(allApps);
-  renderHomePagePinnedApps();
-  updateHomePageAppCounter(allApps.length);
+  // Note: renderHomePageApps() is now called from loadApps() to ensure apps are loaded first
 }
 
 /**
