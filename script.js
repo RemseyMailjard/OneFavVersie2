@@ -1171,6 +1171,7 @@ async function loadCollections() {
 
       // Render collections in de UI
       renderCollectionsQuickAccess();
+      renderUsageStats(); // Render usage statistics
     } else {
       console.warn("collections.json niet gevonden, gebruik localStorage");
       loadCollectionsFromLocalStorage();
@@ -1929,3 +1930,134 @@ function setupCommandPalette() {
 
 // Initialize Command Palette
 setupCommandPalette();
+
+/**
+ * ==========================================
+ * USAGE STATISTICS
+ * ==========================================
+ */
+
+/**
+ * Load usage statistics from localStorage
+ */
+function loadAppStats() {
+  const saved = localStorage.getItem("appStats");
+  if (saved) {
+    try {
+      appStats = JSON.parse(saved);
+    } catch (error) {
+      console.error("Error loading app stats:", error);
+      appStats = {};
+    }
+  }
+}
+
+/**
+ * Save usage statistics to localStorage
+ */
+function saveAppStats() {
+  localStorage.setItem("appStats", JSON.stringify(appStats));
+}
+
+/**
+ * Track app usage
+ */
+function trackAppUsage(appName) {
+  if (!appStats[appName]) {
+    appStats[appName] = {
+      clicks: 0,
+      lastUsed: null,
+      firstUsed: Date.now(),
+    };
+  }
+
+  appStats[appName].clicks++;
+  appStats[appName].lastUsed = Date.now();
+
+  saveAppStats();
+  console.log(`📊 App clicked: ${appName} (${appStats[appName].clicks} times)`);
+}
+
+/**
+ * Get most used apps
+ */
+function getMostUsedApps(limit = 5) {
+  return Object.entries(appStats)
+    .map(([name, stats]) => ({
+      name,
+      ...stats,
+    }))
+    .sort((a, b) => b.clicks - a.clicks)
+    .slice(0, limit);
+}
+
+/**
+ * Get recently used apps
+ */
+function getRecentlyUsedApps(limit = 5) {
+  return Object.entries(appStats)
+    .filter(([_, stats]) => stats.lastUsed)
+    .map(([name, stats]) => ({
+      name,
+      ...stats,
+    }))
+    .sort((a, b) => b.lastUsed - a.lastUsed)
+    .slice(0, limit);
+}
+
+/**
+ * Render usage statistics in app menu
+ */
+function renderUsageStats() {
+  const mostUsed = getMostUsedApps(3);
+  const recent = getRecentlyUsedApps(3);
+
+  if (mostUsed.length === 0) return; // No stats yet
+
+  // Add to quick access section
+  const quickAccessContainer = document.getElementById(
+    "collectionsQuickAccess"
+  );
+  if (!quickAccessContainer) return;
+
+  const statsSection = document.createElement("div");
+  statsSection.className =
+    "mt-4 pt-4 border-t border-gray-200 dark:border-gray-700";
+  statsSection.innerHTML = `
+    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+      📊 MOST USED
+    </p>
+  `;
+
+  mostUsed.forEach((stat) => {
+    const app = allApps.find((a) => a.name === stat.name);
+    if (!app) return;
+
+    const button = document.createElement("button");
+    button.className = `flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left w-full mb-1`;
+    button.innerHTML = `
+      <div class="${app.color.bg} ${app.color.text} rounded p-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="${app.icon.viewBox}" fill="currentColor">
+          <path d="${app.icon.path}" />
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${app.name}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400">${stat.clicks} clicks</div>
+      </div>
+    `;
+    button.onclick = () => {
+      trackAppUsage(app.name);
+      if (app.url) window.open(app.url, "_blank");
+    };
+    statsSection.appendChild(button);
+  });
+
+  quickAccessContainer.parentNode?.insertBefore(
+    statsSection,
+    quickAccessContainer
+  );
+}
+
+// Load stats on init
+loadAppStats();
