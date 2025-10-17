@@ -546,3 +546,511 @@ body {
         height: 1.25rem;
     }
 }
+
+/* ============================================
+   ENHANCED FEATURES STYLES
+   ============================================ */
+
+/* Recent Badge */
+.recent-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 0.75rem;
+    animation: pulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(255, 107, 0, 0.3));
+    z-index: 10;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Usage Counter */
+.usage-counter {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+    z-index: 10;
+    min-width: 18px;
+    text-align: center;
+}
+
+.dark .usage-counter {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+/* Enhanced Hover Effects */
+.app-hover-enhanced {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-hover-enhanced:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.15), 
+                0 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .app-hover-enhanced:hover {
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.4), 
+                0 8px 16px -8px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading Skeleton */
+.app-skeleton {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: #f3f4f6;
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.dark .app-skeleton {
+    background: #374151;
+}
+
+.skeleton-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    margin: 0 auto 0.5rem;
+}
+
+.dark .skeleton-icon {
+    background: #4b5563;
+}
+
+.skeleton-text {
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    margin: 0 auto;
+    max-width: 80%;
+}
+
+.dark .skeleton-text {
+    background: #4b5563;
+}
+
+@keyframes skeletonPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.dark .toast {
+    background: #1f2937;
+    color: #f3f4f6;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast-success {
+    border-left: 4px solid #10b981;
+}
+
+.toast-error {
+    border-left: 4px solid #ef4444;
+}
+
+.toast-info {
+    border-left: 4px solid #3b82f6;
+}
+
+.toast-warning {
+    border-left: 4px solid #f59e0b;
+}
+
+/* Note Indicator */
+.note-indicator {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    font-size: 0.75rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    z-index: 10;
+}
+
+/* Group Indicator */
+.group-indicator {
+    position: absolute;
+    bottom: -4px;
+    left: -4px;
+    font-size: 0.75rem;
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    z-index: 10;
+}
+
+.dark .group-indicator {
+    background: #1f2937;
+}
+
+/* Tag Filter Chips */
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dark .tag-chip {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+.tag-chip:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+}
+
+.dark .tag-chip:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+}
+
+.tag-chip.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.dark .tag-chip.active {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.tag-chip .badge {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tag-chip.active .badge {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Recent Searches Chips */
+.recent-search-chip {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .recent-search-chip {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+.recent-search-chip:hover {
+    background: #f9fafb;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.dark .recent-search-chip:hover {
+    background: #4b5563;
+    border-color: #60a5fa;
+}
+
+/* Smart Suggestions Section */
+.smart-suggestions-container {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 0.75rem;
+    border: 1px solid #bae6fd;
+}
+
+.dark .smart-suggestions-container {
+    background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
+    border-color: #3b82f6;
+}
+
+/* Usage Stats Widget */
+.usage-stats-widget {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.dark .usage-stats-widget {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.dark .stat-card {
+    background: #374151;
+}
+
+.stat-card:hover {
+    transform: scale(1.05);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.dark .stat-label {
+    color: #9ca3af;
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.dark .progress-bar {
+    background: #4b5563;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+/* Keyboard Shortcut Hint */
+.keyboard-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: monospace;
+    color: #4b5563;
+}
+
+.dark .keyboard-hint {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+/* App with keyboard shortcut indicator */
+.app-with-shortcut {
+    position: relative;
+}
+
+.app-with-shortcut::before {
+    content: attr(data-shortcut);
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    z-index: 10;
+}
+
+/* Bulk Selection Mode */
+.bulk-select-mode .app-item {
+    cursor: pointer;
+}
+
+.bulk-select-mode .app-item.selected {
+    outline: 3px solid #3b82f6;
+    outline-offset: 2px;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.dark .bulk-select-mode .app-item.selected {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Bulk Actions Toolbar */
+.bulk-actions-toolbar {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    z-index: 100;
+    animation: slideUp 0.3s ease-out;
+}
+
+.dark .bulk-actions-toolbar {
+    background: #1f2937;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Most Used Section */
+.most-used-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 0.75rem;
+    border: 1px solid #fbbf24;
+}
+
+.dark .most-used-section {
+    background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+    border-color: #d97706;
+}
+
+.most-used-badge {
+    background: #fbbf24;
+    color: #78350f;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+/* Feature Toggle in Settings */
+.feature-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: background 0.2s ease;
+}
+
+.feature-toggle:hover {
+    background: #f9fafb;
+}
+
+.dark .feature-toggle:hover {
+    background: #374151;
+}
+
+.feature-toggle-label {
+    flex: 1;
+}
+
+.feature-toggle-title {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+.dark .feature-toggle-title {
+    color: #f3f4f6;
+}
+
+.feature-toggle-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.125rem;
+}
+
+.dark .feature-toggle-description {
+    color: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .usage-stats-widget {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .bulk-actions-toolbar {
+        bottom: 1rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}

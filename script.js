@@ -9,6 +9,15 @@ let selectedCollectionColor = "blue";
 let currentCategory = "all";
 let editingCollectionId = null;
 
+// Feature modules instances
+let fuzzySearch = null;
+let analytics = null;
+let recentSearches = null;
+let tagFilter = null;
+let uiEnhancements = null;
+let keyboardShortcuts = null;
+let appNotes = null;
+
 // AI Mode state
 let currentAIMode = "gpt"; // Default: ChatGPT
 const aiModes = {
@@ -4568,12 +4577,200 @@ function setupAppsVisibilityToggle() {
 }
 
 // Initialize everything
+/**
+ * Initialize all feature modules
+ */
+function initializeFeatureModules() {
+  console.log("🔧 Initializing feature modules...");
+
+  try {
+    // Check if modules are loaded
+    if (typeof FuzzySearch === "undefined") {
+      console.warn("Feature modules not loaded yet, using defaults");
+      return;
+    }
+
+    // Get feature settings from localStorage or use defaults
+    const savedFeatures = JSON.parse(
+      localStorage.getItem("onefav_features") || "{}"
+    );
+    const features = { ...FEATURES, ...savedFeatures };
+
+    // Initialize Fuzzy Search
+    if (features.fuzzySearch) {
+      fuzzySearch = new FuzzySearch({
+        minScore: FEATURE_SETTINGS.fuzzySearch.minScore,
+        maxResults: FEATURE_SETTINGS.fuzzySearch.maxResults,
+        enabled: true,
+      });
+      console.log("✓ Fuzzy Search initialized");
+    }
+
+    // Initialize Analytics
+    if (features.detailedAnalytics || features.smartSuggestions) {
+      analytics = new AppAnalytics({
+        enabled: features.detailedAnalytics,
+        retentionDays: FEATURE_SETTINGS.usageStats.retentionDays,
+      });
+      console.log("✓ Analytics initialized");
+    }
+
+    // Initialize Recent Searches
+    if (features.recentSearches) {
+      recentSearches = new RecentSearches({
+        maxItems: FEATURE_SETTINGS.recentSearches.maxItems,
+        enabled: true,
+      });
+      console.log("✓ Recent Searches initialized");
+    }
+
+    // Initialize Tag Filter
+    if (features.tagFiltering) {
+      tagFilter = new TagFilter({
+        enabled: true,
+      });
+      console.log("✓ Tag Filter initialized");
+    }
+
+    // Initialize UI Enhancements
+    if (
+      features.recentBadge ||
+      features.usageCounter ||
+      features.hoverEffects
+    ) {
+      uiEnhancements = new UIEnhancements({
+        recentBadge: features.recentBadge,
+        usageCounter: features.usageCounter,
+        hoverEffects: features.hoverEffects,
+        loadingSkeleton: features.loadingSkeleton,
+      });
+      console.log("✓ UI Enhancements initialized");
+    }
+
+    // Initialize Keyboard Shortcuts
+    if (features.quickLaunchShortcuts) {
+      keyboardShortcuts = new KeyboardShortcuts({
+        modifier: FEATURE_SETTINGS.quickLaunchShortcuts.modifier,
+        maxShortcuts: FEATURE_SETTINGS.quickLaunchShortcuts.maxShortcuts,
+        enabled: true,
+      });
+
+      // Listen for app launch events
+      document.addEventListener("shortcuts:appLaunch", (e) => {
+        const { app } = e.detail;
+        if (app && app.url) {
+          window.open(app.url, "_blank");
+          if (analytics) analytics.trackAppOpen(app);
+        }
+      });
+
+      console.log("✓ Keyboard Shortcuts initialized");
+    }
+
+    // Initialize App Notes
+    if (features.appNotes) {
+      appNotes = new AppNotes();
+      console.log("✓ App Notes initialized");
+    }
+
+    // Setup feature toggles in settings
+    setupFeatureToggles();
+
+    console.log("✅ All feature modules initialized successfully!");
+  } catch (error) {
+    console.error("❌ Error initializing feature modules:", error);
+  }
+}
+
+/**
+ * Setup feature toggle handlers
+ */
+function setupFeatureToggles() {
+  const toggles = {
+    fuzzySearchToggle: "fuzzySearch",
+    tagFilteringToggle: "tagFiltering",
+    recentSearchesToggle: "recentSearches",
+    smartSuggestionsToggle: "smartSuggestions",
+    recentBadgeToggle: "recentBadge",
+    usageCounterToggle: "usageCounter",
+    hoverEffectsToggle: "hoverEffects",
+    mostUsedToggle: "mostUsed",
+    usageStatsToggle: "usageStats",
+    quickLaunchToggle: "quickLaunchShortcuts",
+    appNotesToggle: "appNotes",
+    trackUsageToggle: "detailedAnalytics",
+    autoBackupToggle: "autoBackup",
+  };
+
+  // Load saved settings
+  const savedFeatures = JSON.parse(
+    localStorage.getItem("onefav_features") || "{}"
+  );
+
+  // Set toggle states
+  Object.entries(toggles).forEach(([toggleId, featureKey]) => {
+    const toggle = document.getElementById(toggleId);
+    if (toggle) {
+      const isEnabled =
+        savedFeatures[featureKey] !== undefined
+          ? savedFeatures[featureKey]
+          : FEATURES[featureKey];
+      toggle.checked = isEnabled;
+
+      // Add change listener
+      toggle.addEventListener("change", () => {
+        savedFeatures[featureKey] = toggle.checked;
+        localStorage.setItem("onefav_features", JSON.stringify(savedFeatures));
+
+        // Show toast
+        if (uiEnhancements) {
+          uiEnhancements.showToast(
+            `${featureKey} ${
+              toggle.checked ? "ingeschakeld" : "uitgeschakeld"
+            }`,
+            "info"
+          );
+        }
+
+        // Reload page to apply changes (for some features)
+        if (["fuzzySearch", "quickLaunchShortcuts"].includes(featureKey)) {
+          setTimeout(() => location.reload(), 1000);
+        }
+      });
+    }
+  });
+
+  // Reset features button
+  const resetBtn = document.getElementById("resetFeaturesBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (
+        confirm(
+          "Weet je zeker dat je alle features wilt resetten naar standaard?"
+        )
+      ) {
+        localStorage.removeItem("onefav_features");
+        if (uiEnhancements) {
+          uiEnhancements.showToast(
+            "Features gereset naar standaard",
+            "success"
+          );
+        }
+        setTimeout(() => location.reload(), 1000);
+      }
+    });
+  }
+}
+
 async function initializeApp() {
   console.log("🚀 Initializing OneFav...");
 
   try {
     // Load theme first
     loadTheme();
+
+    // Initialize feature modules
+    initializeFeatureModules();
 
     // Load all data
     await loadApps();
