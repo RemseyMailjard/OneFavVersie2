@@ -4192,7 +4192,7 @@ function setupHomePageApps() {
 
   // Setup categories (categories are set up, but apps are rendered in loadApps())
   setupHomePageCategories(allApps);
-  
+
   // Setup chipRow categories
   setupChipRowCategories();
 
@@ -4283,21 +4283,39 @@ function setupChipRowCategories() {
   chipRow.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-category]");
     if (!btn) return;
-    
+
     const category = btn.getAttribute("data-category");
     if (category) {
       // Update active button styling
       document.querySelectorAll(".homepage-chip-btn").forEach((button) => {
         button.classList.remove("active");
         // Reset to default styling
-        button.classList.remove("bg-sky-100", "border-sky-300", "text-sky-700", "font-medium");
-        button.classList.remove("dark:bg-sky-900/30", "dark:border-sky-700", "dark:text-sky-300");
+        button.classList.remove(
+          "bg-sky-100",
+          "border-sky-300",
+          "text-sky-700",
+          "font-medium"
+        );
+        button.classList.remove(
+          "dark:bg-sky-900/30",
+          "dark:border-sky-700",
+          "dark:text-sky-300"
+        );
       });
 
       // Set active styling for clicked button
       btn.classList.add("active");
-      btn.classList.add("bg-sky-100", "border-sky-300", "text-sky-700", "font-medium");
-      btn.classList.add("dark:bg-sky-900/30", "dark:border-sky-700", "dark:text-sky-300");
+      btn.classList.add(
+        "bg-sky-100",
+        "border-sky-300",
+        "text-sky-700",
+        "font-medium"
+      );
+      btn.classList.add(
+        "dark:bg-sky-900/30",
+        "dark:border-sky-700",
+        "dark:text-sky-300"
+      );
 
       // Filter homepage apps
       filterHomePageByCategory(category);
