@@ -9,7 +9,9 @@ let currentCategory = "all";
 let editingCollectionId = null;
 
 // App menu toggle functionaliteit
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("🚀 DOMContentLoaded - Start initialisatie");
+
   const appMenuBtn = document.getElementById("appMenuBtn");
   const appMenu = document.getElementById("appMenu");
   const themeToggle = document.getElementById("themeToggle");
@@ -20,23 +22,38 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Laad apps en instellingen
-  loadApps();
+  // Laad theme eerst (sync)
+  loadTheme();
+  console.log("✅ Theme geladen");
+
+  // Laad apps eerst (async) - DIT MOET EERST!
+  await loadApps();
+  console.log("✅ Apps geladen - allApps.length:", allApps.length);
+
+  // Dan pas collections laden (heeft apps nodig)
+  await loadCollections();
+  console.log(
+    "✅ Collections geladen - collections.length:",
+    collections.length
+  );
+
+  // En dan andere sync functies
   loadPinnedApps();
   loadCustomApps();
-  loadCollections();
-  loadTheme();
+  console.log("✅ Pinned apps en custom apps geladen");
 
   // Setup event listeners
   setupEventListeners();
   setupKeyboardShortcuts();
+  console.log("✅ Event listeners ingesteld");
 
   // Make functions globally available for inline onclick handlers
   window.openCollection = openCollection;
   window.editCollection = editCollection;
   window.deleteCollection = deleteCollection;
-});
 
+  console.log("🎉 Initialisatie compleet!");
+});
 /**
  * Setup alle event listeners
  */
@@ -338,7 +355,7 @@ async function loadApps() {
     // Render apps
     renderApps(allApps);
     renderPinnedApps();
-    renderCollectionsQuickAccess();
+    // renderCollectionsQuickAccess(); // Wordt nu aangeroepen na loadCollections()
 
     // Initialiseer sortable na het renderen
     initSortable();
@@ -1047,6 +1064,7 @@ function loadCollectionsFromLocalStorage() {
   if (saved) {
     try {
       collections = JSON.parse(saved);
+      renderCollectionsQuickAccess(); // Render ook bij fallback
     } catch (error) {
       console.error("Fout bij laden collections:", error);
       collections = [];
@@ -1135,31 +1153,44 @@ function renderCollectionsList() {
     const defaultBadge = isDefault
       ? '<span class="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-400">Default</span>'
       : "";
-    
+
     // Haal app objecten op uit apps.json
     const { validApps, missingApps } = validateCollectionApps(collection);
-    
+
     // Maak app preview (iconen)
-    const appPreview = validApps.slice(0, 5).map(app => `
+    const appPreview = validApps
+      .slice(0, 5)
+      .map(
+        (app) => `
       <div class="${app.color.bg} ${app.color.text} rounded p-1 inline-flex" title="${app.name}">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="${app.icon.viewBox}" fill="currentColor">
           <path d="${app.icon.path}" />
         </svg>
       </div>
-    `).join('');
-    
-    const moreApps = validApps.length > 5 ? `<span class="text-xs text-${collection.color}-600 dark:text-${collection.color}-400">+${validApps.length - 5} meer</span>` : '';
-    
-    const warningBadge = missingApps.length > 0 
-      ? `<span class="ml-2 text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full" title="Sommige apps niet gevonden">⚠️ ${missingApps.length} missing</span>`
-      : '';
+    `
+      )
+      .join("");
+
+    const moreApps =
+      validApps.length > 5
+        ? `<span class="text-xs text-${collection.color}-600 dark:text-${
+            collection.color
+          }-400">+${validApps.length - 5} meer</span>`
+        : "";
+
+    const warningBadge =
+      missingApps.length > 0
+        ? `<span class="ml-2 text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full" title="Sommige apps niet gevonden">⚠️ ${missingApps.length} missing</span>`
+        : "";
 
     item.innerHTML = `
       <div class="flex items-center justify-between mb-2">
         <div class="flex-1">
           <h4 class="font-semibold text-${collection.color}-900 dark:text-${
       collection.color
-    }-100 flex items-center">${collection.name}${defaultBadge}${warningBadge}</h4>
+    }-100 flex items-center">${
+      collection.name
+    }${defaultBadge}${warningBadge}</h4>
           <p class="text-sm text-${collection.color}-700 dark:text-${
       collection.color
     }-300">${collection.description || ""}</p>
@@ -1201,18 +1232,6 @@ function renderCollectionsList() {
     listContainer.appendChild(item);
   });
 }
-          onclick="deleteCollection('${collection.id}')"
-          class="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-          title="Verwijder collection"
-        >
-          🗑️
-        </button>
-      </div>
-    `;
-
-    listContainer.appendChild(item);
-  });
-}
 
 /**
  * Render app selectie checkboxes in het Collection Form
@@ -1223,9 +1242,12 @@ function renderAppSelectionList() {
 
   container.innerHTML = "";
 
+  console.log("🔍 renderAppSelectionList - allApps.length:", allApps.length);
+
   if (allApps.length === 0) {
     container.innerHTML =
       '<p class="text-sm text-gray-500 dark:text-gray-400">Geen apps beschikbaar</p>';
+    console.warn("⚠️ Geen apps beschikbaar! Apps zijn nog niet geladen.");
     return;
   }
 
