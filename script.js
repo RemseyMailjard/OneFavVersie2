@@ -4212,10 +4212,20 @@ function setupMainButtons() {
 
     // Close menu when clicking outside
     document.addEventListener("click", (e) => {
+      // Don't close if clicking on toggle visibility button
+      const toggleBtn = document.getElementById("appsVisibilityToggle");
+      if (toggleBtn && toggleBtn.contains(e.target)) {
+        return;
+      }
+
       if (!appMenu.contains(e.target) && !appMenuBtn.contains(e.target)) {
-        appMenu.classList.add("hidden");
-        appMenu.classList.remove("menu-enter");
-        appMenuBtn.setAttribute("aria-expanded", "false");
+        // Only close if apps are not hidden by visibility toggle
+        const appsVisibility = localStorage.getItem("appsVisibility");
+        if (appsVisibility !== "hidden") {
+          appMenu.classList.add("hidden");
+          appMenu.classList.remove("menu-enter");
+          appMenuBtn.setAttribute("aria-expanded", "false");
+        }
       }
     });
   }
@@ -4411,11 +4421,22 @@ function setupAppsVisibilityToggle() {
   }
 
   // Click handler
-  toggleBtn.addEventListener("click", toggleAppsVisibility);
+  toggleBtn.addEventListener("click", function () {
+    console.log("Toggle button clicked");
+    toggleAppsVisibility();
+  });
 
   function toggleAppsVisibility() {
+    console.log("toggleAppsVisibility called");
     const currentState = localStorage.getItem("appsVisibility");
     const isCurrentlyHidden = currentState === "hidden";
+
+    console.log(
+      "Current state:",
+      currentState,
+      "isCurrentlyHidden:",
+      isCurrentlyHidden
+    );
 
     if (isCurrentlyHidden) {
       showApps();
@@ -4425,13 +4446,18 @@ function setupAppsVisibilityToggle() {
   }
 
   function hideApps() {
-    // Close the menu if it's open
-    if (!appMenu.classList.contains("hidden")) {
-      appMenu.classList.add("hidden");
-      if (appMenuBtn) {
-        appMenuBtn.setAttribute("aria-expanded", "false");
-      }
+    console.log("hideApps called");
+    console.log("appMenu classes before:", appMenu.className);
+
+    // Close the menu - force it to be hidden
+    appMenu.classList.add("hidden");
+    appMenu.classList.remove("menu-enter");
+
+    if (appMenuBtn) {
+      appMenuBtn.setAttribute("aria-expanded", "false");
     }
+
+    console.log("appMenu classes after:", appMenu.className);
 
     // Update icon state
     updateIconState(true);
@@ -4444,9 +4470,11 @@ function setupAppsVisibilityToggle() {
   }
 
   function showApps() {
+    console.log("showApps called");
     // Open the menu
     if (appMenu.classList.contains("hidden")) {
       appMenu.classList.remove("hidden");
+      appMenu.classList.add("menu-enter");
       if (appMenuBtn) {
         appMenuBtn.setAttribute("aria-expanded", "true");
       }
@@ -4463,6 +4491,7 @@ function setupAppsVisibilityToggle() {
   }
 
   function updateIconState(isHidden) {
+    console.log("updateIconState called with isHidden:", isHidden);
     if (isHidden) {
       eyeOpenIcon.classList.add("hidden");
       eyeClosedIcon.classList.remove("hidden");
