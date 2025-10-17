@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>One Fav - All je Favorieten op 1 plek!</title>
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="styles.css" />
+    <!-- SortableJS for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-gray-100 antialiased transition-colors duration-200">
+    <!-- Toolbar rechtsboven met theme switcher en settings -->
+    <div class="fixed right-4 top-4 z-50 flex items-center gap-2">
+        <!-- Theme Switcher -->
+        <button id="themeToggle" type="button"
+            class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            aria-label="Toggle theme">
+            <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="hidden h-5 w-5" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="settingsBtn" type="button"
+            class="rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            aria-label="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                    d="M12 1v6m0 6v6m0-18l-2.5 1.5M12 1l2.5 1.5M12 23l-2.5-1.5M12 23l2.5-1.5m-9-11H1m6 0h6m6 0h4M3 12l1.5-2.5M3 12l1.5 2.5M21 12l-1.5-2.5M21 12l-1.5 2.5" />
+            </svg>
+        </button>
+
+        <!-- Waffel icoon button -->
+        <button id="appMenuBtn" type="button"
+            class="group relative rounded-full p-2.5 text-gray-700 transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            aria-label="Fav Apps">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"
+                aria-hidden="true">
+                <circle cx="5" cy="5" r="2" />
+                <circle cx="12" cy="5" r="2" />
+                <circle cx="19" cy="5" r="2" />
+                <circle cx="5" cy="12" r="2" />
+                <circle cx="12" cy="12" r="2" />
+                <circle cx="19" cy="12" r="2" />
+                <circle cx="5" cy="19" r="2" />
+                <circle cx="12" cy="19" r="2" />
+                <circle cx="19" cy="19" r="2" />
+            </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="appMenu"
+            class="absolute right-0 top-full mt-3 hidden w-[400px] origin-top-right animate-in fade-in slide-in-from-top-2 duration-200">
+            <div
+                class="rounded-2xl border border-gray-200/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-800">
+                <!-- Header met titel, counter en acties -->
+                <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Loading...</p>
+                        <div class="flex items-center gap-2">
+                            <span id="appCounter" class="text-xs text-gray-500 dark:text-gray-400"></span>
+                            <button id="addCustomApp" type="button"
+                                class="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                                title="Voeg custom app toe (Ctrl+N)">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zoekbalk met keyboard hint -->
+                <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+                    <div class="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400">
+                            <path d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z" fill="none"
+                                stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        <input type="text" id="appSearch" placeholder="Zoek apps... (Ctrl+K)"
+                            class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-16 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:focus:border-blue-400 dark:focus:bg-gray-600" />
+                        <kbd
+                            class="absolute right-3 top-1/2 -translate-y-1/2 rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-600 dark:text-gray-300">⌘K</kbd>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+                    <div class="flex gap-2 overflow-x-auto pb-1" id="categoryFilter">
+                        <button data-category="all"
+                            class="category-btn active whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-xs font-medium text-white transition">
+                            Alle
+                        </button>
+                        <!-- Categorieën worden dynamisch geladen -->
+                    </div>
+                </div>
+
+                <!-- Pinned Apps Section -->
+                <div id="pinnedSection" class="hidden border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+                    <p class="mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400">📌 Vastgepind</p>
+                    <div id="pinnedApps" class="grid grid-cols-4 gap-2">
+                        <!-- Gepinde apps komen hier -->
+                    </div>
+                </div>
+
+                <!-- Apps Grid -->
+                <div id="appsGrid" class="grid grid-cols-4 gap-3 p-5" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Apps worden hier dynamisch geladen -->
+                    <div class="col-span-4 py-8 text-center">
+                        <div
+                            class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer met opties -->
+                <div class="border-t border-gray-100 px-5 py-3 dark:border-gray-700">
+                    <div class="flex gap-2">
+                        <button id="exportConfig" type="button"
+                            class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Export
+                        </button>
+                        <button id="importConfig" type="button"
+                            class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            Import
+                        </button>
+                        <button id="resetOrder" type="button"
+                            class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M21 3v5h-5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom App Modal -->
+    <div id="customAppModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Voeg Custom App Toe</h3>
+            <form id="customAppForm" class="space-y-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">App Naam</label>
+                    <input type="text" id="customAppName" required
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="Mijn App" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">URL</label>
+                    <input type="url" id="customAppUrl" required
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="https://example.com" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Categorie</label>
+                    <select id="customAppCategory"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                        <option value="custom">Custom</option>
+                        <option value="work">Work</option>
+                        <option value="social">Social</option>
+                        <option value="tools">Tools</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Kleur</label>
+                    <div class="grid grid-cols-6 gap-2">
+                        <button type="button" data-color="red"
+                            class="color-picker h-8 w-8 rounded-full bg-red-100 ring-2 ring-transparent hover:ring-red-500"></button>
+                        <button type="button" data-color="blue"
+                            class="color-picker h-8 w-8 rounded-full bg-blue-100 ring-2 ring-transparent hover:ring-blue-500"></button>
+                        <button type="button" data-color="green"
+                            class="color-picker h-8 w-8 rounded-full bg-green-100 ring-2 ring-transparent hover:ring-green-500"></button>
+                        <button type="button" data-color="yellow"
+                            class="color-picker h-8 w-8 rounded-full bg-yellow-100 ring-2 ring-transparent hover:ring-yellow-500"></button>
+                        <button type="button" data-color="purple"
+                            class="color-picker h-8 w-8 rounded-full bg-purple-100 ring-2 ring-transparent hover:ring-purple-500"></button>
+                        <button type="button" data-color="pink"
+                            class="color-picker h-8 w-8 rounded-full bg-pink-100 ring-2 ring-transparent hover:ring-pink-500"></button>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" id="cancelCustomApp"
+                        class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                        Annuleer
+                    </button>
+                    <button type="submit"
+                        class="flex-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
+                        Toevoegen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Instellingen</h3>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Sneltoetsen</h4>
+                    <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex justify-between"><span>Menu openen/sluiten</span><kbd
+                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+M</kbd></div>
+                        <div class="flex justify-between"><span>Zoeken</span><kbd
+                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+K</kbd></div>
+                        <div class="flex justify-between"><span>Custom app toevoegen</span><kbd
+                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+N</kbd></div>
+                        <div class="flex justify-between"><span>Theme wisselen</span><kbd
+                                class="rounded bg-gray-200 px-2 py-1 dark:bg-gray-700">Ctrl+T</kbd></div>
+                    </div>
+                </div>
+                <button type="button" id="closeSettings"
+                    class="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600">
+                    Sluiten
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="mx-auto max-w-5xl px-6 py-16">
+        <h1 class="mb-8 text-center text-xl font-medium text-gray-700">One Favorite App</h1>
+
+        <!-- Wrapper om de zoekbalk te centreren -->
+        <div class="mx-auto max-w-3xl">
+            <!-- Zoekbalk -->
+            <div class="relative flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-3 shadow-sm transition ring-0 focus-within:border-gray-300 focus-within:shadow-md"
+                role="search" aria-label="Zoekbalk">
+                <!-- Vergrootglas links -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+                    class="h-5 w-5 flex-none text-gray-400">
+                    <path d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z" fill="none" stroke="currentColor"
+                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
+                <!-- Invoerveld -->
+                <input type="text" placeholder="Zoeken..."
+                    class="w-full appearance-none bg-transparent text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none" />
+
+                <!-- Rechter iconen -->
+                <div class="flex items-center gap-3">
+                    <!-- Microfoon -->
+                    <!-- <button type="button"
+                            class="rounded-full p-1.5 text-gray-500 transition hover:bg-gray-50 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                            aria-label="Zoeken met spraak">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5"
+                                aria-hidden="true">
+                                <path d="M12 4a3 3 0 00-3 3v6a3 3 0 006 0V7a3 3 0 00-3-3zM5 11a7 7 0 0014 0m-7 7v2"
+                                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </button> -->
+
+                    <!-- AI-modus pill -->
+                    <button type="button"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                        aria-label="AI-modus">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-gray-600"
+                            aria-hidden="true">
+                            <path d="M12 5v4l3-3M12 19v-4l-3 3M5 12h4l-3-3m13 3h-4l3 3" fill="none"
+                                stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        <span class="leading-none">AI‑modus</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Extra: smalle variant voorbeeld 
+        <p class="mt-6 text-center text-sm text-gray-500">Tip: pas padding/spacing aan voor kleinere varianten.</p> -->
+        </div>
+    </main>
+
+    <!-- External JavaScript -->
+    <script src="script.js"></script>
+</body>
+
+</html>
