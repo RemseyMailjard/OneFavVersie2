@@ -533,13 +533,6 @@ function createAppCard(app, isPinnedButton = false) {
   nameSpan.textContent = app.name;
   openBtn.appendChild(nameSpan);
 
-  // Desktop drag indicator (hidden but functional)
-  const dragIndicator = document.createElement("span");
-  dragIndicator.className = "drag-indicator hidden md:block";
-  dragIndicator.setAttribute("aria-hidden", "true");
-  dragIndicator.style.display = "none !important";
-  dragIndicator.textContent = "⠿";
-
   // Click handler for opening the app
   openBtn.addEventListener("click", (e) => {
     if (!cardDiv.classList.contains("sortable-drag")) {
@@ -596,7 +589,6 @@ function createAppCard(app, isPinnedButton = false) {
   cardDiv.appendChild(mobileDragHandle);
   cardDiv.appendChild(pinBtn);
   cardDiv.appendChild(openBtn);
-  cardDiv.appendChild(dragIndicator);
 
   return cardDiv;
 }
