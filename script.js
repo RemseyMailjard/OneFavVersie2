@@ -9,6 +9,13 @@ let selectedCollectionColor = "blue";
 let currentCategory = "all";
 let editingCollectionId = null;
 
+// Prevent infinite loops flags
+let isRenderingHomePage = false;
+let isRenderingInlineFavs = false;
+let isLoadingApps = false;
+let lastRenderTime = 0;
+const RENDER_THROTTLE_MS = 100;
+
 // Feature modules instances with fallbacks
 let fuzzySearch = null;
 let analytics = null;
@@ -63,7 +70,6 @@ const aiModes = {
 // Search engine shortcuts (loaded from external JSON with inline fallback)
 let searchEngines = [];
 let apps = [];
-let isLoadingApps = false;
 
 async function ensureAppsLoaded() {
   if (allApps && allApps.length > 0) {
@@ -79,6 +85,13 @@ async function ensureAppsLoaded() {
 }
 
 async function loadApps() {
+  if (isLoadingApps) {
+    console.warn("⚠️ loadApps already in progress");
+    return;
+  }
+
+  isLoadingApps = true;
+
   try {
     const response = await fetch("apps.json");
 
@@ -125,6 +138,8 @@ async function loadApps() {
   } catch (error) {
     console.error("Fout bij laden van apps:", error);
     showErrorMessage();
+  } finally {
+    isLoadingApps = false;
   }
 }
 
@@ -2605,7 +2620,6 @@ function setupShowInlineFavsToggle() {
 }
 
 // Prevent infinite loops
-let isRenderingInlineFavs = false;
 
 function renderInlineFavs() {
   // Prevent recursive calls
@@ -4177,9 +4191,6 @@ function updateHomePageAppCounter(visible, total) {
 }
 
 // Prevent infinite rendering loops
-let isRenderingHomePage = false;
-let lastRenderTime = 0;
-const RENDER_THROTTLE_MS = 100; // Minimum time between renders
 
 /**
  * Render homepage apps
@@ -5242,5 +5253,5 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeApp);
 } else {
   // DOM is already ready
-  initializeApp();
+  setTimeout(initializeApp, 10); // Small delay to ensure everything is ready
 }
