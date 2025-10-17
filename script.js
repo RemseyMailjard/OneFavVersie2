@@ -3254,7 +3254,6 @@ function setupAutocomplete() {
   // Input handler for autocomplete
   searchInput.addEventListener("input", (e) => {
     const query = e.target.value.trim();
-    console.log("📝 Input event - query:", query);
 
     // IMPORTANT: Also filter the apps in the menu
     filterApps(e.target.value);
@@ -3266,7 +3265,6 @@ function setupAutocomplete() {
 
     // Get suggestions
     const suggestions = getAutocompleteSuggestions(query);
-    console.log("💡 Suggestions:", suggestions.length);
     autocompleteState.results = suggestions;
 
     // Auto-select first result if there's only 1 suggestion
@@ -3279,10 +3277,9 @@ function setupAutocomplete() {
     if (suggestions.length > 0) {
       renderAutocompleteSuggestions(suggestions);
       showAutocomplete();
-      console.log("✅ Autocomplete shown");
     } else {
       hideAutocomplete();
-      console.log("❌ No suggestions - hiding");
+    }
     }
   }); // Keyboard navigation
   searchInput.addEventListener("keydown", (e) => {
@@ -3753,17 +3750,29 @@ function getAutocompleteSuggestions(query) {
 
   // Search in all apps
   allApps.forEach((app) => {
-    const matchResult = fuzzyMatch(app.name.toLowerCase(), lowerQuery);
-
-    // fuzzyMatch returns null if no match, or { matches, score } if match found
-    if (matchResult !== null) {
+    // Simple substring match first
+    if (app.name.toLowerCase().includes(lowerQuery)) {
       suggestions.push({
         type: "app",
         app: app,
-        score: matchResult.score,
-        matches: matchResult.matches,
+        score: 100,
+        matches: [],
         reason: "App",
       });
+    }
+    // Then try fuzzy match for more results
+    else {
+      const matchResult = fuzzyMatch(app.name.toLowerCase(), lowerQuery);
+      
+      if (matchResult !== null) {
+        suggestions.push({
+          type: "app",
+          app: app,
+          score: matchResult.score,
+          matches: matchResult.matches,
+          reason: "App",
+        });
+      }
     }
 
     // Also check tags
