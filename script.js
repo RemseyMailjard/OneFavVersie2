@@ -3280,8 +3280,9 @@ function setupAutocomplete() {
     } else {
       hideAutocomplete();
     }
-    }
-  }); // Keyboard navigation
+  });
+
+  // Keyboard navigation
   searchInput.addEventListener("keydown", (e) => {
     if (!autocompleteState.isOpen) return;
 
@@ -3763,7 +3764,7 @@ function getAutocompleteSuggestions(query) {
     // Then try fuzzy match for more results
     else {
       const matchResult = fuzzyMatch(app.name.toLowerCase(), lowerQuery);
-      
+
       if (matchResult !== null) {
         suggestions.push({
           type: "app",
