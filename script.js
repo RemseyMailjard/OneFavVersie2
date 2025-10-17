@@ -3928,7 +3928,13 @@ function setupHomePageCategories(apps) {
   // Clear existing categories (except "Alle")
   const allBtn = categoryFilter.querySelector('[data-category="all"]');
   categoryFilter.innerHTML = "";
-  if (allBtn) categoryFilter.appendChild(allBtn);
+  if (allBtn) {
+    // Ensure the All button uses the homepage class so querySelectorAll works
+    if (!allBtn.classList.contains("homepage-category-btn")) {
+      allBtn.classList.add("homepage-category-btn");
+    }
+    categoryFilter.appendChild(allBtn);
+  }
 
   categories.forEach((cat) => {
     const btn = document.createElement("button");
@@ -3944,14 +3950,22 @@ function setupHomePageCategories(apps) {
       .join(" ");
     btn.textContent = `${emoji} ${displayName}`;
 
-    btn.addEventListener("click", () => filterHomePageByCategory(cat));
+  btn.addEventListener("click", () => filterHomePageByCategory(cat));
 
     categoryFilter.appendChild(btn);
   });
 
-  // All button handler
+  // All button handler - ensure proper class + listener
   if (allBtn) {
-    allBtn.addEventListener("click", () => filterHomePageByCategory("all"));
+    allBtn.textContent = "📱 Alle apps";
+    if (!allBtn.classList.contains("homepage-category-btn")) {
+      allBtn.classList.add("homepage-category-btn");
+    }
+    // Remove previous listeners (defensive) and re-add
+    const newAll = allBtn.cloneNode(true);
+    newAll.addEventListener("click", () => filterHomePageByCategory("all"));
+    // Replace to avoid duplicate listeners
+    categoryFilter.replaceChild(newAll, allBtn);
   }
 }
 
@@ -3959,6 +3973,7 @@ function setupHomePageCategories(apps) {
  * Filter homepage apps by category
  */
 function filterHomePageByCategory(category) {
+  console.log("🧭 filterHomePageByCategory called", { category, allAppsLength: allApps.length });
   // Update active button
   document.querySelectorAll(".homepage-category-btn").forEach((btn) => {
     btn.classList.remove("active", "bg-blue-500", "text-white");
@@ -3987,7 +4002,8 @@ function filterHomePageByCategory(category) {
   if (category === "all") {
     renderHomePageApps(allApps);
   } else {
-    const filtered = allApps.filter((app) => app.category === category);
+    const filtered = allApps.filter((app) => (app.category || "").toString() === category);
+    console.log("🔎 filtered apps count:", filtered.length, "for category:", category);
     renderHomePageApps(filtered);
   }
 }
